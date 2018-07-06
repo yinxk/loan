@@ -5,13 +5,13 @@ package top.yinxiaokang.original;
  * @date 2018/7/6 14:13
  */
 
-import top.yinxiaokang.others.CurrentPeriodRange;
+import top.yinxiaokang.others.*;
 
-import java.text.ParseException;
-import java.util.Date;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * @author yinxk
@@ -27,6 +27,25 @@ public class LoanRepaymentAlgorithm {
 
 
     private final static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
+
+
+    private enum LoanRecoveryType {
+
+        BX("01"), BJ("02");
+        String code;
+
+        LoanRecoveryType(String code) {
+            this.code = code;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+        }
+    }
 
 
     /**
@@ -147,7 +166,7 @@ public class LoanRepaymentAlgorithm {
      * @param ydkkrq 逾期业务实际的扣款时间
      * @return 本期的逾期罚息
      */
-    public final static BigDecimal calOverdueFx(BigDecimal yqbj, BigDecimal yqlx, BigDecimal dknlv, Date ywfsrq, Date ydkkrq)  {
+    public final static BigDecimal calOverdueFx(BigDecimal yqbj, BigDecimal yqlx, BigDecimal dknlv, Date ywfsrq, Date ydkkrq) {
         return calOverdueFx(yqbj, yqlx, dknlv, calYqts(ywfsrq, ydkkrq));
     }
 
@@ -161,7 +180,7 @@ public class LoanRepaymentAlgorithm {
      * @param yqts  逾期天数
      * @return 本期的逾期罚息
      */
-    public final static BigDecimal calOverdueFx(BigDecimal yqbj, BigDecimal yqlx, BigDecimal dknlv, int yqts)  {
+    public final static BigDecimal calOverdueFx(BigDecimal yqbj, BigDecimal yqlx, BigDecimal dknlv, int yqts) {
         // 其中1.5是逾期罚息的倍率 , 根据以前代码来的
         return yqbj.add(yqlx)
                 .multiply(
@@ -218,7 +237,7 @@ public class LoanRepaymentAlgorithm {
         int sourceDay = calendar.get(Calendar.DAY_OF_MONTH);
         for (int i = 1; ; i++) {
             long beforeTime = calendar.getTime().getTime();
-            calendar = calNextAmountMonth(sourceDay,calendar,1);
+            calendar = calNextAmountMonth(sourceDay, calendar, 1);
             if (beforeTime < dqsj.getTime() && dqsj.getTime() <= calendar.getTime().getTime()) {
                 currentPeriodRange.setBeforeTime(new Date(beforeTime));
                 currentPeriodRange.setCurrentPeriod(i);
@@ -309,5 +328,45 @@ public class LoanRepaymentAlgorithm {
             }
         }
         return instance;
+    }
+
+    /**
+     * 某一期还款计划的本息
+     *
+     * @param dkffe  贷款发放额
+     * @param dkqs   贷款期数
+     * @param dkhkfs 贷款还款方式
+     * @param dkll   贷款利率
+     * @param dqqc   当期期次
+     * @return
+     */
+    public static LoanPlanItem currentLoanPlanItem(BigDecimal dkffe, int dkqs, String dkhkfs, BigDecimal dkll, int dqqc) {
+        if (dkffe == null) {
+            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款发放额为空");
+        }
+        if (dkll == null) {
+            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款利率为空");
+        }
+        if (dkqs <= 0) {
+            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款期数不小于0");
+        }
+        if (!StringUtil.notEmpty(dkhkfs)) {
+            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款还款方式为空,或者02本金01本息");
+        }
+        if (dqqc == 0) {
+            return null;
+        }
+        return null;
+    }
+
+    public static LoanPlanItem currentLoanPlanItem(BigDecimal dkffe, int dkqs, LoanRecoveryType dkhkfs, BigDecimal dkll, int dqqc) {
+        if (LoanRecoveryType.BX == dkhkfs){
+
+        } else if (LoanRecoveryType.BJ == dkhkfs) {
+
+        } else{
+            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款还款方式错误");
+        }
+        return null;
     }
 }
