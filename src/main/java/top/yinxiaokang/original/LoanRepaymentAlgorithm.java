@@ -26,6 +26,11 @@ public class LoanRepaymentAlgorithm {
     private final static int YEAR_DAYS = 360;
 
 
+    /**
+     *
+     */
+    private final static int YEAR_MONTHS = 12;
+
     private final static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
 
 
@@ -115,6 +120,18 @@ public class LoanRepaymentAlgorithm {
     private static BigDecimal convertYearRateToDayRate(BigDecimal yearRate) {
         BigDecimal dayRate = yearRate.divide(new BigDecimal(100), 10, BigDecimal.ROUND_HALF_UP)
                 .divide(new BigDecimal(YEAR_DAYS), 10, BigDecimal.ROUND_HALF_UP);
+        return dayRate.setScale(8, BigDecimal.ROUND_HALF_UP);
+    }
+
+    /**
+     * 转换年利率为日利率
+     *
+     * @param yearRate 没有经过小数处理的年利率(百分数)
+     * @return 根据文档需要精确到%表示的小数点后6位, 也就是小数表示的8位
+     */
+    private static BigDecimal convertYearRateToMonthRate(BigDecimal yearRate) {
+        BigDecimal dayRate = yearRate.divide(new BigDecimal(100), 10, BigDecimal.ROUND_HALF_UP)
+                .divide(new BigDecimal(YEAR_MONTHS), 10, BigDecimal.ROUND_HALF_UP);
         return dayRate.setScale(8, BigDecimal.ROUND_HALF_UP);
     }
 
@@ -360,13 +377,58 @@ public class LoanRepaymentAlgorithm {
     }
 
     public static LoanPlanItem currentLoanPlanItem(BigDecimal dkffe, int dkqs, LoanRecoveryType dkhkfs, BigDecimal dkll, int dqqc) {
-        if (LoanRecoveryType.BX == dkhkfs){
+        if (LoanRecoveryType.BX == dkhkfs) {
 
         } else if (LoanRecoveryType.BJ == dkhkfs) {
 
-        } else{
+        } else {
             throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款还款方式错误");
         }
         return null;
+    }
+
+    public static BigDecimal currentMonthlyPayments(BigDecimal dkffe, int dkqs, LoanRecoveryType dkhkfs, BigDecimal dkll, int dqqc) {
+        BigDecimal monthlyPayments ;
+        BigDecimal monthRate = convertYearRateToMonthRate(dkll);
+        BigDecimal dkqsDecimal = new BigDecimal(dkqs);
+        currentCheck(dkqs, dqqc);
+        if (LoanRecoveryType.BX == dkhkfs) {
+            monthlyPayments = dkffe.multiply(monthRate)
+                    .multiply(BigDecimal.ONE.add(monthRate).pow(dkqs))
+                    .divide(
+                            BigDecimal.ONE.add(monthRate)
+                                    .pow(dkqs)
+                                    .subtract(BigDecimal.ONE)
+                    );
+        } else if (LoanRecoveryType.BJ == dkhkfs) {
+            monthlyPayments = dkffe.multiply(monthRate)
+                    .multiply(
+                            BigDecimal.ONE.subtract(
+                                    new BigDecimal(dqqc).subtract(BigDecimal.ONE)
+                                            .divide(dkqsDecimal)
+                            )
+                    )
+                    .add(dkffe.divide(dkqsDecimal));
+        } else {
+            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款还款方式错误");
+        }
+        return monthlyPayments;
+    }
+
+    private static void currentCheck(int dkqs, int dqqc) {
+        if (dqqc < 1){
+            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "期次");
+        }
+        if (dkqs < 0 || dkqs > 999999999) {
+            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款期数");
+        }
+    }
+
+    public static BigDecimal currentMonthlyInterest(BigDecimal dkffe, int dkqs, LoanRecoveryType dkhkfs, BigDecimal dkll, int dqqc) {
+        BigDecimal monthlyInterest = BigDecimal.ZERO;
+        currentCheck(dkqs, dqqc);
+        BigDecimal monthRate = convertYearRateToMonthRate(dkll);
+
+        return monthlyInterest;
     }
 }
