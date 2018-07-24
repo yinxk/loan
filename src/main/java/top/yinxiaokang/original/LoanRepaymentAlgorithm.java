@@ -431,4 +431,15 @@ public class LoanRepaymentAlgorithm {
 
         return monthlyInterest;
     }
+
+    /**
+     * 根据贷款余额和贷款利率计算利息
+     * @param dkye 贷款余额
+     * @param dkll 贷款利率
+     * @return 利息
+     */
+    public static BigDecimal calLxByDkye(BigDecimal dkye,BigDecimal dkll){
+        BigDecimal lx = dkye.multiply(convertYearRateToMonthRate(dkll));
+        return lx.setScale(2,BigDecimal.ROUND_HALF_UP);
+    }
 }

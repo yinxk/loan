@@ -27,6 +27,8 @@ public class HousingfundAccountPlanGetInformation  implements Serializable {
 
     private String HKQC; //还款期次
 
+    private String QMDKYE; // 期末贷款余额
+
     public String getHKQC() {
         return HKQC;
     }
@@ -104,6 +106,14 @@ public class HousingfundAccountPlanGetInformation  implements Serializable {
 
     }
 
+    public String getQMDKYE() {
+        return QMDKYE;
+    }
+
+    public void setQMDKYE(String QMDKYE) {
+        this.QMDKYE = QMDKYE;
+    }
+
     @Override
     public String toString() {
         return "HousingfundAccountPlanGetInformation{" +
@@ -113,6 +123,7 @@ public class HousingfundAccountPlanGetInformation  implements Serializable {
                 ", HKLXJE='" + HKLXJE + '\'' +
                 ", HKRQ='" + HKRQ + '\'' +
                 ", HKQC='" + HKQC + '\'' +
+                ", QMDKYE='" + QMDKYE + '\'' +
                 '}';
     }
 }

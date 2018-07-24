@@ -446,19 +446,12 @@ public final class CommLoanAlgorithm {
         LinkedList<HousingfundAccountPlanGetInformation> information = new LinkedList<>();
         HousingfundAccountPlanGetInformation housingfundAccountPlanGetInformation = null;
         BigDecimal dkye = DKFFE;
-        if (dkye.compareTo(new BigDecimal(0)) == 0) return information;
+        if (dkye.compareTo(BigDecimal.ZERO) <= 0) return information;
         boolean first=true;
         BigDecimal sqbj=null;
         for (int i = 1; i <= DKQS; i++) {
             housingfundAccountPlanGetInformation = new HousingfundAccountPlanGetInformation();
-            calendar.add(Calendar.MONTH, 1);
-            int newDay= calendar.get(Calendar.DAY_OF_MONTH);
-            int maxDay=calendar.getActualMaximum(Calendar.DATE);
-            if(newDay>sourceDay){
-                calendar.set(Calendar.DAY_OF_MONTH,-(newDay-sourceDay));
-            }else if(newDay<sourceDay&&newDay<maxDay&&maxDay<=sourceDay){
-                calendar.add(Calendar.DAY_OF_MONTH,maxDay-newDay);
-            }
+            calendar = LoanRepaymentAlgorithm.calNextAmountMonth(sourceDay,calendar,1);
             BigDecimal bqbx = currentBX(DKFFE, DKQS, DKHKFS, DKLL, i).setScale(2,BigDecimal.ROUND_HALF_UP);
             BigDecimal mylx = overdueThisPeriodLX(DKFFE, i, DKHKFS, DKLL, DKQS).setScale(2,BigDecimal.ROUND_HALF_UP);
             BigDecimal bjje = bqbx.subtract(mylx);
@@ -474,7 +467,16 @@ public final class CommLoanAlgorithm {
             housingfundAccountPlanGetInformation.setFSE(bqbx.toString());//本期本息
             housingfundAccountPlanGetInformation.setHKBJJE(bjje.toString());//本金金额
             housingfundAccountPlanGetInformation.setHKLXJE(mylx.toString());//利息
-            housingfundAccountPlanGetInformation.setDKYE(dkye.toString());//贷款余额
+            housingfundAccountPlanGetInformation.setQMDKYE(dkye.subtract(bjje).toString()); // 期末贷款余额
+            // 最后一期做特殊处理, 因为之前的舍入会产生误差
+            if (i == DKQS) {
+                mylx = LoanRepaymentAlgorithm.calLxByDkye(dkye, DKLL);
+                housingfundAccountPlanGetInformation.setHKBJJE(dkye+"");
+                housingfundAccountPlanGetInformation.setHKLXJE(mylx+"");//利息
+                housingfundAccountPlanGetInformation.setFSE(dkye.add(mylx)+"");//本期本息
+                housingfundAccountPlanGetInformation.setQMDKYE("0");
+            }
+            housingfundAccountPlanGetInformation.setDKYE(dkye.toString());//贷款余额 以前代码中,表示期初贷款余额
             information.add(housingfundAccountPlanGetInformation);
         }
         return information;
@@ -615,15 +617,16 @@ public final class CommLoanAlgorithm {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(sim.parse(DKFFRQ));
+        int sourceDay= calendar.get(Calendar.DAY_OF_MONTH);
         LinkedList<HousingfundAccountPlanGetInformation> information = new LinkedList<>();
         HousingfundAccountPlanGetInformation housingfundAccountPlanGetInformation = null;
         BigDecimal dkye = DKFFE;
-        if (dkye.compareTo(new BigDecimal(0)) == 0) return information;
+        if (dkye.compareTo(BigDecimal.ZERO) <= 0) return information;
         boolean first=true;
         BigDecimal sqbj=null;
         for (int i = 1; i <= DKQS; i++) {
             housingfundAccountPlanGetInformation = new HousingfundAccountPlanGetInformation();
-            calendar.add(Calendar.MONTH, 1);
+            calendar = LoanRepaymentAlgorithm.calNextAmountMonth(sourceDay,calendar,1);
             BigDecimal bqbx = currentBX(DKFFE, DKQS, DKHKFS, DKLL, i).setScale(2,BigDecimal.ROUND_HALF_UP);
             BigDecimal mylx = overdueThisPeriodLX(DKFFE, i, DKHKFS, DKLL, DKQS).setScale(2,BigDecimal.ROUND_HALF_UP);
             BigDecimal bjje = bqbx.subtract(mylx);
@@ -651,6 +654,15 @@ public final class CommLoanAlgorithm {
             housingfundAccountPlanGetInformation.setFSE(bqbx.toString());//本期本息
             housingfundAccountPlanGetInformation.setHKBJJE(bjje.toString());//本金金额
             housingfundAccountPlanGetInformation.setHKLXJE(mylx.toString());//利息
+            housingfundAccountPlanGetInformation.setQMDKYE(dkye.subtract(bjje).toString()); // 期末贷款余额
+            // 最后一期做特殊处理, 因为之前的舍入会产生误差
+            if (i == DKQS) {
+                mylx = LoanRepaymentAlgorithm.calLxByDkye(dkye, DKLL);
+                housingfundAccountPlanGetInformation.setHKBJJE(dkye+"");
+                housingfundAccountPlanGetInformation.setHKLXJE(mylx+"");//利息
+                housingfundAccountPlanGetInformation.setFSE(dkye.add(mylx)+"");//本期本息
+                housingfundAccountPlanGetInformation.setQMDKYE("0");
+            }
             housingfundAccountPlanGetInformation.setDKYE(dkye.toString());//贷款余额
             information.add(housingfundAccountPlanGetInformation);
         }
