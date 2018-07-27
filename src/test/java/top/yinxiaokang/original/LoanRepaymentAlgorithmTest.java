@@ -27,12 +27,13 @@ public class LoanRepaymentAlgorithmTest {
 
         Date dkffrq = SIMPLE_DATE_FORMAT.parse("2017-06-10");
         Date hssj = SIMPLE_DATE_FORMAT.parse("2017-12-31");
-        CurrentPeriodRange currentPeriodRange = LoanRepaymentAlgorithm.calHSRange(dkffrq, hssj);
+        Date soutStartDate = Utils.SDF_YEAR_MONTH_DAY.parse("2017-12-01");
+        CurrentPeriodRange currentPeriodRange = LoanRepaymentAlgorithm.calHSRange(dkffrq, hssj,soutStartDate);
         Assert.assertEquals(6,currentPeriodRange.getCurrentPeriod());
         System.out.println(currentPeriodRange);
 
         dkffrq = SIMPLE_DATE_FORMAT.parse("2015-03-20");
-        currentPeriodRange = LoanRepaymentAlgorithm.calHSRange(dkffrq, hssj);
+        currentPeriodRange = LoanRepaymentAlgorithm.calHSRange(dkffrq, hssj,soutStartDate);
         Assert.assertEquals(33,currentPeriodRange.getCurrentPeriod());
         System.out.println(currentPeriodRange);
     }

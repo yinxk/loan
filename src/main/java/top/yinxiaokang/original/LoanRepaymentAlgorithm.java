@@ -273,7 +273,7 @@ public class LoanRepaymentAlgorithm {
      * @return
      * @throws ParseException
      */
-    public static CurrentPeriodRange calHSRange(Date dkffrq, Date hssj) throws ParseException {
+    public static CurrentPeriodRange calHSRange(Date dkffrq, Date hssj,Date soutStartDate) throws ParseException {
         hssj = SDF.parse(SDF.format(hssj));
         dkffrq = SDF.parse(SDF.format(dkffrq));
         CurrentPeriodRange currentPeriodRange = new CurrentPeriodRange();
@@ -287,10 +287,13 @@ public class LoanRepaymentAlgorithm {
 
             calendar1.setTime(calendar.getTime());
             calendar1 = calNextAmountMonth(sourceDay, calendar1, 1);
+            currentPeriodRange.setBeforeTime(beforeTime);
+            currentPeriodRange.setCurrentPeriod(i);
+            currentPeriodRange.setAfterTime(new Date(calendar.getTime().getTime()));
+            if (calendar.getTime().getTime() > soutStartDate.getTime()) {
+                System.out.println(currentPeriodRange);
+            }
             if (calendar.getTime().getTime() <= hssj.getTime() && hssj.getTime() < calendar1.getTime().getTime()) {
-                currentPeriodRange.setBeforeTime(beforeTime);
-                currentPeriodRange.setCurrentPeriod(i);
-                currentPeriodRange.setAfterTime(new Date(calendar.getTime().getTime()));
                 break;
             }
         }

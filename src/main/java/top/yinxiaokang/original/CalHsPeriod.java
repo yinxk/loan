@@ -3,6 +3,7 @@ package top.yinxiaokang.original;
 import top.yinxiaokang.others.CurrentPeriodRange;
 import top.yinxiaokang.others.ReducePlanEntity;
 
+import javax.rmi.CORBA.Util;
 import javax.sound.midi.Soundbank;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -30,10 +31,11 @@ public class CalHsPeriod {
 
             Date dkffrq = calHsPeriod.getDkffrq(dkzh, connection);
             System.out.println("贷款发放日期:" + Utils.SDF_YEAR_MONTH_DAY.format(dkffrq));
-            Date hssj = Utils.SDF_YEAR_MONTH_DAY.parse("2017-12-31");
+            Date hssj = Utils.SDF_YEAR_MONTH_DAY.parse("2018-7-27");
 
-            CurrentPeriodRange currentPeriodRange = LoanRepaymentAlgorithm.calHSRange(dkffrq, hssj);
-            System.out.println(currentPeriodRange);
+            Date soutStartDate = Utils.SDF_YEAR_MONTH_DAY.parse("2017-12-01");
+            CurrentPeriodRange currentPeriodRange = LoanRepaymentAlgorithm.calHSRange(dkffrq, hssj,soutStartDate);
+//            System.out.println(currentPeriodRange);
 
             long endTime = System.currentTimeMillis();
             System.out.println("正常结束，时间："+(endTime - startTime) + " ms");
