@@ -1,5 +1,7 @@
 package top.yinxiaokang.others;
 
+import top.yinxiaokang.original.Utils;
+
 import java.util.Date;
 
 /**
@@ -41,8 +43,8 @@ public class CurrentPeriodRange {
     @Override
     public String toString() {
         return "CurrentPeriodRange{" +
-                "beforeTime=" + beforeTime +
-                ", afterTime=" + afterTime +
+                "beforeTime=" + Utils.SDF_YEAR_MONTH_DAY.format(beforeTime) +
+                ", afterTime=" + Utils.SDF_YEAR_MONTH_DAY.format(afterTime) +
                 ", currentPeriod=" + currentPeriod +
                 '}';
     }

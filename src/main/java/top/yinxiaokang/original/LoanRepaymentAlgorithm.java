@@ -265,6 +265,39 @@ public class LoanRepaymentAlgorithm {
         return currentPeriodRange;
     }
 
+    /**
+     * 根据贷款发放日期和当前时间,计算核算时间属于的还款期间
+     *
+     * @param dkffrq
+     * @param hssj
+     * @return
+     * @throws ParseException
+     */
+    public static CurrentPeriodRange calHSRange(Date dkffrq, Date hssj) throws ParseException {
+        hssj = SDF.parse(SDF.format(hssj));
+        dkffrq = SDF.parse(SDF.format(dkffrq));
+        CurrentPeriodRange currentPeriodRange = new CurrentPeriodRange();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(dkffrq);
+        Calendar calendar1 = Calendar.getInstance();
+        int sourceDay = calendar.get(Calendar.DAY_OF_MONTH);
+        for (int i = 1; ; i++) {
+            Date beforeTime = calendar.getTime();
+            calendar = calNextAmountMonth(sourceDay, calendar, 1);
+
+            calendar1.setTime(calendar.getTime());
+            calendar1 = calNextAmountMonth(sourceDay, calendar1, 1);
+            if (calendar.getTime().getTime() <= hssj.getTime() && hssj.getTime() < calendar1.getTime().getTime()) {
+                currentPeriodRange.setBeforeTime(beforeTime);
+                currentPeriodRange.setCurrentPeriod(i);
+                currentPeriodRange.setAfterTime(new Date(calendar.getTime().getTime()));
+                break;
+            }
+        }
+
+        return currentPeriodRange;
+    }
+
 
     /**
      * 根据对应的正常还款的业务发生日期(如果没有对应的业务发生日期(数据异常),则使用以前的计算罚息的方式进行计算) <br/>
