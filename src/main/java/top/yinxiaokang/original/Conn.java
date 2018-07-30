@@ -28,8 +28,8 @@ public class Conn {
     public Connection getConnection() {
         Connection conn = null;
         try {
-            System.out.println("获取连接");
             conn = DriverManager.getConnection(URL, NAME, PASSWORD);
+            System.out.println("获取连接 : " + conn.toString());
         } catch (SQLException e) {
             e.printStackTrace();
         }
