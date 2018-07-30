@@ -9,15 +9,7 @@ import java.sql.*;
 import java.util.List;
 
 public class Conn {
-    /**
-     * 毕节市
-     */
-    //private static final String DRIVER = "com.mysql.jdbc.Driver";
-    //private static final String URL = "jdbc:mysql://172.16.20.99:3306/housingfund?characterEncoding=utf8&useSSL=false";
-    //private static final String NAME = "bj";
-    //private static final String PASSWORD = "v58BscjjqCkvGydF/nQ+90woTFgOhs0c+TCOObFWgkw=";
-
- // b4
+   // b4
     private static final String DRIVER = "com.mysql.jdbc.Driver";
     private static final String URL = "jdbc:mysql://172.18.20.100:3306/product_0103_b4?characterEncoding=utf8&useSSL=false";
     private static final String NAME = "root";

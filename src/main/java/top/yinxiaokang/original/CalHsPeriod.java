@@ -17,7 +17,7 @@ import java.util.Date;
  */
 public class CalHsPeriod {
 
-    public static void main(String[] args)  {
+    public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
         Conn conn = new Conn();
         Connection connection = conn.getConnection();
@@ -34,22 +34,21 @@ public class CalHsPeriod {
             Date hssj = Utils.SDF_YEAR_MONTH_DAY.parse("2018-7-27");
 
             Date soutStartDate = Utils.SDF_YEAR_MONTH_DAY.parse("2017-12-01");
-            CurrentPeriodRange currentPeriodRange = LoanRepaymentAlgorithm.calHSRange(dkffrq, hssj,soutStartDate);
+            CurrentPeriodRange currentPeriodRange = LoanRepaymentAlgorithm.calHSRange(dkffrq, hssj, soutStartDate);
 //            System.out.println(currentPeriodRange);
 
             long endTime = System.currentTimeMillis();
-            System.out.println("正常结束，时间："+(endTime - startTime) + " ms");
-        }catch (Exception e){
+            System.out.println("正常结束，时间：" + (endTime - startTime) + " ms");
+        } catch (Exception e) {
             e.printStackTrace();
-            conn.closeResource(connection,preparedStatement,resultSet);
-        }finally {
-            conn.closeResource(connection,preparedStatement,resultSet);
+        } finally {
+            conn.closeResource(connection, preparedStatement, resultSet);
         }
 
     }
 
-    public Date getDkffrq(String dkzh,Connection connection) throws SQLException {
-        String selectSql = "SELECT acc.DKFFRQ FROM st_housing_personal_account acc WHERE acc.DKZH = '"+dkzh+"'";
+    public Date getDkffrq(String dkzh, Connection connection) throws SQLException {
+        String selectSql = "SELECT acc.DKFFRQ FROM st_housing_personal_account acc WHERE acc.DKZH = '" + dkzh + "'";
         PreparedStatement preparedStatement = connection.prepareStatement(selectSql);
         ResultSet resultSet = preparedStatement.executeQuery();
         Date dkffrq = null;
