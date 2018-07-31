@@ -45,7 +45,7 @@ public class CalDkye {
                 }
                 dkye = dkye.subtract(bjje);
                 System.out.print(next);
-                System.out.println("\t推算余额: "+dkye);
+                System.out.println("\t推算余额: "+dkye + "\t差额: "+dkye.subtract(next.getXqdkye()));
             }
 
             System.out.println("推算结束======");
