@@ -22,7 +22,7 @@ public class RepaymentItem implements Serializable {
      */
     private BigDecimal hklxje;
     /**
-     *    发生额
+     * 发生额
      */
     private BigDecimal fse;
     /**

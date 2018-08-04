@@ -14,32 +14,35 @@ public class RepaymentPlan {
     /**
      * 还款计划
      *
-     * @param dkffe           贷款发放额
-     * @param dkffrq          贷款发放日期
-     * @param hkqs            还款期数
-     * @param dknlv           贷款年利率
-     * @param repaymentMethod 还款方式
-     * @param qsqs            起始期数
+     * @param dkffe                   贷款发放额
+     * @param dkffrq                  贷款发放日期(可为null)
+     * @param hkqs                    还款期数
+     * @param dknlv                   贷款年利率
+     * @param repaymentMethod         还款方式
+     * @param qsqs                    起始期数(可为null,默认值为0)
+     * @param repaymentMonthRateScale 转换年利率小数位数的处理方式(可为null,默认值YES)
      * @return 生成还款计划
      */
     public static List<RepaymentItem> listRepaymentPlan(BigDecimal dkffe, Date dkffrq, int hkqs, BigDecimal dknlv, RepaymentMethod repaymentMethod, Integer qsqs, RepaymentMonthRateScale repaymentMonthRateScale) {
         List<RepaymentItem> result = new ArrayList<>();
         if (dkffe == null || dkffe.compareTo(BigDecimal.ZERO) <= 0)
             return result;
-        if (dkffrq == null)
-            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款发放日期");
         if (qsqs == null)
             qsqs = 0;
         if (dknlv == null || dknlv.compareTo(BigDecimal.ZERO) <= 0)
             throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款年利率");
+        // 这种验证是否多次一举呢 , 编译器会检查类型 , 可否绕过呢?
         if (repaymentMethod != RepaymentMethod.BX && repaymentMethod != RepaymentMethod.BJ)
             throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "还款方式");
-
         if (repaymentMonthRateScale == null)
             repaymentMonthRateScale = RepaymentMonthRateScale.YES;
+
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(dkffrq);
-        int sourceDay = calendar.get(Calendar.DAY_OF_MONTH);
+        int sourceDay = 1;
+        if (dkffrq != null) {
+            calendar.setTime(dkffrq);
+            sourceDay = calendar.get(Calendar.DAY_OF_MONTH);
+        }
         BigDecimal dkye = dkffe;
         BigDecimal hkbjje = BigDecimal.ZERO;
         BigDecimal hklxje = BigDecimal.ZERO;
@@ -67,9 +70,11 @@ public class RepaymentPlan {
                 }
             }
 
-            calendar = LoanRepaymentAlgorithm.calNextAmountMonth(sourceDay, calendar, 1);
+            if (dkffrq != null) {
+                calendar = LoanRepaymentAlgorithm.calNextAmountMonth(sourceDay, calendar, 1);
+                repaymentItem.setHkrq(calendar.getTime());
+            }
             repaymentItem.setHkqc(qsqs + i + 1);
-            repaymentItem.setHkrq(calendar.getTime());
             repaymentItem.setQcdkye(dkye);
             repaymentItem.setQmdkye(dkye.subtract(hkbjje));
             repaymentItem.setHkbjje(hkbjje);
