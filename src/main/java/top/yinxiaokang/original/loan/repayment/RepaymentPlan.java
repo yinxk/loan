@@ -55,7 +55,7 @@ public class RepaymentPlan {
         for (int i = 0; i < hkqs; i++) {
             RepaymentItem repaymentItem = new RepaymentItem();
 
-            hklxje = LoanRepaymentAlgorithm.calLxByDkye(dkye, dknlv);
+            hklxje = LoanRepaymentAlgorithm.calLxByDkye(dkye, dknlv, repaymentMonthRateScale);
             // 最后一期 , 贷款余额为该期本金
             if (i == hkqs - 1) {
                 hkbjje = dkye;
