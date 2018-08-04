@@ -6,13 +6,14 @@ package top.yinxiaokang.original;
  */
 
 import top.yinxiaokang.original.loan.repayment.RepaymentMonthRateScale;
-import top.yinxiaokang.others.*;
+import top.yinxiaokang.others.CurrentPeriodRange;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+
+import static top.yinxiaokang.original.Utils.*;
 
 /**
  * @author yinxk
@@ -22,39 +23,6 @@ import java.util.Date;
 public class LoanRepaymentAlgorithm {
 
     /**
-     * 一年以360天计算
-     */
-    private final static int YEAR_DAYS = 360;
-
-
-    /**
-     *
-     */
-    private final static int YEAR_MONTHS = 12;
-
-    private final static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
-
-
-    private enum LoanRecoveryType {
-
-        BX("01"), BJ("02");
-        String code;
-
-        LoanRecoveryType(String code) {
-            this.code = code;
-        }
-
-        public String getCode() {
-            return code;
-        }
-
-        public void setCode(String code) {
-            this.code = code;
-        }
-    }
-
-
-    /**
      * 计算提前还款本金
      *
      * @param tqhkje 提前还款金额
@@ -62,7 +30,7 @@ public class LoanRepaymentAlgorithm {
      * @return 提前还款本金
      */
     public static BigDecimal calEarlyRepaymentOfPrincipal(BigDecimal tqhkje, BigDecimal lx) {
-        return tqhkje.subtract(lx).setScale(2, BigDecimal.ROUND_HALF_UP);
+        return tqhkje.subtract(lx).setScale(SCALE_TWO, BigDecimal.ROUND_HALF_UP);
     }
 
     /**
@@ -80,16 +48,16 @@ public class LoanRepaymentAlgorithm {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(dkffrq);
         // 每月还款日
-        int normalDay = calendar.get(Calendar.DATE) > 30 ? 30 : calendar.get(Calendar.DATE);
+        int normalDay = calendar.get(Calendar.DATE) > MONTH_DAYS ? MONTH_DAYS : calendar.get(Calendar.DATE);
         // 约定扣款日期即实际还款日
         calendar.setTime(ydkkrq);
-        int actualDay = calendar.get(Calendar.DATE) > 30 ? 30 : calendar.get(Calendar.DATE);
+        int actualDay = calendar.get(Calendar.DATE) > MONTH_DAYS ? MONTH_DAYS : calendar.get(Calendar.DATE);
         // 相差天数
         int subDays = 0;
         if (actualDay >= normalDay) {
             subDays = actualDay - normalDay;
         } else {
-            subDays = 30 - normalDay + actualDay;
+            subDays = MONTH_DAYS - normalDay + actualDay;
         }
         return subDays;
 
@@ -106,47 +74,46 @@ public class LoanRepaymentAlgorithm {
      * @return 利息
      */
     public final static BigDecimal calInterestByInterestDays(BigDecimal dkye, BigDecimal dkll, int jxts) {
-        BigDecimal dayRate = convertYearRateToDayRate(dkll);
+        BigDecimal dayRate = convertYearRateToDayRate(dkll, RepaymentMonthRateScale.YES);
         BigDecimal interest = dkye.multiply(dayRate)
                 .multiply(new BigDecimal(jxts));
-        return interest.setScale(2, BigDecimal.ROUND_HALF_UP);
+        return interest.setScale(SCALE_TWO, BigDecimal.ROUND_HALF_UP);
     }
 
     /**
      * 转换年利率为日利率
      *
      * @param yearRate 没有经过小数处理的年利率(百分数)
-     * @return 日利率  根据文档需要精确到%表示的小数点后6位, 也就是小数表示的8位
+     * @return 日利率  根据文档需要精确到%表示的小数点后6位, 也就是小数表示的8位(根据拿到的资料是这么计算的) <br />
+     * 网上资料显示精确到小数点后12位
      */
-    public static BigDecimal convertYearRateToDayRate(BigDecimal yearRate) {
-        BigDecimal dayRate = yearRate.divide(new BigDecimal(100), 10, BigDecimal.ROUND_HALF_UP)
-                .divide(new BigDecimal(YEAR_DAYS), 10, BigDecimal.ROUND_HALF_UP);
-        return dayRate.setScale(8, BigDecimal.ROUND_HALF_UP);
+    public static BigDecimal convertYearRateToDayRate(BigDecimal yearRate, RepaymentMonthRateScale repaymentMonthRateScale) {
+        BigDecimal dayRate = convertYearRateToMonthRate(yearRate, RepaymentMonthRateScale.NO).divide(new BigDecimal(MONTH_DAYS), SCALE_TWELVE, BigDecimal.ROUND_HALF_UP);
+        if (repaymentMonthRateScale == RepaymentMonthRateScale.YES)
+            dayRate = dayRate.setScale(SCALE_EIGHT, BigDecimal.ROUND_HALF_UP);
+        return dayRate;
     }
 
-
-    public static BigDecimal convertYearRateToMonthRate(BigDecimal yearRate) {
-        return convertYearRateToMonthRate(yearRate, RepaymentMonthRateScale.YES);
-    }
 
     /**
      * 转换年利率为月利率
      *
      * @param yearRate                没有经过小数处理的年利率(百分数)
      * @param repaymentMonthRateScale 转换月利率是否进行小数处理
-     * @return 不理小数位数(最多10位)或者根据文档需要精确到%表示的小数点后6位, 也就是小数表示的8位
+     * @return 不理小数位数(最多12位)或者根据文档需要精确到%表示的小数点后6位, 也就是小数表示的8位(根据拿到的资料是这么计算的) <br />
+     * 网上资料显示精确到小数点后12位
      */
     public static BigDecimal convertYearRateToMonthRate(BigDecimal yearRate, RepaymentMonthRateScale repaymentMonthRateScale) {
-        BigDecimal monthRate = yearRate.divide(new BigDecimal(100), 10, BigDecimal.ROUND_HALF_UP)
-                .divide(new BigDecimal(YEAR_MONTHS), 10, BigDecimal.ROUND_HALF_UP);
+        BigDecimal monthRate = yearRate.divide(new BigDecimal(100), SCALE_TWELVE, BigDecimal.ROUND_HALF_UP)
+                .divide(new BigDecimal(YEAR_MONTHS), SCALE_TWELVE, BigDecimal.ROUND_HALF_UP);
         if (repaymentMonthRateScale == RepaymentMonthRateScale.YES)
-            monthRate.setScale(8, BigDecimal.ROUND_HALF_UP);
+            monthRate = monthRate.setScale(SCALE_EIGHT, BigDecimal.ROUND_HALF_UP);
         return monthRate;
     }
 
 
     /**
-     * 只支持正向计算,即end>=start否则,结果为0
+     * 只支持正向计算,即end>=start. 否则,结果为0
      * <p>计算开始日期和结束日期之间的天数,左闭右开区间,[2018-5-17,2018-5-18)</p>
      * <p>比如: 2018-5-17 和 2018-5-18 之间的计算结果为 1 </p>
      * <p>2018-5-17----> 2018-5-19  =  2 </p>
@@ -166,16 +133,16 @@ public class LoanRepaymentAlgorithm {
         int startYear = startC.get(Calendar.YEAR);
         int endYear = endC.get(Calendar.YEAR);
         int startDay = startC.get(Calendar.DATE);
-        startDay = startDay > 30 ? 30 : startDay;
+        startDay = startDay > MONTH_DAYS ? MONTH_DAYS : startDay;
         int endDay = endC.get(Calendar.DATE);
-        endDay = endDay > 30 ? 30 : endDay;
+        endDay = endDay > MONTH_DAYS ? MONTH_DAYS : endDay;
         int subYears = endYear - startYear;
         int subMonths = endMonth - startMonth;
         // 比如日期是2017-1-20  -------->  2017-5-10
         // 相当于计算2017-1-20-----> 2017-4-20---->2017-5-10的天数
         // 相差   3*30 + (30-20)+10
-        int subDays = 30 - startDay + endDay;
-        int betweenDays = subYears * 12 * 30 + subMonths * 30 + subDays;
+        int subDays = MONTH_DAYS - startDay + endDay;
+        int betweenDays = subYears * YEAR_MONTHS * MONTH_DAYS + subMonths * MONTH_DAYS + subDays;
         if (betweenDays < 0) {
             betweenDays = 0;
         }
@@ -211,10 +178,10 @@ public class LoanRepaymentAlgorithm {
         // 其中1.5是逾期罚息的倍率 , 根据以前代码来的
         return yqbj.add(yqlx)
                 .multiply(
-                        convertYearRateToDayRate(dknlv).multiply(new BigDecimal(1.5))
+                        convertYearRateToDayRate(dknlv, RepaymentMonthRateScale.YES).multiply(new BigDecimal(1.5))
                 )
                 .multiply(new BigDecimal(yqts))
-                .setScale(2, BigDecimal.ROUND_HALF_UP);
+                .setScale(SCALE_TWO, BigDecimal.ROUND_HALF_UP);
 
     }
 
@@ -256,8 +223,8 @@ public class LoanRepaymentAlgorithm {
      * @throws ParseException
      */
     public static CurrentPeriodRange calCurrentPeriodRange(Date dkffrq, Date dqsj) throws ParseException {
-        dqsj = SDF.parse(SDF.format(dqsj));
-        dkffrq = SDF.parse(SDF.format(dkffrq));
+        dqsj = SDF_YEAR_MONTH_DAY.parse(SDF_YEAR_MONTH_DAY.format(dqsj));
+        dkffrq = SDF_YEAR_MONTH_DAY.parse(SDF_YEAR_MONTH_DAY.format(dkffrq));
         CurrentPeriodRange currentPeriodRange = new CurrentPeriodRange();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(dkffrq);
@@ -284,8 +251,8 @@ public class LoanRepaymentAlgorithm {
      * @throws ParseException
      */
     public static CurrentPeriodRange calHSRange(Date dkffrq, Date hssj, Date soutStartDate) throws ParseException {
-        hssj = SDF.parse(SDF.format(hssj));
-        dkffrq = SDF.parse(SDF.format(dkffrq));
+        hssj = SDF_YEAR_MONTH_DAY.parse(SDF_YEAR_MONTH_DAY.format(hssj));
+        dkffrq = SDF_YEAR_MONTH_DAY.parse(SDF_YEAR_MONTH_DAY.format(dkffrq));
         CurrentPeriodRange currentPeriodRange = new CurrentPeriodRange();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(dkffrq);
@@ -394,84 +361,6 @@ public class LoanRepaymentAlgorithm {
     }
 
     /**
-     * 某一期还款计划的本息
-     *
-     * @param dkffe  贷款发放额
-     * @param dkqs   贷款期数
-     * @param dkhkfs 贷款还款方式
-     * @param dkll   贷款利率
-     * @param dqqc   当期期次
-     * @return
-     */
-    public static LoanPlanItem currentLoanPlanItem(BigDecimal dkffe, int dkqs, String dkhkfs, BigDecimal dkll, int dqqc) {
-        if (dkffe == null) {
-            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款发放额为空");
-        }
-        if (dkll == null) {
-            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款利率为空");
-        }
-        if (dkqs <= 0) {
-            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款期数不小于0");
-        }
-        if (!StringUtil.notEmpty(dkhkfs)) {
-            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款还款方式为空,或者02本金01本息");
-        }
-        if (dqqc == 0) {
-            return null;
-        }
-        return null;
-    }
-
-    public static LoanPlanItem currentLoanPlanItem(BigDecimal dkffe, int dkqs, LoanRecoveryType dkhkfs, BigDecimal dkll, int dqqc) {
-        if (LoanRecoveryType.BX == dkhkfs) {
-
-        } else if (LoanRecoveryType.BJ == dkhkfs) {
-
-        } else {
-            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款还款方式错误");
-        }
-        return null;
-    }
-
-    public static BigDecimal currentMonthlyPayments(BigDecimal dkffe, int dkqs, LoanRecoveryType dkhkfs, BigDecimal dkll, int dqqc) {
-        BigDecimal monthlyPayments;
-        BigDecimal monthRate = convertYearRateToMonthRate(dkll);
-        BigDecimal dkqsDecimal = new BigDecimal(dkqs);
-        currentCheck(dkqs, dqqc);
-        if (LoanRecoveryType.BX == dkhkfs) {
-            monthlyPayments = dkffe.multiply(monthRate)
-                    .multiply(BigDecimal.ONE.add(monthRate).pow(dkqs))
-                    .divide(
-                            BigDecimal.ONE.add(monthRate)
-                                    .pow(dkqs)
-                                    .subtract(BigDecimal.ONE)
-                    );
-        } else if (LoanRecoveryType.BJ == dkhkfs) {
-            monthlyPayments = dkffe.multiply(monthRate)
-                    .multiply(
-                            BigDecimal.ONE.subtract(
-                                    new BigDecimal(dqqc).subtract(BigDecimal.ONE)
-                                            .divide(dkqsDecimal)
-                            )
-                    )
-                    .add(dkffe.divide(dkqsDecimal));
-        } else {
-            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款还款方式错误");
-        }
-        return monthlyPayments;
-    }
-
-    private static void currentCheck(int dkqs, int dqqc) {
-        if (dqqc < 1) {
-            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "期次");
-        }
-        if (dkqs < 0 || dkqs > 999999999) {
-            throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "贷款期数");
-        }
-    }
-
-
-    /**
      * 根据贷款余额和贷款利率计算利息
      *
      * @param dkye 贷款余额
@@ -480,7 +369,7 @@ public class LoanRepaymentAlgorithm {
      */
     public static BigDecimal calLxByDkye(BigDecimal dkye, BigDecimal dkll) {
         BigDecimal lx = dkye.multiply(convertYearRateToMonthRate(dkll, RepaymentMonthRateScale.YES));
-        return lx.setScale(2, BigDecimal.ROUND_HALF_UP);
+        return lx.setScale(SCALE_TWO, BigDecimal.ROUND_HALF_UP);
     }
 
     /**
@@ -493,6 +382,6 @@ public class LoanRepaymentAlgorithm {
      */
     public static BigDecimal calLxByDkye(BigDecimal dkye, BigDecimal dkll, RepaymentMonthRateScale repaymentMonthRateScale) {
         BigDecimal lx = dkye.multiply(convertYearRateToMonthRate(dkll, repaymentMonthRateScale));
-        return lx.setScale(2, BigDecimal.ROUND_HALF_UP);
+        return lx.setScale(SCALE_TWO, BigDecimal.ROUND_HALF_UP);
     }
 }
