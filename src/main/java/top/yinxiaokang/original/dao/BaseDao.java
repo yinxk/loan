@@ -35,7 +35,7 @@ public class BaseDao {
      * @return
      * @throws SQLException
      */
-    public <T> Collection<T> list(Class<T> clazz, String sql, Object... params) throws SQLException, IllegalAccessException, InstantiationException {
+    public <T> List<T> list(Class<T> clazz, String sql, Object... params) throws SQLException, IllegalAccessException, InstantiationException {
         List<T> list = new ArrayList<>();
         ResultSet rs = selectCommon(sql, params);
         while (rs.next()) {
