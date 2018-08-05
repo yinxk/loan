@@ -2,6 +2,7 @@ package top.yinxiaokang.original;
 
 import org.junit.Assert;
 import org.junit.Test;
+import top.yinxiaokang.original.loan.repayment.RepaymentMonthRateScale;
 import top.yinxiaokang.others.CurrentPeriodRange;
 
 import java.math.BigDecimal;
@@ -18,8 +19,8 @@ public class LoanRepaymentAlgorithmTest {
 
     @Test
     public void calLxByDkye() throws Exception {
-        BigDecimal dkye = new BigDecimal("237853.15");
-        BigDecimal bigDecimal = LoanRepaymentAlgorithm.calLxByDkye(dkye, DKLL);
+        BigDecimal dkye = new BigDecimal("2454.53");
+        BigDecimal bigDecimal = LoanRepaymentAlgorithm.calLxByDkye(dkye, DKLL, RepaymentMonthRateScale.NO);
         System.out.println(bigDecimal);
     }
 
