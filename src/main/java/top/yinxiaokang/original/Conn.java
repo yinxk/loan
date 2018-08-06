@@ -36,7 +36,7 @@ public class Conn {
         return conn;
     }
 
-    public void closeResource(Connection conn, Statement statement, ResultSet resultSet) {
+    public static void closeResource(Connection conn, Statement statement, ResultSet resultSet) {
         try {
             if (resultSet != null) {
                 resultSet.close();
