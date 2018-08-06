@@ -10,7 +10,7 @@ import java.util.List;
  * @author yinxk
  * @date 2018/8/6 11:08
  */
-public class SthousingAccountDao extends BaseDao{
+public class SthousingAccountDao extends BaseDao {
 
     public SthousingAccountDao(Connection connection) {
         super(connection);

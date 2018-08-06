@@ -23,25 +23,28 @@ public class AccountCheckMain {
     public void Test1() {
         AccountCheck accountCheck = new AccountCheck();
         String dkzh = "2406071098002745823";
-        SthousingAccount account = accountCheck.getSthousingAccount(dkzh);
-        List<CurrentPeriodRange> ranges = accountCheck.listHSRange(account);
-        BigDecimal syqs = accountCheck.syqs(ranges, account);
         BigDecimal initDkye = new BigDecimal("234381.53");
+        SthousingAccount account = accountCheck.getSthousingAccount(dkzh);
+        List<CurrentPeriodRange> ranges = accountCheck.listHSRange(account, null);
+        BigDecimal syqs = accountCheck.syqs(ranges, account);
 
         BigDecimal dkxffe = initDkye;
-        Date dkxffrq = ranges.get(0).getBeforeTime();
+        CurrentPeriodRange currentPeriodRange = null;
+        if (!ranges.isEmpty()) {
+            currentPeriodRange = ranges.get(0);
+        }
+        Date dkxffrq = currentPeriodRange == null ? null : currentPeriodRange.getBeforeTime();
 
         // 初始还款计划,如果后面发生提前还款 , 那么还款计划会发生改变
         List<RepaymentItem> repaymentItems = RepaymentPlan.listRepaymentPlan(dkxffe, dkxffrq, syqs.intValue(), account.getDkll(),
-                RepaymentMethod.getRepaymentMethodByCode(account.getDkhkfs()), account.getDkqs().subtract(syqs).intValue(), RepaymentMonthRateScale.NO);
+                RepaymentMethod.getRepaymentMethodByCode(account.getDkhkfs()), account.getDkqs().subtract(syqs).intValue(), RepaymentMonthRateScale.YES);
 
         for (RepaymentItem item : repaymentItems) {
             System.out.println(item);
         }
-        for (CurrentPeriodRange c : ranges) {
-            System.out.println(c);
-        }
+
         List<SthousingDetail> sthousingDetails = accountCheck.listDetails(account);
+
         for (SthousingDetail detail : sthousingDetails) {
             System.out.println(detail);
         }

@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -63,9 +64,9 @@ public class AccountCheck {
         return null;
     }
 
-    public List<CurrentPeriodRange> listHSRange(String dkzh) {
+    public List<CurrentPeriodRange> listHSRange(String dkzh,Date hssj) {
         SthousingAccount sthousingAccount = getSthousingAccount(dkzh);
-        List<CurrentPeriodRange> ranges = listHSRange(sthousingAccount);
+        List<CurrentPeriodRange> ranges = listHSRange(sthousingAccount,hssj);
         return ranges;
     }
 
@@ -81,10 +82,16 @@ public class AccountCheck {
 
 
 
-    public List<CurrentPeriodRange> listHSRange(SthousingAccount account) {
+    public List<CurrentPeriodRange> listHSRange(SthousingAccount account,Date hssj) {
         try {
             Date dkffrq = account.getDkffrq();
-            Date hssj = Utils.SDF_YEAR_MONTH_DAY.parse("2018-7-27");
+            if (hssj == null) {
+                hssj = new Date();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(hssj);
+                calendar.add(Calendar.DAY_OF_MONTH, -1);
+                hssj = calendar.getTime();
+            }
             Date soutStartDate = Utils.SDF_YEAR_MONTH_DAY.parse("2017-12-01");
             List<CurrentPeriodRange> ranges = LoanRepaymentAlgorithm.listHSRange(dkffrq, hssj, soutStartDate);
             return ranges;
