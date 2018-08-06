@@ -21,6 +21,21 @@ import static top.yinxiaokang.original.Utils.*;
  * 贷款还款算法
  */
 public class LoanRepaymentAlgorithm {
+    /**
+     * 一年以360天计算
+     */
+    public final static int YEAR_DAYS = 360;
+    public final static int YEAR_MONTHS = 12;
+    public final static int MONTH_DAYS = 30;
+
+
+    /**
+     * 小数舍入位数
+     */
+    public final static int SCALE_TWO = 2;
+    public final static int SCALE_EIGHT = 8;
+    public final static int SCALE_TEN = 10;
+    public final static int SCALE_TWELVE = 12;
 
     /**
      * 计算提前还款本金
