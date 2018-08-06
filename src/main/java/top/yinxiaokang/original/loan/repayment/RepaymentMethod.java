@@ -24,7 +24,7 @@ public enum RepaymentMethod {
         this.code = code;
     }
 
-    public RepaymentMethod getRepaymentMethodByCode(String code) {
+    public static RepaymentMethod getRepaymentMethodByCode(String code) {
         RepaymentMethod[] values = values();
         for (RepaymentMethod repaymentMethod : values) {
             if (repaymentMethod.getCode().equals(code)) {

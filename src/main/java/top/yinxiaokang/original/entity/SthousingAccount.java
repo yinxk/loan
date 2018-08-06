@@ -22,6 +22,8 @@ public class SthousingAccount {
 
     private String dkzh;
 
+    private String dkhkfs;
+
     public String getId() {
         return id;
     }
@@ -76,6 +78,14 @@ public class SthousingAccount {
 
     public void setDkzh(String dkzh) {
         this.dkzh = dkzh;
+    }
+
+    public String getDkhkfs() {
+        return dkhkfs;
+    }
+
+    public void setDkhkfs(String dkhkfs) {
+        this.dkhkfs = dkhkfs;
     }
 
     @Override

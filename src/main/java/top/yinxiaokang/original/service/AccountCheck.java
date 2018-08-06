@@ -9,6 +9,7 @@ import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.SthousingDetail;
 import top.yinxiaokang.others.CurrentPeriodRange;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -27,14 +28,14 @@ public class AccountCheck {
     private SthousingAccountDao sthousingAccountDao = null;
     private SthousingDetailDao sthousingDetailDao = null;
 
-    public AccountCheck (){
+    public AccountCheck() {
         Conn conn = new Conn();
         connection = conn.getConnection();
         sthousingAccountDao = new SthousingAccountDao(connection);
         sthousingDetailDao = new SthousingDetailDao(connection);
     }
 
-    public SthousingAccount getSthousingAccount(String dkzh){
+    public SthousingAccount getSthousingAccount(String dkzh) {
         try {
             SthousingAccount accountByDkzh = sthousingAccountDao.getAccountByDkzh(dkzh);
             return accountByDkzh;
@@ -68,6 +69,18 @@ public class AccountCheck {
         return ranges;
     }
 
+
+    public BigDecimal syqs(List<CurrentPeriodRange> ranges, SthousingAccount account) {
+        BigDecimal yhqs = BigDecimal.ZERO;
+        if (!ranges.isEmpty()) {
+            yhqs = new BigDecimal(ranges.get(0).getCurrentPeriod() - 1);
+        }
+        return account.getDkqs().subtract(yhqs);
+    }
+
+
+
+
     public List<CurrentPeriodRange> listHSRange(SthousingAccount account) {
         try {
             Date dkffrq = account.getDkffrq();
@@ -84,6 +97,6 @@ public class AccountCheck {
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        Conn.closeResource(connection,null,null);
+        Conn.closeResource(connection, null, null);
     }
 }
