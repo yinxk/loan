@@ -1,8 +1,7 @@
 package top.yinxiaokang.others;
 
 /**
- * @author yinxk
- * @date 2018/7/6 14:32
+ * Created by Funnyboy on 2017/10/2.
  */
 public class CurrentBeforeAfterime {
     long dqsj;
