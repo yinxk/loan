@@ -10,10 +10,12 @@ import top.yinxiaokang.others.CurrentPeriodRange;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
-import static top.yinxiaokang.original.Utils.*;
+import static top.yinxiaokang.original.Utils.SDF_YEAR_MONTH_DAY;
 
 /**
  * @author yinxk
@@ -291,6 +293,35 @@ public class LoanRepaymentAlgorithm {
         }
 
         return currentPeriodRange;
+    }
+    public static List<CurrentPeriodRange> listHSRange(Date dkffrq, Date hssj, Date soutStartDate) throws ParseException {
+        List<CurrentPeriodRange> result = new ArrayList<>();
+        hssj = SDF_YEAR_MONTH_DAY.parse(SDF_YEAR_MONTH_DAY.format(hssj));
+        dkffrq = SDF_YEAR_MONTH_DAY.parse(SDF_YEAR_MONTH_DAY.format(dkffrq));
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(dkffrq);
+        Calendar calendar1 = Calendar.getInstance();
+        int sourceDay = calendar.get(Calendar.DAY_OF_MONTH);
+        for (int i = 1; ; i++) {
+            CurrentPeriodRange currentPeriodRange = new CurrentPeriodRange();
+            Date beforeTime = calendar.getTime();
+            calendar = calNextAmountMonth(sourceDay, calendar, 1);
+
+            calendar1.setTime(calendar.getTime());
+            calendar1 = calNextAmountMonth(sourceDay, calendar1, 1);
+            currentPeriodRange.setBeforeTime(beforeTime);
+            currentPeriodRange.setCurrentPeriod(i);
+            currentPeriodRange.setAfterTime(new Date(calendar.getTime().getTime()));
+            if (calendar.getTime().getTime() > soutStartDate.getTime()) {
+                result.add(currentPeriodRange);
+            }
+            if (calendar.getTime().getTime() <= hssj.getTime() && hssj.getTime() < calendar1.getTime().getTime()) {
+                break;
+            }
+        }
+
+        return result;
     }
 
 
