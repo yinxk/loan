@@ -82,6 +82,9 @@ public class RepaymentPlanTest {
         }
         System.out.printf("利息1总额: %s , 利息2总额: %s , 利息总额差额: %s",sumlx1,sumlx2,sumlx1.subtract(sumlx2));
         System.out.println("=========================");
+        /**
+         * 发现以前的还款计划, 不管是同我的月利率是8为小数或者是16位小数 ,都有一定的差异
+         */
     }
 
 }
