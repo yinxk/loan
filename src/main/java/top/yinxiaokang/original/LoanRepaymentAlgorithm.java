@@ -111,6 +111,10 @@ public class LoanRepaymentAlgorithm {
         return dayRate;
     }
 
+    public static BigDecimal convertYearRateToDayRate(BigDecimal yearRate) {
+        BigDecimal dayRate = convertYearRateToDayRate(yearRate, RepaymentMonthRateScale.NO);
+        return dayRate;
+    }
 
     /**
      * 转换年利率为月利率
@@ -128,6 +132,9 @@ public class LoanRepaymentAlgorithm {
         return monthRate;
     }
 
+    public static BigDecimal convertYearRateToMonthRate(BigDecimal yearRate){
+        return convertYearRateToMonthRate(yearRate, RepaymentMonthRateScale.YES);
+    }
 
     /**
      * 只支持正向计算,即end>=start. 否则,结果为0
