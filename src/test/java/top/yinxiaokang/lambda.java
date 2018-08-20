@@ -5,10 +5,10 @@ package top.yinxiaokang;
  */
 public class lambda {
     public static void main(String[] args) {
-        int i = 0 ;
         new Thread(() -> {
+            int i = 0;
             while (true){
-                System.out.println("do some thing !" + i);
+                System.out.println("do some thing ! " + ++i);
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
