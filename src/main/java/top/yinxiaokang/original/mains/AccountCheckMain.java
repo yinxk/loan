@@ -23,9 +23,9 @@ public class AccountCheckMain {
     public void Test1() {
         AccountCheck accountCheck = new AccountCheck();
 
-        String dkzh = "2406071098002745823";
-        BigDecimal initDkye = new BigDecimal("234381.53");
-        BigDecimal initOverdueBjje = new BigDecimal("");
+        String dkzh = "23846001230007599";
+        BigDecimal initDkye = new BigDecimal("73593.14");
+        BigDecimal initOverdueBjje = new BigDecimal("1794.47");
 
         SthousingAccount account = accountCheck.getSthousingAccount(dkzh);
         List<CurrentPeriodRange> ranges = accountCheck.listHSRange(account, null);
