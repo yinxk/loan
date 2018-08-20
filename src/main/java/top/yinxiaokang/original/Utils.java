@@ -8,6 +8,9 @@ import java.text.SimpleDateFormat;
 public class Utils {
 
 
+    /**
+     * 非多线程情况, 无所谓
+     */
     public final static SimpleDateFormat SDF_YEAR_MONTH_DAY = new SimpleDateFormat("yyyy-MM-dd");
 
     public static String toLowerCase(String s) {

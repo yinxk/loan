@@ -5,10 +5,8 @@ import com.sargeraswang.util.ExcelUtil.ExcelUtil;
 import org.junit.Test;
 import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.SthousingDetail;
+import top.yinxiaokang.original.entity.excel.InitHasOverdue;
 import top.yinxiaokang.original.loan.repayment.RepaymentItem;
-import top.yinxiaokang.original.loan.repayment.RepaymentMethod;
-import top.yinxiaokang.original.loan.repayment.RepaymentMonthRateScale;
-import top.yinxiaokang.original.loan.repayment.RepaymentPlan;
 import top.yinxiaokang.original.service.AccountCheck;
 import top.yinxiaokang.others.CurrentPeriodRange;
 
@@ -42,10 +40,21 @@ public class AccountCheckMain {
 
         System.out.println("读取总条数: " + importExcel.size());
 
-        for (Map m : importExcel) {
-            byDkzh(accountCheck, (String) m.get("dkzh"), new BigDecimal((String) m.get("csye")), new BigDecimal((String) m.get("csyqbj")));
+        ArrayList<InitHasOverdue> initHasOverdueList = new ArrayList<>();
 
+        for (Map m : importExcel) {
+            InitHasOverdue initHasOverdue = new InitHasOverdue();
+            initHasOverdue.setDkzh((String) m.get("dkzh"));
+            initHasOverdue.setCsye((BigDecimal) m.get("csye"));
+            initHasOverdue.setCsqs((BigDecimal) m.get("csqs"));
+            initHasOverdue.setCsyqbj((BigDecimal) m.get("csyqbj"));
+            initHasOverdueList.add(initHasOverdue);
         }
+
+        for (InitHasOverdue item : initHasOverdueList) {
+            byDkzh(accountCheck, item.getDkzh(), item.getCsye(), item.getCsyqbj());
+        }
+
         System.out.println("读取总条数: " + importExcel.size());
 
     }
@@ -55,40 +64,29 @@ public class AccountCheckMain {
 
         SthousingAccount account = accountCheck.getSthousingAccount(dkzh);
         List<CurrentPeriodRange> ranges = accountCheck.listHSRange(account, null);
-        BigDecimal syqs = accountCheck.syqs(ranges, account);
-
-        BigDecimal ourFirstQc = account.getDkqs().subtract(syqs).add(BigDecimal.ONE);
-
-        BigDecimal dkxffe = initDkye.subtract(initOverdueBjje);
-        CurrentPeriodRange currentPeriodRange = null;
-        if (!ranges.isEmpty()) {
-            currentPeriodRange = ranges.get(0);
-        }
-        Date dkxffrq = currentPeriodRange == null ? null : currentPeriodRange.getBeforeTime();
+        BigDecimal yhqs = accountCheck.yhqs(ranges);
+        BigDecimal ourFirstQc = yhqs.add(BigDecimal.ONE);
+        // 该账号已入账的业务记录
+        List<SthousingDetail> sthousingDetails = accountCheck.listDetails(account);
+        Collections.sort(sthousingDetails, Comparator.comparing(SthousingDetail::getDqqc));
+        // 还款计划
+        List<RepaymentItem> repaymentItems = accountCheck.repaymentItems(account, ranges, initDkye, initOverdueBjje, true);
 
         System.out.println("==============================开始======================================= " + dkzh + " ======================");
-        System.out.printf("贷款账号: %s , 初始贷款余额 : %s , 初始逾期本金 : %s , 初始期数: %s \n", dkzh, initDkye, initOverdueBjje,ourFirstQc);
-
-        // 初始还款计划,如果后面发生提前还款 , 那么还款计划会发生改变
-        List<RepaymentItem> repaymentItems = RepaymentPlan.listRepaymentPlan(dkxffe, dkxffrq, syqs.intValue(), account.getDkll(),
-                RepaymentMethod.getRepaymentMethodByCode(account.getDkhkfs()), ourFirstQc.subtract(BigDecimal.ONE).intValue(), RepaymentMonthRateScale.YES);
+        System.out.printf("贷款账号: %s , 初始贷款余额 : %s , 初始逾期本金 : %s , 初始期数: %s \n", dkzh, initDkye, initOverdueBjje, ourFirstQc);
 
         for (RepaymentItem item : repaymentItems) {
 //            if (item.getHkrq().getTime() <= System.currentTimeMillis())
 //                System.out.println(item);
         }
 
-        List<SthousingDetail> sthousingDetails = accountCheck.listDetails(account);
-
-        Collections.sort(sthousingDetails, Comparator.comparing(SthousingDetail::getDqqc));
-
-       boolean isLianXu = true;
-       boolean isKouKuan = false;
-       BigDecimal qsqs = ourFirstQc;
+        boolean isLianXu = true;
+        boolean isKouKuan = false;
+        BigDecimal qsqs = ourFirstQc;
         for (SthousingDetail detail : sthousingDetails) {
-            if (detail.getDqqc().compareTo(ourFirstQc)>= 0){
+            if (detail.getDqqc().compareTo(ourFirstQc) >= 0) {
                 isKouKuan = true;
-                if(detail.getDqqc().compareTo(qsqs) != 0){
+                if (detail.getDqqc().compareTo(qsqs) != 0) {
                     isLianXu = false;
                 }
                 qsqs = qsqs.add(BigDecimal.ONE);
@@ -96,12 +94,11 @@ public class AccountCheckMain {
             System.out.println(detail);
         }
 
-        System.out.println("是否是连续的扣款期次: " + isLianXu );
-        System.out.println("是否在生成的计划后扣款: " + isKouKuan );
+        System.out.println("是否是连续的扣款期次: " + isLianXu);
+        System.out.println("是否在生成的计划后扣款: " + isKouKuan);
         System.out.println("==============================结束======================================= " + dkzh + " ======================");
 
     }
-
 
 
 }

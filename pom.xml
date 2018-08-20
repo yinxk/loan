@@ -43,7 +43,12 @@
           <artifactId>excel-util</artifactId>
           <version>1.2.1</version>
       </dependency>
-
+      <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+      <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.18</version>
+        </dependency>
   </dependencies>
 
   <build>
