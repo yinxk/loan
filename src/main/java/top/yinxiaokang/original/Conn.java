@@ -9,7 +9,7 @@ import java.sql.*;
 import java.util.List;
 
 public class Conn {
-   // b4
+    // b4
     private static final String DRIVER = "com.mysql.jdbc.Driver";
     private static final String URL = "jdbc:mysql://172.18.20.100:3306/product_0103_b4?characterEncoding=utf8&useSSL=false";
     private static final String NAME = "root";
@@ -21,17 +21,18 @@ public class Conn {
             Class.forName(DRIVER);
             System.out.println("加载驱动结束...");
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            System.out.println("加载驱动失败...");
         }
     }
 
     public Connection getConnection() {
         Connection conn = null;
         try {
+            System.out.println("获取连接开始...");
             conn = DriverManager.getConnection(URL, NAME, PASSWORD);
-            System.out.println("获取连接 : " + conn.toString());
+            System.out.println("获取到的连接 : " + conn.toString());
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("获取连接失败...");
         }
         return conn;
     }
@@ -54,7 +55,9 @@ public class Conn {
     }
 
 
-    /** 判断数据库是否支持批处理 */
+    /**
+     * 判断数据库是否支持批处理
+     */
     public static boolean supportBatch(Connection con) {
         try {
             // 得到数据库的元数据
@@ -66,7 +69,9 @@ public class Conn {
         return false;
     }
 
-    /** 执行一批SQL语句 */
+    /**
+     * 执行一批SQL语句
+     */
     public static int[] goBatch(Connection con, List<String> sqls) throws Exception {
         if (sqls == null) {
             return null;

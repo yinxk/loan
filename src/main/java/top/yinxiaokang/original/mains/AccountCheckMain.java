@@ -3,9 +3,10 @@ package top.yinxiaokang.original.mains;
 import com.sargeraswang.util.ExcelUtil.ExcelLogs;
 import com.sargeraswang.util.ExcelUtil.ExcelUtil;
 import org.junit.Test;
+import top.yinxiaokang.original.dto.AccountInformations;
 import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.SthousingDetail;
-import top.yinxiaokang.original.entity.excel.InitHasOverdue;
+import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.loan.repayment.RepaymentItem;
 import top.yinxiaokang.original.service.AccountCheck;
 import top.yinxiaokang.others.CurrentPeriodRange;
@@ -38,67 +39,144 @@ public class AccountCheckMain {
         }
 
 
-        System.out.println("读取总条数: " + importExcel.size());
+        // 日志
+        StringBuffer logs = new StringBuffer();
 
-        ArrayList<InitHasOverdue> initHasOverdueList = new ArrayList<>();
+
+        logs.append("读取总条数: " + importExcel.size() + "\n");
+
+        ArrayList<InitInformation> initHasOverdueList = new ArrayList<>();
 
         for (Map m : importExcel) {
-            InitHasOverdue initHasOverdue = new InitHasOverdue();
+            InitInformation initHasOverdue = new InitInformation();
             initHasOverdue.setDkzh((String) m.get("dkzh"));
-            initHasOverdue.setCsye((BigDecimal) m.get("csye"));
-            initHasOverdue.setCsqs((BigDecimal) m.get("csqs"));
-            initHasOverdue.setCsyqbj((BigDecimal) m.get("csyqbj"));
+            initHasOverdue.setCsye(new BigDecimal((String) m.get("csye")));
+            initHasOverdue.setCsqs(new BigDecimal((String) m.get("csqs")));
+            initHasOverdue.setCsyqbj(new BigDecimal((String) m.get("csyqbj")));
             initHasOverdueList.add(initHasOverdue);
         }
 
-        for (InitHasOverdue item : initHasOverdueList) {
-            byDkzh(accountCheck, item.getDkzh(), item.getCsye(), item.getCsyqbj());
+        List<AccountInformations> accountInformationsList = new ArrayList<>();
+        for (InitInformation initInformation : initHasOverdueList) {
+            AccountInformations accountInformations = toAccountInformations(accountCheck, initInformation);
+            accountInformationsList.add(accountInformations);
         }
 
-        System.out.println("读取总条数: " + importExcel.size());
+        Map<String, List<AccountInformations>> generateOrNotGenerateList = isGenerateOrNotGenerateList(accountInformationsList);
+        List<AccountInformations> isGenerate = generateOrNotGenerateList.get("isGenerate");
+        List<AccountInformations> notGenerate = generateOrNotGenerateList.get("notGenerate");
+
+
+        int dealNum = 0;
+        logs.append("==================================================start--已经产生业务==========================================\n");
+        for (AccountInformations item : isGenerate) {
+            logs.append("开始处理第: " + (++dealNum) + " 条 \n");
+            analyze(item, logs);
+            logs.append("结束处理第: " + dealNum + " 条 \n\n");
+
+        }
+        logs.append("==================================================end--已经产生业务==========================================\n");
+        logs.append("==================================================start--没有产生业务==========================================\n");
+        for (AccountInformations item : notGenerate) {
+            logs.append("开始处理第: " + (++dealNum) + " 条 \n");
+            analyze(item, logs);
+            logs.append("结束处理第: " + dealNum + " 条 \n\n");
+
+        }
+        logs.append("==================================================end--没有产生业务==========================================\n");
+
+        logs.append("读取总条数: " + importExcel.size() + "\n");
+
+
+        System.out.println(logs.toString());
 
     }
 
 
-    public void byDkzh(AccountCheck accountCheck, String dkzh, BigDecimal initDkye, BigDecimal initOverdueBjje) {
+    public void analyze(AccountInformations informations, StringBuffer logs) {
 
-        SthousingAccount account = accountCheck.getSthousingAccount(dkzh);
+        logs.append("贷款账号: " + informations.getSthousingAccount().getDkzh() +
+                " , 初始贷款余额 : " + informations.getInitInformation().getCsye() +
+                " , 初始逾期本金 : " + informations.getInitInformation().getCsyqbj() +
+                " , 初始期数: " + informations.getInitFirstQc() + " \n");
+        List<SthousingDetail> details = informations.getDetails();
+        for (SthousingDetail detail : details) {
+            logs.append(detail + "\n");
+        }
+    }
+
+
+    /**
+     * 将每个账号有关的信息转换整理
+     *
+     * @param accountCheck
+     * @param initInformation
+     * @return
+     */
+    public AccountInformations toAccountInformations(AccountCheck accountCheck, InitInformation initInformation) {
+        AccountInformations accountInformations = new AccountInformations();
+        SthousingAccount account = accountCheck.getSthousingAccount(initInformation.getDkzh());
         List<CurrentPeriodRange> ranges = accountCheck.listHSRange(account, null);
         BigDecimal yhqs = accountCheck.yhqs(ranges);
-        BigDecimal ourFirstQc = yhqs.add(BigDecimal.ONE);
+        BigDecimal initFirstQc = yhqs.add(BigDecimal.ONE);
         // 该账号已入账的业务记录
         List<SthousingDetail> sthousingDetails = accountCheck.listDetails(account);
         Collections.sort(sthousingDetails, Comparator.comparing(SthousingDetail::getDqqc));
         // 还款计划
-        List<RepaymentItem> repaymentItems = accountCheck.repaymentItems(account, ranges, initDkye, initOverdueBjje, true);
-
-        System.out.println("==============================开始======================================= " + dkzh + " ======================");
-        System.out.printf("贷款账号: %s , 初始贷款余额 : %s , 初始逾期本金 : %s , 初始期数: %s \n", dkzh, initDkye, initOverdueBjje, ourFirstQc);
-
-        for (RepaymentItem item : repaymentItems) {
-//            if (item.getHkrq().getTime() <= System.currentTimeMillis())
-//                System.out.println(item);
-        }
-
-        boolean isLianXu = true;
-        boolean isKouKuan = false;
-        BigDecimal qsqs = ourFirstQc;
-        for (SthousingDetail detail : sthousingDetails) {
-            if (detail.getDqqc().compareTo(ourFirstQc) >= 0) {
-                isKouKuan = true;
-                if (detail.getDqqc().compareTo(qsqs) != 0) {
-                    isLianXu = false;
-                }
-                qsqs = qsqs.add(BigDecimal.ONE);
-            }
-            System.out.println(detail);
-        }
-
-        System.out.println("是否是连续的扣款期次: " + isLianXu);
-        System.out.println("是否在生成的计划后扣款: " + isKouKuan);
-        System.out.println("==============================结束======================================= " + dkzh + " ======================");
-
+        List<RepaymentItem> repaymentItems = accountCheck.repaymentItems(account, ranges, initInformation.getCsye(), initInformation.getCsyqbj(), true);
+        accountInformations.setSthousingAccount(account);
+        accountInformations.setCurrentPeriodRanges(ranges);
+        accountInformations.setYhqs(yhqs);
+        accountInformations.setSyqs(accountCheck.syqs(yhqs, account));
+        accountInformations.setInitFirstQc(initFirstQc);
+        accountInformations.setDetails(sthousingDetails);
+        accountInformations.setInitInformation(initInformation);
+        accountInformations.setRepaymentItems(repaymentItems);
+        return accountInformations;
     }
 
 
+    public Map<String, List<AccountInformations>> isGenerateOrNotGenerateList(List<AccountInformations> list) {
+        Map<String, List<AccountInformations>> result = new HashMap<>();
+        List<AccountInformations> isGenerate = new ArrayList<>();
+        List<AccountInformations> notGenerate = new ArrayList<>();
+
+        for (AccountInformations item : list) {
+            isGenerate(item);
+            if (item.isGenerated()) {
+                isGenerate.add(item);
+            } else {
+                notGenerate.add(item);
+            }
+        }
+        result.put("isGenerate", isGenerate);
+        result.put("notGenerate", notGenerate);
+
+        return result;
+    }
+
+    public AccountInformations isGenerate(AccountInformations accountInformations) {
+
+        // 该账号已入账的业务记录
+        List<SthousingDetail> sthousingDetails = accountInformations.getDetails();
+
+        // 是否连续
+        boolean isContinuous = true;
+        // 是否已产生入账的业务
+        boolean isGenerated = false;
+        BigDecimal qsqs = accountInformations.getInitFirstQc();
+        for (SthousingDetail detail : sthousingDetails) {
+            if (detail.getDqqc().compareTo(accountInformations.getInitFirstQc()) >= 0) {
+                isGenerated = true;
+                if (detail.getDqqc().compareTo(qsqs) != 0) {
+                    isContinuous = false;
+                }
+                qsqs = qsqs.add(BigDecimal.ONE);
+
+            }
+        }
+        accountInformations.setGenerated(isGenerated);
+        accountInformations.setContinuous(isContinuous);
+        return accountInformations;
+    }
 }

@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class InitHasOverdue {
+public class InitInformation {
 
     private String dkzh;
 
