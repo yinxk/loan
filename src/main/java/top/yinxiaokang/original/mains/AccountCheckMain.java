@@ -85,6 +85,8 @@ public class AccountCheckMain {
         }
         logs.append("==================================================end--没有产生业务==========================================\n");
 
+        logs.append("已经产生业务账号数: " + isGenerate.size() + "\n");
+        logs.append("没有产生业务账号数: " + notGenerate.size() + "\n");
         logs.append("读取总条数: " + importExcel.size() + "\n");
 
 
