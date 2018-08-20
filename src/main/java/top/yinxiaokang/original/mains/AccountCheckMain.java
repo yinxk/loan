@@ -22,13 +22,16 @@ public class AccountCheckMain {
     @Test
     public void Test1() {
         AccountCheck accountCheck = new AccountCheck();
+
         String dkzh = "2406071098002745823";
         BigDecimal initDkye = new BigDecimal("234381.53");
+        BigDecimal initOverdueBjje = new BigDecimal("");
+
         SthousingAccount account = accountCheck.getSthousingAccount(dkzh);
         List<CurrentPeriodRange> ranges = accountCheck.listHSRange(account, null);
         BigDecimal syqs = accountCheck.syqs(ranges, account);
 
-        BigDecimal dkxffe = initDkye;
+        BigDecimal dkxffe = initDkye.subtract(initOverdueBjje);
         CurrentPeriodRange currentPeriodRange = null;
         if (!ranges.isEmpty()) {
             currentPeriodRange = ranges.get(0);
@@ -46,7 +49,7 @@ public class AccountCheckMain {
         List<SthousingDetail> sthousingDetails = accountCheck.listDetails(account);
 
         for (SthousingDetail detail : sthousingDetails) {
-            System.out.println(detail);
+            System.out.println(detail+"\n\n\n\n\n");
         }
     }
 }

@@ -16,7 +16,8 @@ public class ExcelUtilTest {
     @Test
     public void importExcelTest() throws FileNotFoundException {
 
-        File f = new File("src/test/resources/无标题1.xlsx");
+        //File f = new File("src/test/resources/初始有逾期.xlsx");
+        File f = new File("src/test/resources/包含所有的账号的初始余额和导入的逾期本金和.xlsx");
         InputStream inputStream = new FileInputStream(f);
 
         ExcelLogs logs = new ExcelLogs();
@@ -42,5 +43,6 @@ public class ExcelUtilTest {
             //}
             System.out.println(m);
         }
+        System.out.println("读取总条数: "+importExcel.size());
     }
 }
