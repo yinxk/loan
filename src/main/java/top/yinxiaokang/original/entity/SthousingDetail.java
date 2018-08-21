@@ -119,15 +119,13 @@ public class SthousingDetail {
 
     @Override
     public String toString() {
-        return "SthousingDetail{" +
-                " ywfsrq=" + (ywfsrq == null ? null : Utils.SDF_YEAR_MONTH_DAY.format(ywfsrq)) +
-                ", dqqc=" + dqqc +
-                ", dkywmxlx='" + dkywmxlx + '\'' +
-                ", bjje=" + bjje +
-                ", lxje=" + lxje +
-                ", fxje=" + fxje +
-                ", fse=" + fse +
-                ", xqdkye=" + xqdkye +
-                '}';
+        return "业务发生日期:" + (ywfsrq == null ? null : Utils.SDF_YEAR_MONTH_DAY.format(ywfsrq)) +
+                ", 当期期次:" + dqqc +
+                ", 业务类型:'" + dkywmxlx + '\'' +
+                ", 本金金额:" + bjje +
+                ", 利息金额:" + lxje +
+                ", 罚息金额:" + fxje +
+                ", 发生额:" + fse +
+                ", 下期贷款余额:" + xqdkye;
     }
 }

@@ -2,7 +2,6 @@ package top.yinxiaokang.original.mains;
 
 import com.sargeraswang.util.ExcelUtil.ExcelLogs;
 import com.sargeraswang.util.ExcelUtil.ExcelUtil;
-import org.junit.Test;
 import top.yinxiaokang.original.dto.AccountInformations;
 import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.SthousingDetail;
@@ -10,6 +9,7 @@ import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.loan.repayment.RepaymentItem;
 import top.yinxiaokang.original.service.AccountCheck;
 import top.yinxiaokang.others.CurrentPeriodRange;
+import top.yinxiaokang.util.Common;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,9 +23,25 @@ import java.util.*;
  * @date 2018/8/6 11:45
  */
 public class AccountCheckMain {
-    @Test
-    public void Test1() {
-        AccountCheck accountCheck = new AccountCheck();
+    private AccountCheck accountCheck = new AccountCheck();
+    /**
+     * 日志
+     */
+    private static StringBuffer logs = new StringBuffer();
+
+    private static final String KEY_ISGENERATE = "isGenerate";
+
+    private static final String KEY_NOTGENERATE = "notGenerate";
+
+    /**
+     * 误差范围
+     */
+    private static final BigDecimal ERROR_RANGE = new BigDecimal("0.02");
+
+
+    public static void main(String[] args) {
+
+        AccountCheckMain checkMain = new AccountCheckMain();
 
         File f = new File("src/test/resources/初始有逾期.xlsx");
         Collection<Map> importExcel = new ArrayList<>();
@@ -37,11 +53,6 @@ public class AccountCheckMain {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-        // 日志
-        StringBuffer logs = new StringBuffer();
-
 
         logs.append("读取总条数: " + importExcel.size() + "\n");
 
@@ -58,31 +69,21 @@ public class AccountCheckMain {
 
         List<AccountInformations> accountInformationsList = new ArrayList<>();
         for (InitInformation initInformation : initHasOverdueList) {
-            AccountInformations accountInformations = toAccountInformations(accountCheck, initInformation);
+            AccountInformations accountInformations = checkMain.toAccountInformations(initInformation);
             accountInformationsList.add(accountInformations);
         }
 
-        Map<String, List<AccountInformations>> generateOrNotGenerateList = isGenerateOrNotGenerateList(accountInformationsList);
-        List<AccountInformations> isGenerate = generateOrNotGenerateList.get("isGenerate");
-        List<AccountInformations> notGenerate = generateOrNotGenerateList.get("notGenerate");
+        Map<String, List<AccountInformations>> generateOrNotGenerateList = checkMain.isGenerateOrNotGenerateList(accountInformationsList);
+        List<AccountInformations> isGenerate = generateOrNotGenerateList.get(KEY_ISGENERATE);
+        List<AccountInformations> notGenerate = generateOrNotGenerateList.get(KEY_NOTGENERATE);
 
 
         int dealNum = 0;
         logs.append("==================================================start--已经产生业务==========================================\n");
-        for (AccountInformations item : isGenerate) {
-            logs.append("开始处理第: " + (++dealNum) + " 条 \n");
-            analyze(item, logs);
-            logs.append("结束处理第: " + dealNum + " 条 \n\n");
-
-        }
+        doAnalyze(checkMain, notGenerate, dealNum);
         logs.append("==================================================end--已经产生业务==========================================\n");
         logs.append("==================================================start--没有产生业务==========================================\n");
-        for (AccountInformations item : notGenerate) {
-            logs.append("开始处理第: " + (++dealNum) + " 条 \n");
-            analyze(item, logs);
-            logs.append("结束处理第: " + dealNum + " 条 \n\n");
-
-        }
+        doAnalyze(checkMain, notGenerate, dealNum);
         logs.append("==================================================end--没有产生业务==========================================\n");
 
         logs.append("已经产生业务账号数: " + isGenerate.size() + "\n");
@@ -94,8 +95,53 @@ public class AccountCheckMain {
 
     }
 
+    private static void doAnalyze(AccountCheckMain checkMain, List<AccountInformations> informations, int dealNum) {
+        for (AccountInformations item : informations) {
+            logs.append("开始处理第: " + (++dealNum) + " 条 \n");
+            List<Integer> integers = checkMain.analyzeReverseBx(item);
+            checkMain.analyze(item);
+            if(integers.size() == 0){
+                logs.append("本息相反的期次: 无\n");
+            }else {
+                logs.append("本息相反的期次: " + integers.toString()+"\n");
+            }
+            logs.append("结束处理第: " + dealNum + " 条 \n\n");
 
-    public void analyze(AccountInformations informations, StringBuffer logs) {
+        }
+    }
+
+
+    /**
+     * 获取本息反了的期次
+     *
+     * @param informations
+     * @return
+     */
+    public List<Integer> analyzeReverseBx(AccountInformations informations) {
+        List<Integer> reverseQc = new ArrayList<>();
+        List<RepaymentItem> repaymentItems = accountCheck.repaymentItems(informations.getSthousingAccount(),
+                informations.getCurrentPeriodRanges(),
+                informations.getInitInformation().getCsye(),
+                informations.getInitInformation().getCsyqbj(),
+                false);
+        List<SthousingDetail> details = informations.getDetails();
+        int numId = 0;
+        for (SthousingDetail detail : details) {
+            if (detail.getDqqc().compareTo(informations.getInitFirstQc()) < 0)
+                continue;
+            RepaymentItem item = Common.getRepaymentItemByDqqc(repaymentItems, detail.getDqqc().intValue());
+            if (item == null) continue;
+            if (item.getHkbjje().subtract(detail.getLxje()).abs().compareTo(ERROR_RANGE) <= 0
+                    && item.getHklxje().subtract(detail.getBjje()).abs().compareTo(ERROR_RANGE) <= 0) {
+                reverseQc.add(detail.getDqqc().intValue());
+            }
+
+        }
+        return reverseQc;
+    }
+
+
+    public void analyze(AccountInformations informations) {
 
         logs.append("贷款账号: " + informations.getSthousingAccount().getDkzh() +
                 " , 初始贷款余额 : " + informations.getInitInformation().getCsye() +
@@ -111,11 +157,10 @@ public class AccountCheckMain {
     /**
      * 将每个账号有关的信息转换整理
      *
-     * @param accountCheck
      * @param initInformation
      * @return
      */
-    public AccountInformations toAccountInformations(AccountCheck accountCheck, InitInformation initInformation) {
+    public AccountInformations toAccountInformations(InitInformation initInformation) {
         AccountInformations accountInformations = new AccountInformations();
         SthousingAccount account = accountCheck.getSthousingAccount(initInformation.getDkzh());
         List<CurrentPeriodRange> ranges = accountCheck.listHSRange(account, null);
@@ -151,8 +196,8 @@ public class AccountCheckMain {
                 notGenerate.add(item);
             }
         }
-        result.put("isGenerate", isGenerate);
-        result.put("notGenerate", notGenerate);
+        result.put(KEY_ISGENERATE, isGenerate);
+        result.put(KEY_NOTGENERATE, notGenerate);
 
         return result;
     }
