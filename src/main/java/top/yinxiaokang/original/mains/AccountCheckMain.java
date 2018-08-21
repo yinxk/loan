@@ -211,8 +211,9 @@ public class AccountCheckMain {
 
         for (SthousingDetail detail : details) {
             oddYwdkye = detail.getBjje().add(detail.getXqdkye());
-            lxEight = LoanRepaymentAlgorithm.calLxByDkye(oddYwdkye, monthRateEight);
-            lxTen = LoanRepaymentAlgorithm.calLxByDkye(oddYwdkye, monthRateTen);
+            lxEight = oddYwdkye.multiply(monthRateEight).setScale(2, BigDecimal.ROUND_HALF_UP);
+            lxTen = oddYwdkye.multiply(monthRateTen).setScale(2, BigDecimal.ROUND_HALF_UP);
+
             dkyeByYeWu = dkyeByYeWu.subtract(detail.getBjje());
             // 存在提前还款 , 需要新的还款计划
             if (LoanBusinessType.提前还款.getCode().equals(detail.getDkywmxlx())) {
