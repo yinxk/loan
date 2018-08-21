@@ -132,7 +132,7 @@ public class AccountCheck {
         if (isSubtract == null) {
             isSubtract = true;
         }
-        BigDecimal dkxffe = null;
+        BigDecimal dkxffe = initDkye;
         if (isSubtract) {
             dkxffe = initDkye.subtract(initOverdueBjje);
         }

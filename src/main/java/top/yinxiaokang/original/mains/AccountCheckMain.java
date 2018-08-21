@@ -2,6 +2,7 @@ package top.yinxiaokang.original.mains;
 
 import com.sargeraswang.util.ExcelUtil.ExcelLogs;
 import com.sargeraswang.util.ExcelUtil.ExcelUtil;
+import top.yinxiaokang.original.Utils;
 import top.yinxiaokang.original.dto.AccountInformations;
 import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.SthousingDetail;
@@ -80,7 +81,7 @@ public class AccountCheckMain {
 
         int dealNum = 0;
         logs.append("==================================================start--已经产生业务==========================================\n");
-        doAnalyze(checkMain, notGenerate, dealNum);
+        doAnalyze(checkMain, isGenerate, dealNum);
         logs.append("==================================================end--已经产生业务==========================================\n");
         logs.append("==================================================start--没有产生业务==========================================\n");
         doAnalyze(checkMain, notGenerate, dealNum);
@@ -100,10 +101,10 @@ public class AccountCheckMain {
             logs.append("开始处理第: " + (++dealNum) + " 条 \n");
             List<Integer> integers = checkMain.analyzeReverseBx(item);
             checkMain.analyze(item);
-            if(integers.size() == 0){
+            if (integers.size() == 0) {
                 logs.append("本息相反的期次: 无\n");
-            }else {
-                logs.append("本息相反的期次: " + integers.toString()+"\n");
+            } else {
+                logs.append("本息相反的期次: " + integers.toString() + "\n");
             }
             logs.append("结束处理第: " + dealNum + " 条 \n\n");
 
@@ -146,7 +147,10 @@ public class AccountCheckMain {
         logs.append("贷款账号: " + informations.getSthousingAccount().getDkzh() +
                 " , 初始贷款余额 : " + informations.getInitInformation().getCsye() +
                 " , 初始逾期本金 : " + informations.getInitInformation().getCsyqbj() +
-                " , 初始期数: " + informations.getInitFirstQc() + " \n");
+                " , 初始期数: " + informations.getInitFirstQc() +
+                " , 贷款发放日期: " + Utils.SDF_YEAR_MONTH_DAY.format(informations.getSthousingAccount().getDkffrq()) +
+                " , 贷款期数: " + informations.getSthousingAccount().getDkqs() +
+                " , 初始期数正确性: " + (informations.getInitFirstQc().compareTo(informations.getSthousingAccount().getDkqs()) > 0 ? "错误" : "正确") + " \n");
         List<SthousingDetail> details = informations.getDetails();
         for (SthousingDetail detail : details) {
             logs.append(detail + "\n");
