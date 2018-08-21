@@ -25,7 +25,7 @@ public class RepaymentPlan {
      */
     public static List<RepaymentItem> listRepaymentPlan(BigDecimal dkffe, Date dkffrq, int hkqs, BigDecimal dknlv, RepaymentMethod repaymentMethod, Integer qsqs, RepaymentMonthRateScale repaymentMonthRateScale) {
         List<RepaymentItem> result = new ArrayList<>();
-        if (hkqs < 0)
+        if (hkqs <= 0)
             return result;
         if (dkffe == null || dkffe.compareTo(BigDecimal.ZERO) <= 0)
             return result;
@@ -101,7 +101,7 @@ public class RepaymentPlan {
      */
     public static BigDecimal calBxFse(BigDecimal dkffe, int hkqs, BigDecimal dknlv, RepaymentMonthRateScale repaymentMonthRateScale) {
         BigDecimal fse = BigDecimal.ZERO;
-        if (hkqs < 0)
+        if (hkqs <= 0)
             return fse;
 
         BigDecimal monthRate = LoanRepaymentAlgorithm.convertYearRateToMonthRate(dknlv, repaymentMonthRateScale);
