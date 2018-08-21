@@ -132,7 +132,7 @@ public class LoanRepaymentAlgorithm {
         return monthRate;
     }
 
-    public static BigDecimal convertYearRateToMonthRate(BigDecimal yearRate){
+    public static BigDecimal convertYearRateToMonthRate(BigDecimal yearRate) {
         return convertYearRateToMonthRate(yearRate, RepaymentMonthRateScale.YES);
     }
 
@@ -301,8 +301,10 @@ public class LoanRepaymentAlgorithm {
 
         return currentPeriodRange;
     }
+
     public static List<CurrentPeriodRange> listHSRange(Date dkffrq, Date hssj, Date soutStartDate) throws ParseException {
         List<CurrentPeriodRange> result = new ArrayList<>();
+        if (dkffrq == null) return result;
         hssj = SDF_YEAR_MONTH_DAY.parse(SDF_YEAR_MONTH_DAY.format(hssj));
         dkffrq = SDF_YEAR_MONTH_DAY.parse(SDF_YEAR_MONTH_DAY.format(dkffrq));
 

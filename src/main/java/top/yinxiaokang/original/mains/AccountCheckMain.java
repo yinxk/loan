@@ -9,6 +9,8 @@ import top.yinxiaokang.original.entity.SthousingDetail;
 import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.enums.LoanBusinessType;
 import top.yinxiaokang.original.loan.repayment.RepaymentItem;
+import top.yinxiaokang.original.loan.repayment.RepaymentMethod;
+import top.yinxiaokang.original.loan.repayment.RepaymentPlan;
 import top.yinxiaokang.original.service.AccountCheck;
 import top.yinxiaokang.others.CurrentPeriodRange;
 import top.yinxiaokang.util.Common;
@@ -47,7 +49,9 @@ public class AccountCheckMain {
 
         AccountCheckMain checkMain = new AccountCheckMain();
 
-        File f = new File("src/test/resources/初始有逾期.xlsx");
+        //File f = new File("src/test/resources/初始有逾期.xlsx");
+        File f = new File("src/test/resources/20180821-误差5块以内的.xlsx");
+
         Collection<Map> importExcel = new ArrayList<>();
         try {
             try (InputStream inputStream = new FileInputStream(f)) {
@@ -76,14 +80,31 @@ public class AccountCheckMain {
             AccountInformations accountInformations = checkMain.toAccountInformations(initInformation);
             accountInformationsList.add(accountInformations);
         }
+        //doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
+        doAnalyzeWuchaIn5(accountInformationsList, checkMain);
+        logs.append("读取总条数: " + importExcel.size() + "\n");
+        System.out.println(logs.toString());
+    }
 
+    private static void doAnalyzeWuchaIn5(List<AccountInformations> accountInformationsList, AccountCheckMain checkMain) {
+        int dealNum = 0;
+        logs.append("==================================================--start--==========================================\n");
+        doAnalyze(checkMain, accountInformationsList, dealNum);
+        logs.append("==================================================--end--==========================================\n");
+    }
+
+    /**
+     * 对于初始有逾期的进行分析
+     *
+     * @param accountInformationsList
+     * @param checkMain
+     */
+    private static void doAnalyzeInitHasOverdue(List<AccountInformations> accountInformationsList, AccountCheckMain checkMain) {
         Map<String, List<AccountInformations>> generateOrNotGenerateList = checkMain.isGenerateOrNotGenerateList(accountInformationsList);
         List<AccountInformations> isGenerate = generateOrNotGenerateList.get(KEY_ISGENERATE);
         List<AccountInformations> notGenerate = generateOrNotGenerateList.get(KEY_NOTGENERATE);
         List<AccountInformations> prepayment = generateOrNotGenerateList.get(KEY_PREPAYMENT);
         System.out.println(prepayment.size());
-
-
         int dealNum = 0;
         logs.append("==================================================start--已经产生业务==========================================\n");
         doAnalyze(checkMain, isGenerate, dealNum);
@@ -94,16 +115,12 @@ public class AccountCheckMain {
 
         logs.append("已经产生业务账号数: " + isGenerate.size() + "\n");
         logs.append("没有产生业务账号数: " + notGenerate.size() + "\n");
-        logs.append("读取总条数: " + importExcel.size() + "\n");
-
-
-        System.out.println(logs.toString());
-
     }
 
     private static void doAnalyze(AccountCheckMain checkMain, List<AccountInformations> informations, int dealNum) {
         for (AccountInformations item : informations) {
             logs.append("开始处理第: " + (++dealNum) + " 条 \n");
+            if (item.getSthousingAccount() == null || item.getSthousingAccount().getDkffrq() == null) continue;
             List<Integer> reverseBxQc = checkMain.analyzeReverseBx(item);
             checkMain.analyze(item, reverseBxQc);
             if (reverseBxQc.size() == 0) {
@@ -112,7 +129,6 @@ public class AccountCheckMain {
                 logs.append("本息相反的期次: " + reverseBxQc.toString() + "\n");
             }
             logs.append("结束处理第: " + dealNum + " 条 \n\n");
-
         }
     }
 
@@ -159,13 +175,47 @@ public class AccountCheckMain {
                 " , 初始贷款余额 : " + informations.getInitInformation().getCsye() +
                 " , 初始逾期本金 : " + informations.getInitInformation().getCsyqbj() +
                 " , 初始期数: " + informations.getInitFirstQc() +
-                " , 贷款发放日期: " + Utils.SDF_YEAR_MONTH_DAY.format(informations.getSthousingAccount().getDkffrq()) +
+                " , 贷款发放日期: " + (informations.getSthousingAccount().getDkffrq() == null ? "" : Utils.SDF_YEAR_MONTH_DAY.format(informations.getSthousingAccount().getDkffrq())) +
                 " , 贷款期数: " + informations.getSthousingAccount().getDkqs() +
                 " , 初始期数正确性: " + (informations.getInitFirstQc().compareTo(informations.getSthousingAccount().getDkqs()) > 0 ? "错误" : "正确") + " \n");
+        // 业务记录
         List<SthousingDetail> details = informations.getDetails();
+        // 初始还款计划 , 没有做提前还款
+        List<RepaymentItem> repaymentItems = informations.getRepaymentItems();
+        // 初始余额
+        BigDecimal csye = informations.getInitInformation().getCsye();
+        // 根据业务推算的余额
+        BigDecimal dkyeByYeWu = csye;
+        // 误差
+        BigDecimal wuCha = BigDecimal.ZERO;
+
+        BigDecimal subtractBjje = null;
+        BigDecimal subtractLxje = null;
+        BigDecimal subtractQmdkye = null;
+
+        // 现在实际余额
+        BigDecimal nowDkye = informations.getSthousingAccount().getDkye();
+
         for (SthousingDetail detail : details) {
-            logs.append(detail + "\n");
+            dkyeByYeWu = dkyeByYeWu.subtract(detail.getBjje());
+            // 存在提前还款 , 需要新的还款计划
+            if (LoanBusinessType.提前还款.getCode().equals(detail.getDkywmxlx())) {
+                repaymentItems = RepaymentPlan.listRepaymentPlan(dkyeByYeWu, informations.getSthousingAccount().getDkffrq()
+                        , informations.getSthousingAccount().getDkqs().subtract(detail.getDqqc()).intValue(), informations.getSthousingAccount().getDkll(),
+                        RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()), detail.getDqqc().intValue(), null);
+            }
+            RepaymentItem repaymentItemByDqqc = Common.getRepaymentItemByDqqc(repaymentItems, detail.getDqqc().intValue());
+            logs.append(detail);
+            if (repaymentItemByDqqc != null) {
+                subtractBjje = repaymentItemByDqqc.getHkbjje().subtract(detail.getBjje());
+                subtractLxje = repaymentItemByDqqc.getHklxje().subtract(detail.getLxje());
+                subtractQmdkye = repaymentItemByDqqc.getQmdkye().subtract(detail.getXqdkye());
+                wuCha = wuCha.add(subtractBjje);
+                logs.append(" 本金误差(计划-业务): " + subtractBjje + " 利息误差: " + subtractLxje + " 期末余额误差: " + subtractQmdkye);
+            }
+            logs.append("\n");
         }
+        logs.append("实际余额-业务推算余额 : " + (nowDkye.subtract(dkyeByYeWu)) + "  本金差额总额: " + wuCha + "\n");
     }
 
 
@@ -178,6 +228,9 @@ public class AccountCheckMain {
     public AccountInformations toAccountInformations(InitInformation initInformation) {
         AccountInformations accountInformations = new AccountInformations();
         SthousingAccount account = accountCheck.getSthousingAccount(initInformation.getDkzh());
+        //System.out.println(account);
+        if (account == null)
+            return accountInformations;
         List<CurrentPeriodRange> ranges = accountCheck.listHSRange(account, null);
         BigDecimal yhqs = accountCheck.yhqs(ranges);
         BigDecimal initFirstQc = yhqs.add(BigDecimal.ONE);
@@ -211,7 +264,7 @@ public class AccountCheckMain {
             } else {
                 notGenerate.add(item);
             }
-            if(item.isPrepayment()){
+            if (item.isPrepayment()) {
                 isPrepayment.add(item);
             }
 

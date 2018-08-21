@@ -100,7 +100,7 @@ public class AccountCheck {
      */
     public BigDecimal yhqs(List<CurrentPeriodRange> ranges) {
         BigDecimal yhqs = BigDecimal.ZERO;
-        if (!ranges.isEmpty()) {
+        if (ranges != null && !ranges.isEmpty()) {
             yhqs = new BigDecimal(ranges.get(0).getCurrentPeriod() - 1);
         }
         return yhqs;
