@@ -2,6 +2,7 @@ package top.yinxiaokang.original.mains;
 
 import com.sargeraswang.util.ExcelUtil.ExcelLogs;
 import com.sargeraswang.util.ExcelUtil.ExcelUtil;
+import top.yinxiaokang.original.LoanRepaymentAlgorithm;
 import top.yinxiaokang.original.Utils;
 import top.yinxiaokang.original.dto.AccountInformations;
 import top.yinxiaokang.original.entity.SthousingAccount;
@@ -10,6 +11,7 @@ import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.enums.LoanBusinessType;
 import top.yinxiaokang.original.loan.repayment.RepaymentItem;
 import top.yinxiaokang.original.loan.repayment.RepaymentMethod;
+import top.yinxiaokang.original.loan.repayment.RepaymentMonthRateScale;
 import top.yinxiaokang.original.loan.repayment.RepaymentPlan;
 import top.yinxiaokang.original.service.AccountCheck;
 import top.yinxiaokang.others.CurrentPeriodRange;
@@ -198,10 +200,19 @@ public class AccountCheckMain {
         BigDecimal subtractLxje = null;
         BigDecimal subtractQmdkye = null;
 
+        BigDecimal oddYwdkye = BigDecimal.ZERO;
+        BigDecimal lxEight = BigDecimal.ZERO;
+        BigDecimal lxTen = BigDecimal.ZERO;
+        BigDecimal monthRateEight = LoanRepaymentAlgorithm.convertYearRateToMonthRate(informations.getSthousingAccount().getDkll(), RepaymentMonthRateScale.YES);
+        BigDecimal monthRateTen = LoanRepaymentAlgorithm.convertYearRateToMonthRate(informations.getSthousingAccount().getDkll(), RepaymentMonthRateScale.NO);
+
         // 现在实际余额
         BigDecimal nowDkye = informations.getSthousingAccount().getDkye();
 
         for (SthousingDetail detail : details) {
+            oddYwdkye = detail.getBjje().add(detail.getXqdkye());
+            lxEight = LoanRepaymentAlgorithm.calLxByDkye(oddYwdkye, monthRateEight);
+            lxTen = LoanRepaymentAlgorithm.calLxByDkye(oddYwdkye, monthRateTen);
             dkyeByYeWu = dkyeByYeWu.subtract(detail.getBjje());
             // 存在提前还款 , 需要新的还款计划
             if (LoanBusinessType.提前还款.getCode().equals(detail.getDkywmxlx())) {
@@ -216,7 +227,10 @@ public class AccountCheckMain {
                 subtractLxje = repaymentItemByDqqc.getHklxje().subtract(detail.getLxje());
                 subtractQmdkye = repaymentItemByDqqc.getQmdkye().subtract(detail.getXqdkye());
                 wuCha = wuCha.add(subtractBjje);
-                logs.append(", 发生额(计划): " + repaymentItemByDqqc.getFse() + " 本金:" + repaymentItemByDqqc.getHkbjje() + " 利息: " + repaymentItemByDqqc.getHklxje() + " 期末余额: " + repaymentItemByDqqc.getQmdkye() + "  本金误差(计划-业务): " + subtractBjje + " 利息误差: " + subtractLxje + " 期末余额误差: " + subtractQmdkye);
+                logs.append(", 利息(8)-业务利息: " + lxEight.subtract(detail.getLxje()) + " 利息(10)-业务利息: " + lxTen.subtract(detail.getLxje()) +
+                        " 发生额(计划): " + repaymentItemByDqqc.getFse() + " 本金:" + repaymentItemByDqqc.getHkbjje() + " 利息: " + repaymentItemByDqqc.getHklxje() +
+                        " 期末余额: " + repaymentItemByDqqc.getQmdkye() + "  本金误差(计划-业务): " + subtractBjje +
+                        " 利息误差: " + subtractLxje + " 期末余额误差: " + subtractQmdkye);
             }
             logs.append("\n");
         }
