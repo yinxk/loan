@@ -15,10 +15,7 @@ import top.yinxiaokang.original.service.AccountCheck;
 import top.yinxiaokang.others.CurrentPeriodRange;
 import top.yinxiaokang.util.Common;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -83,7 +80,15 @@ public class AccountCheckMain {
         //doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
         doAnalyzeWuchaIn5(accountInformationsList, checkMain);
         logs.append("读取总条数: " + importExcel.size() + "\n");
-        System.out.println(logs.toString());
+        String fileName = "accountCheckLog.log";
+
+        try (FileWriter writer = new FileWriter(fileName)) {
+            writer.write(logs.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("创建失败!");
+        }
+        System.out.println("结束运行!");
     }
 
     private static void doAnalyzeWuchaIn5(List<AccountInformations> accountInformationsList, AccountCheckMain checkMain) {
