@@ -138,7 +138,7 @@ public class AccountCheck {
         }
         // 初始还款计划,如果后面发生提前还款 , 那么还款计划会发生改变
         List<RepaymentItem> repaymentItems = RepaymentPlan.listRepaymentPlan(dkxffe, dkxffrq, syqs.intValue(), account.getDkll(),
-                RepaymentMethod.getRepaymentMethodByCode(account.getDkhkfs()), yhqs.intValue(), RepaymentMonthRateScale.YES);
+                RepaymentMethod.getRepaymentMethodByCode(account.getDkhkfs()), yhqs.intValue(), RepaymentMonthRateScale.NO);
         return repaymentItems;
     }
 
@@ -152,24 +152,7 @@ public class AccountCheck {
     public List<RepaymentItem> repaymentItems(String dkzh, BigDecimal initDkye, BigDecimal initOverdueBjje, Boolean isSubtract) {
         SthousingAccount account = getSthousingAccount(dkzh);
         List<CurrentPeriodRange> ranges = listHSRange(account, null);
-        BigDecimal yhqs = yhqs(ranges);
-        BigDecimal syqs = syqs(yhqs, account);
-        Date dkxffrq = getFirstDkxffrq(ranges);
-
-        if (initOverdueBjje == null) {
-            initOverdueBjje = BigDecimal.ZERO;
-        }
-        // 贷款新发放额, 减去逾期再生成还款计划,与以前的记录做对比
-        if (isSubtract == null) {
-            isSubtract = true;
-        }
-        BigDecimal dkxffe = null;
-        if (isSubtract) {
-            dkxffe = initDkye.subtract(initOverdueBjje);
-        }
-        // 初始还款计划,如果后面发生提前还款 , 那么还款计划会发生改变
-        List<RepaymentItem> repaymentItems = RepaymentPlan.listRepaymentPlan(dkxffe, dkxffrq, syqs.intValue(), account.getDkll(),
-                RepaymentMethod.getRepaymentMethodByCode(account.getDkhkfs()), yhqs.intValue(), RepaymentMonthRateScale.YES);
+        List<RepaymentItem> repaymentItems = repaymentItems(account, ranges, initDkye, initOverdueBjje, isSubtract);
         return repaymentItems;
     }
 
