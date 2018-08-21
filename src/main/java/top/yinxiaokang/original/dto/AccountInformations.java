@@ -32,9 +32,19 @@ public class AccountInformations {
 
     private List<RepaymentItem> repaymentItems;
 
+    /**
+     * 是否连续扣款
+     */
     private boolean isContinuous;
 
+    /**
+     * 是否有已入账的业务
+     */
     private boolean isGenerated;
+    /**
+     * 是否提前还款
+     */
+    private boolean isPrepayment;
 
 
 }

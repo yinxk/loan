@@ -7,6 +7,7 @@ import top.yinxiaokang.original.dto.AccountInformations;
 import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.SthousingDetail;
 import top.yinxiaokang.original.entity.excel.InitInformation;
+import top.yinxiaokang.original.enums.LoanBusinessType;
 import top.yinxiaokang.original.loan.repayment.RepaymentItem;
 import top.yinxiaokang.original.service.AccountCheck;
 import top.yinxiaokang.others.CurrentPeriodRange;
@@ -33,6 +34,8 @@ public class AccountCheckMain {
     private static final String KEY_ISGENERATE = "isGenerate";
 
     private static final String KEY_NOTGENERATE = "notGenerate";
+
+    private static final String KEY_PREPAYMENT = "prepayment";
 
     /**
      * 误差范围
@@ -77,6 +80,8 @@ public class AccountCheckMain {
         Map<String, List<AccountInformations>> generateOrNotGenerateList = checkMain.isGenerateOrNotGenerateList(accountInformationsList);
         List<AccountInformations> isGenerate = generateOrNotGenerateList.get(KEY_ISGENERATE);
         List<AccountInformations> notGenerate = generateOrNotGenerateList.get(KEY_NOTGENERATE);
+        List<AccountInformations> prepayment = generateOrNotGenerateList.get(KEY_PREPAYMENT);
+        System.out.println(prepayment.size());
 
 
         int dealNum = 0;
@@ -99,12 +104,12 @@ public class AccountCheckMain {
     private static void doAnalyze(AccountCheckMain checkMain, List<AccountInformations> informations, int dealNum) {
         for (AccountInformations item : informations) {
             logs.append("开始处理第: " + (++dealNum) + " 条 \n");
-            List<Integer> integers = checkMain.analyzeReverseBx(item);
-            checkMain.analyze(item);
-            if (integers.size() == 0) {
+            List<Integer> reverseBxQc = checkMain.analyzeReverseBx(item);
+            checkMain.analyze(item, reverseBxQc);
+            if (reverseBxQc.size() == 0) {
                 logs.append("本息相反的期次: 无\n");
             } else {
-                logs.append("本息相反的期次: " + integers.toString() + "\n");
+                logs.append("本息相反的期次: " + reverseBxQc.toString() + "\n");
             }
             logs.append("结束处理第: " + dealNum + " 条 \n\n");
 
@@ -142,7 +147,13 @@ public class AccountCheckMain {
     }
 
 
-    public void analyze(AccountInformations informations) {
+    /**
+     * 对一个账号的业务进行分析
+     *
+     * @param informations
+     * @param reverseQc
+     */
+    public void analyze(AccountInformations informations, List<Integer> reverseQc) {
 
         logs.append("贷款账号: " + informations.getSthousingAccount().getDkzh() +
                 " , 初始贷款余额 : " + informations.getInitInformation().getCsye() +
@@ -191,6 +202,7 @@ public class AccountCheckMain {
         Map<String, List<AccountInformations>> result = new HashMap<>();
         List<AccountInformations> isGenerate = new ArrayList<>();
         List<AccountInformations> notGenerate = new ArrayList<>();
+        List<AccountInformations> isPrepayment = new ArrayList<>();
 
         for (AccountInformations item : list) {
             isGenerate(item);
@@ -199,9 +211,14 @@ public class AccountCheckMain {
             } else {
                 notGenerate.add(item);
             }
+            if(item.isPrepayment()){
+                isPrepayment.add(item);
+            }
+
         }
         result.put(KEY_ISGENERATE, isGenerate);
         result.put(KEY_NOTGENERATE, notGenerate);
+        result.put(KEY_PREPAYMENT, isPrepayment);
 
         return result;
     }
@@ -215,9 +232,13 @@ public class AccountCheckMain {
         boolean isContinuous = true;
         // 是否已产生入账的业务
         boolean isGenerated = false;
+        // 是否有提前还款
+        boolean isPrepayment = false;
         BigDecimal qsqs = accountInformations.getInitFirstQc();
         for (SthousingDetail detail : sthousingDetails) {
             if (detail.getDqqc().compareTo(accountInformations.getInitFirstQc()) >= 0) {
+                if (LoanBusinessType.提前还款.getCode().equals(detail.getDkywmxlx()))
+                    isPrepayment = true;
                 isGenerated = true;
                 if (detail.getDqqc().compareTo(qsqs) != 0) {
                     isContinuous = false;
@@ -228,6 +249,7 @@ public class AccountCheckMain {
         }
         accountInformations.setGenerated(isGenerated);
         accountInformations.setContinuous(isContinuous);
+        accountInformations.setPrepayment(isPrepayment);
         return accountInformations;
     }
 }
