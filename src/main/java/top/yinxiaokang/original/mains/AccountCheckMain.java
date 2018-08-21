@@ -228,7 +228,7 @@ public class AccountCheckMain {
                 subtractLxje = repaymentItemByDqqc.getHklxje().subtract(detail.getLxje());
                 subtractQmdkye = repaymentItemByDqqc.getQmdkye().subtract(detail.getXqdkye());
                 wuCha = wuCha.add(subtractBjje);
-                logs.append(", 利息(8)-业务利息: " + lxEight.subtract(detail.getLxje()) + " 利息(10)-业务利息: " + lxTen.subtract(detail.getLxje()) +
+                logs.append(",利息(8): " + lxEight + " 利息(8)-业务利息: " + lxEight.subtract(detail.getLxje()) + " 利息(10): " + lxTen + " 利息(10)-业务利息: " + lxTen.subtract(detail.getLxje()) +
                         " 发生额(计划): " + repaymentItemByDqqc.getFse() + " 本金:" + repaymentItemByDqqc.getHkbjje() + " 利息: " + repaymentItemByDqqc.getHklxje() +
                         " 期末余额: " + repaymentItemByDqqc.getQmdkye() + "  本金误差(计划-业务): " + subtractBjje +
                         " 利息误差: " + subtractLxje + " 期末余额误差: " + subtractQmdkye);
