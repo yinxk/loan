@@ -206,8 +206,10 @@ public class AccountCheckMain {
     public void analyzeInitHasOverdueLx(AccountInformations informations, List<Integer> reverseQc) {
         // 业务记录
         List<SthousingDetail> details = informations.getDetails();
+        BigDecimal csye = informations.getInitInformation().getCsye();
+        BigDecimal dkyeByCsye = csye;
         // 根据业务推算的余额 , 减去初始逾期本金对我们系统的业务进行分析,计算
-        BigDecimal dkyeByYeWu = informations.getInitInformation().getCsye().subtract(informations.getInitInformation().getCsyqbj());
+        BigDecimal dkyeByYeWu = csye.subtract(informations.getInitInformation().getCsyqbj());
         // 利息差额合计
         BigDecimal lxSum = BigDecimal.ZERO;
         // 每一期利息
@@ -217,9 +219,12 @@ public class AccountCheckMain {
         for (SthousingDetail detail : details) {
             // 过滤不是我们系统的期次的业务
             if (detail.getDqqc().compareTo(informations.getInitFirstQc()) < 0) {
-                logs.append(detail + "  根据期次判断 ,该期为导入的数据\n");
+                logs.append(detail + " 推算期末余额: " + dkyeByCsye.subtract(detail.getBjje()) +
+                        " 推末-业末: " + dkyeByCsye.subtract(detail.getBjje()).subtract(detail.getXqdkye()) + "  根据期次判断,该期为导入的数据\n");
+                dkyeByCsye = dkyeByCsye.subtract(detail.getBjje());
                 continue;
             }
+            logs.append("推算导入系统逾期记录最后余额 - 等于初始余额减初始逾期本金 : " + (dkyeByCsye.subtract(dkyeByYeWu)) + "\n");
             lxItem = LoanRepaymentAlgorithm.calLxByDkye(dkyeByYeWu, informations.getSthousingAccount().getDkll(), RepaymentMonthRateScale.YES);
 
             if (Arrays.asList(LoanBusinessType.结清.getCode(), LoanBusinessType.提前还款.getCode()).contains(detail.getDkywmxlx())) {
