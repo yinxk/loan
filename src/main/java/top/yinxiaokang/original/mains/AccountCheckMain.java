@@ -82,7 +82,7 @@ public class AccountCheckMain {
         doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
         //doAnalyzeWuchaIn5(accountInformationsList, checkMain);
         logs.append("读取总条数: " + importExcel.size() + "\n");
-        String fileName = "accountCheckLog.log";
+        String fileName = "initHasOverdueLxCalTest.log";
 
         try (FileWriter writer = new FileWriter(fileName)) {
             writer.write(logs.toString());
@@ -111,7 +111,7 @@ public class AccountCheckMain {
         List<AccountInformations> isGenerate = generateOrNotGenerateList.get(KEY_ISGENERATE);
         List<AccountInformations> notGenerate = generateOrNotGenerateList.get(KEY_NOTGENERATE);
         List<AccountInformations> prepayment = generateOrNotGenerateList.get(KEY_PREPAYMENT);
-        System.out.println(prepayment.size());
+        System.out.println("存在提前还款业务的账号数量: " + prepayment.size());
         int dealNum = 0;
         logs.append("==================================================start--已经产生业务==========================================\n");
         doAnalyze(checkMain, isGenerate, dealNum);
@@ -126,7 +126,7 @@ public class AccountCheckMain {
 
     private static void doAnalyze(AccountCheckMain checkMain, List<AccountInformations> informations, int dealNum) {
         for (AccountInformations item : informations) {
-            logs.append("开始处理第: " + (++dealNum) + " 条 \n");
+            logs.append("开始分析第 " + (++dealNum) + " 条 \n");
             if (item.getSthousingAccount() == null || item.getSthousingAccount().getDkffrq() == null) continue;
             List<Integer> reverseBxQc = checkMain.analyzeReverseBx(item);
             logs.append("贷款账号: " + item.getSthousingAccount().getDkzh() +
@@ -143,7 +143,7 @@ public class AccountCheckMain {
             } else {
                 logs.append("本息相反的期次: " + reverseBxQc.toString() + "\n");
             }
-            logs.append("结束处理第: " + dealNum + " 条 \n\n");
+            logs.append("结束分析第 " + dealNum + " 条 \n\n");
         }
     }
 
@@ -215,24 +215,39 @@ public class AccountCheckMain {
         BigDecimal lxItemSub = BigDecimal.ZERO;
         for (SthousingDetail detail : details) {
             // 过滤不是我们系统的期次的业务
-            if (detail.getDqqc().compareTo(informations.getInitFirstQc()) < 0)
+            if (detail.getDqqc().compareTo(informations.getInitFirstQc()) < 0) {
+                logs.append(detail + "  根据期次判断 ,该期为导入的数据\n");
                 continue;
+            }
             lxItem = LoanRepaymentAlgorithm.calLxByDkye(dkyeByYeWu, informations.getSthousingAccount().getDkll(), RepaymentMonthRateScale.YES);
-            logs.append(detail + " 推算期初余额: " + dkyeByYeWu + " 推算利息: " + lxItem);
-            if (reverseQc.contains(detail.getDqqc())) {
+
+            if (LoanBusinessType.结清.getCode().equals(detail.getDkywmxlx())) {
+                logs.append(detail + "  结清\n");
+                continue;
+            }
+            if (LoanBusinessType.提前还款.getCode().equals(detail.getDkywmxlx())) {
+                logs.append(detail + "  提前还款\n");
+                continue;
+            }
+            logs.append(detail);
+            if (reverseQc.contains(detail.getDqqc().intValue())) {
                 lxItemSub = detail.getBjje().subtract(lxItem);
-                logs.append(" 业务利息-推算利息: " + lxItemSub + " 该期本息倒置\n");
+                logs.append(" 推算期末余额: " + dkyeByYeWu.subtract(detail.getLxje()) + " 推末-业末: " + dkyeByYeWu.subtract(detail.getLxje()).subtract(detail.getXqdkye()) +
+                        " 推算期初余额: " + dkyeByYeWu + " 推算利息: " + lxItem + " 业务利息-推算利息: " + lxItemSub + " 该期本息倒置\n");
                 dkyeByYeWu = dkyeByYeWu.subtract(detail.getLxje());
+
             } else {
                 lxItemSub = detail.getLxje().subtract(lxItem);
-                logs.append(" 业务利息-推算利息: " + lxItemSub + " \n");
+                logs.append(" 推算期末余额: " + dkyeByYeWu.subtract(detail.getLxje()) + " 推末-业末: " + dkyeByYeWu.subtract(detail.getLxje()).subtract(detail.getXqdkye()) +
+                        " 推算期初余额: " + dkyeByYeWu + " 推算利息: " + lxItem + " 业务利息-推算利息: " + lxItemSub + " \n");
                 dkyeByYeWu = dkyeByYeWu.subtract(detail.getBjje());
             }
             lxSum = lxSum.add(lxItemSub);
 
         }
         logs.append("利息差额总额: " + lxSum + " 推算贷款余额:" + dkyeByYeWu + " 实际贷款余额: " + informations.getSthousingAccount().getDkye() +
-                " 推算余额-实际余额:" + dkyeByYeWu.subtract(informations.getSthousingAccount().getDkye()));
+                " 推算余额-实际余额:" + dkyeByYeWu.subtract(informations.getSthousingAccount().getDkye()) +
+                " 差额是否与初始逾期本金相等: " + (dkyeByYeWu.subtract(informations.getSthousingAccount().getDkye()).abs().compareTo(informations.getInitInformation().getCsyqbj()) == 0 ? "是" : "否") + "\n");
     }
 
     /**
