@@ -179,6 +179,7 @@ public class AccountCheckMain {
                         RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()), detail.getDqqc().intValue(), RepaymentMonthRateScale.YES);
                 isPreItemPrepayment = true;
             }
+            // 提前还款或者结清没有本息倒置的情况, 与还款计划比较, 自动过滤了, 不需要考虑
 
             // 前一项为提前还款 , 由于提前还款后第一期利息比还款计划多, 那么只能比较本金来 , 可能是本息颠倒
             if (isPreItemPrepayment) {
@@ -221,13 +222,8 @@ public class AccountCheckMain {
             }
             lxItem = LoanRepaymentAlgorithm.calLxByDkye(dkyeByYeWu, informations.getSthousingAccount().getDkll(), RepaymentMonthRateScale.YES);
 
-            if (LoanBusinessType.结清.getCode().equals(detail.getDkywmxlx())) {
-                logs.append(detail + "  结清\n");
-                continue;
-            }
-            if (LoanBusinessType.提前还款.getCode().equals(detail.getDkywmxlx())) {
-                logs.append(detail + "  提前还款\n");
-                continue;
+            if (Arrays.asList(LoanBusinessType.结清.getCode(), LoanBusinessType.提前还款.getCode()).contains(detail.getDkywmxlx())) {
+                lxItem = detail.getLxje();
             }
             logs.append(detail);
             if (reverseQc.contains(detail.getDqqc().intValue())) {
@@ -238,7 +234,7 @@ public class AccountCheckMain {
 
             } else {
                 lxItemSub = detail.getLxje().subtract(lxItem);
-                logs.append(" 推算期末余额: " + dkyeByYeWu.subtract(detail.getLxje()) + " 推末-业末: " + dkyeByYeWu.subtract(detail.getLxje()).subtract(detail.getXqdkye()) +
+                logs.append(" 推算期末余额: " + dkyeByYeWu.subtract(detail.getBjje()) + " 推末-业末: " + dkyeByYeWu.subtract(detail.getLxje()).subtract(detail.getXqdkye()) +
                         " 推算期初余额: " + dkyeByYeWu + " 推算利息: " + lxItem + " 业务利息-推算利息: " + lxItemSub + " \n");
                 dkyeByYeWu = dkyeByYeWu.subtract(detail.getBjje());
             }
