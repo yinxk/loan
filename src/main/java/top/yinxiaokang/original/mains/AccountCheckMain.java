@@ -48,8 +48,8 @@ public class AccountCheckMain {
 
         AccountCheckMain checkMain = new AccountCheckMain();
 
-        //File f = new File("src/test/resources/初始有逾期.xlsx");
-        File f = new File("src/test/resources/20180821-误差5块以内的.xlsx");
+        File f = new File("src/test/resources/初始有逾期.xlsx");
+        //File f = new File("src/test/resources/20180821-误差5块以内的.xlsx");
 
         Collection<Map> importExcel = new ArrayList<>();
         try {
@@ -79,8 +79,8 @@ public class AccountCheckMain {
             AccountInformations accountInformations = checkMain.toAccountInformations(initInformation);
             accountInformationsList.add(accountInformations);
         }
-        //doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
-        doAnalyzeWuchaIn5(accountInformationsList, checkMain);
+        doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
+        //doAnalyzeWuchaIn5(accountInformationsList, checkMain);
         logs.append("读取总条数: " + importExcel.size() + "\n");
         String fileName = "accountCheckLog.log";
 
@@ -129,7 +129,15 @@ public class AccountCheckMain {
             logs.append("开始处理第: " + (++dealNum) + " 条 \n");
             if (item.getSthousingAccount() == null || item.getSthousingAccount().getDkffrq() == null) continue;
             List<Integer> reverseBxQc = checkMain.analyzeReverseBx(item);
-            checkMain.analyze(item, reverseBxQc);
+            logs.append("贷款账号: " + item.getSthousingAccount().getDkzh() +
+                    " , 初始贷款余额 : " + item.getInitInformation().getCsye() +
+                    " , 初始逾期本金 : " + item.getInitInformation().getCsyqbj() +
+                    " , 初始期数: " + item.getInitFirstQc() +
+                    " , 贷款发放日期: " + (item.getSthousingAccount().getDkffrq() == null ? "" : Utils.SDF_YEAR_MONTH_DAY.format(item.getSthousingAccount().getDkffrq())) +
+                    " , 贷款期数: " + item.getSthousingAccount().getDkqs() +
+                    " , 初始期数正确性: " + (item.getInitFirstQc().compareTo(item.getSthousingAccount().getDkqs()) > 0 ? "错误" : "正确") + " \n");
+            //checkMain.analyze(item, reverseBxQc);
+            checkMain.analyzeInitHasOverdueLx(item, reverseBxQc);
             if (reverseBxQc.size() == 0) {
                 logs.append("本息相反的期次: 无\n");
             } else {
@@ -139,9 +147,8 @@ public class AccountCheckMain {
         }
     }
 
-
     /**
-     * 获取本息反了的期次
+     * 获取本息反了的期次(只能参考)
      *
      * @param informations
      * @return
@@ -153,14 +160,33 @@ public class AccountCheckMain {
                 informations.getInitInformation().getCsye(),
                 informations.getInitInformation().getCsyqbj(),
                 false);
+        // 前一项是否为提前还款
+        boolean isPreItemPrepayment = false;
+        // 已经根据期次顺序排序
         List<SthousingDetail> details = informations.getDetails();
-        int numId = 0;
         for (SthousingDetail detail : details) {
+            // 过滤不是我们系统的期次的业务
             if (detail.getDqqc().compareTo(informations.getInitFirstQc()) < 0)
                 continue;
             RepaymentItem item = Common.getRepaymentItemByDqqc(repaymentItems, detail.getDqqc().intValue());
-            if (item == null) continue;
-            if (item.getHkbjje().subtract(detail.getLxje()).abs().compareTo(ERROR_RANGE) <= 0
+            if (item == null)
+                continue;
+
+            // 存在提前还款 , 需要新的还款计划 , 根据业务中提前还款剩余的余额进行推算, 期次也是 ,如果该业务的期次或者期末余额有一项不对, 那么提前还款后的本息倒置得不到有效的结果
+            if (LoanBusinessType.提前还款.getCode().equals(detail.getDkywmxlx())) {
+                repaymentItems = RepaymentPlan.listRepaymentPlan(detail.getXqdkye(), informations.getSthousingAccount().getDkffrq()
+                        , informations.getSthousingAccount().getDkqs().subtract(detail.getDqqc()).intValue(), informations.getSthousingAccount().getDkll(),
+                        RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()), detail.getDqqc().intValue(), RepaymentMonthRateScale.YES);
+                isPreItemPrepayment = true;
+            }
+
+            // 前一项为提前还款 , 由于提前还款后第一期利息比还款计划多, 那么只能比较本金来 , 可能是本息颠倒
+            if (isPreItemPrepayment) {
+                isPreItemPrepayment = false;
+                if (item.getHkbjje().subtract(detail.getLxje()).abs().compareTo(ERROR_RANGE) <= 0) {
+                    reverseQc.add(detail.getDqqc().intValue());
+                }
+            } else if (item.getHkbjje().subtract(detail.getLxje()).abs().compareTo(ERROR_RANGE) <= 0
                     && item.getHklxje().subtract(detail.getBjje()).abs().compareTo(ERROR_RANGE) <= 0) {
                 reverseQc.add(detail.getDqqc().intValue());
             }
@@ -171,20 +197,52 @@ public class AccountCheckMain {
 
 
     /**
-     * 对一个账号的业务进行分析
+     * 有些业务没有连续扣款, 那么根据业务推算余额进行计算利息 , 一个账号多的利息(参考)
+     *
+     * @param informations
+     * @param reverseQc
+     */
+    public void analyzeInitHasOverdueLx(AccountInformations informations, List<Integer> reverseQc) {
+        // 业务记录
+        List<SthousingDetail> details = informations.getDetails();
+        // 根据业务推算的余额 , 减去初始逾期本金对我们系统的业务进行分析,计算
+        BigDecimal dkyeByYeWu = informations.getInitInformation().getCsye().subtract(informations.getInitInformation().getCsyqbj());
+        // 利息差额合计
+        BigDecimal lxSum = BigDecimal.ZERO;
+        // 每一期利息
+        BigDecimal lxItem = BigDecimal.ZERO;
+        // 每一期利息差额
+        BigDecimal lxItemSub = BigDecimal.ZERO;
+        for (SthousingDetail detail : details) {
+            // 过滤不是我们系统的期次的业务
+            if (detail.getDqqc().compareTo(informations.getInitFirstQc()) < 0)
+                continue;
+            lxItem = LoanRepaymentAlgorithm.calLxByDkye(dkyeByYeWu, informations.getSthousingAccount().getDkll(), RepaymentMonthRateScale.YES);
+            logs.append(detail + " 推算期初余额: " + dkyeByYeWu + " 推算利息: " + lxItem);
+            if (reverseQc.contains(detail.getDqqc())) {
+                lxItemSub = detail.getBjje().subtract(lxItem);
+                logs.append(" 业务利息-推算利息: " + lxItemSub + " 该期本息倒置\n");
+                dkyeByYeWu = dkyeByYeWu.subtract(detail.getLxje());
+            } else {
+                lxItemSub = detail.getLxje().subtract(lxItem);
+                logs.append(" 业务利息-推算利息: " + lxItemSub + " \n");
+                dkyeByYeWu = dkyeByYeWu.subtract(detail.getBjje());
+            }
+            lxSum = lxSum.add(lxItemSub);
+
+        }
+        logs.append("利息差额总额: " + lxSum + " 推算贷款余额:" + dkyeByYeWu + " 实际贷款余额: " + informations.getSthousingAccount().getDkye() +
+                " 推算余额-实际余额:" + dkyeByYeWu.subtract(informations.getSthousingAccount().getDkye()));
+    }
+
+    /**
+     * 对一个账号的业务进行分析(存在误差的业务的分析)
      *
      * @param informations
      * @param reverseQc
      */
     public void analyze(AccountInformations informations, List<Integer> reverseQc) {
 
-        logs.append("贷款账号: " + informations.getSthousingAccount().getDkzh() +
-                " , 初始贷款余额 : " + informations.getInitInformation().getCsye() +
-                " , 初始逾期本金 : " + informations.getInitInformation().getCsyqbj() +
-                " , 初始期数: " + informations.getInitFirstQc() +
-                " , 贷款发放日期: " + (informations.getSthousingAccount().getDkffrq() == null ? "" : Utils.SDF_YEAR_MONTH_DAY.format(informations.getSthousingAccount().getDkffrq())) +
-                " , 贷款期数: " + informations.getSthousingAccount().getDkqs() +
-                " , 初始期数正确性: " + (informations.getInitFirstQc().compareTo(informations.getSthousingAccount().getDkqs()) > 0 ? "错误" : "正确") + " \n");
         // 业务记录
         List<SthousingDetail> details = informations.getDetails();
         // 初始还款计划 , 没有做提前还款
@@ -219,7 +277,7 @@ public class AccountCheckMain {
             if (LoanBusinessType.提前还款.getCode().equals(detail.getDkywmxlx())) {
                 repaymentItems = RepaymentPlan.listRepaymentPlan(dkyeByYeWu, informations.getSthousingAccount().getDkffrq()
                         , informations.getSthousingAccount().getDkqs().subtract(detail.getDqqc()).intValue(), informations.getSthousingAccount().getDkll(),
-                        RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()), detail.getDqqc().intValue(), RepaymentMonthRateScale.NO);
+                        RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()), detail.getDqqc().intValue(), RepaymentMonthRateScale.YES);
             }
             RepaymentItem repaymentItemByDqqc = Common.getRepaymentItemByDqqc(repaymentItems, detail.getDqqc().intValue());
             logs.append(detail);
