@@ -48,7 +48,8 @@ public class AccountCheckMain {
 
         AccountCheckMain checkMain = new AccountCheckMain();
 
-        File f = new File("src/test/resources/初始有逾期.xlsx");
+        File f = new File("src/test/resources/1000多个问题贷款账号.xlsx");
+        //File f = new File("src/test/resources/初始有逾期.xlsx");
         //File f = new File("src/test/resources/20180821-误差5块以内的.xlsx");
 
         Collection<Map> importExcel = new ArrayList<>();
@@ -79,10 +80,12 @@ public class AccountCheckMain {
             AccountInformations accountInformations = checkMain.toAccountInformations(initInformation);
             accountInformationsList.add(accountInformations);
         }
-        doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
+        //doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
         //doAnalyzeWuchaIn5(accountInformationsList, checkMain);
+        doAnalyzeOneThousandDkzh(accountInformationsList, checkMain);
         logs.append("读取总条数: " + importExcel.size() + "\n");
-        String fileName = "initHasOverdueLxCalTest.log";
+        //String fileName = "initHasOverdueLxCalTest.log";
+        String fileName = "1400多个贷款账号分析.log";
 
         try (FileWriter writer = new FileWriter(fileName)) {
             writer.write(logs.toString());
@@ -93,7 +96,26 @@ public class AccountCheckMain {
         System.out.println("结束运行!");
     }
 
+    /**
+     * 分析误差在5块内的
+     *
+     * @param accountInformationsList
+     * @param checkMain
+     */
     private static void doAnalyzeWuchaIn5(List<AccountInformations> accountInformationsList, AccountCheckMain checkMain) {
+        int dealNum = 0;
+        logs.append("==================================================--start--==========================================\n");
+        doAnalyze(checkMain, accountInformationsList, dealNum);
+        logs.append("==================================================--end--==========================================\n");
+    }
+
+    /**
+     * 1000多个有问题的贷款账号
+     *
+     * @param accountInformationsList
+     * @param checkMain
+     */
+    private static void doAnalyzeOneThousandDkzh(List<AccountInformations> accountInformationsList, AccountCheckMain checkMain) {
         int dealNum = 0;
         logs.append("==================================================--start--==========================================\n");
         doAnalyze(checkMain, accountInformationsList, dealNum);
@@ -124,6 +146,13 @@ public class AccountCheckMain {
         logs.append("没有产生业务账号数: " + notGenerate.size() + "\n");
     }
 
+    /**
+     * 分析器 ,  每种经过该方法,  该方法再调用其他需要的模块
+     *
+     * @param checkMain
+     * @param informations
+     * @param dealNum
+     */
     private static void doAnalyze(AccountCheckMain checkMain, List<AccountInformations> informations, int dealNum) {
         for (AccountInformations item : informations) {
             logs.append("开始分析第 " + (++dealNum) + " 条 \n");
@@ -137,7 +166,8 @@ public class AccountCheckMain {
                     " , 贷款期数: " + item.getSthousingAccount().getDkqs() +
                     " , 初始期数正确性: " + (item.getInitFirstQc().compareTo(item.getSthousingAccount().getDkqs()) > 0 ? "错误" : "正确") + " \n");
             //checkMain.analyze(item, reverseBxQc);
-            checkMain.analyzeInitHasOverdueLx(item, reverseBxQc);
+            //checkMain.analyzeInitHasOverdueLx(item, reverseBxQc);
+            checkMain.analyzeOneThousandDkzh(item, reverseBxQc);
             if (reverseBxQc.size() == 0) {
                 logs.append("本息相反的期次: 无\n");
             } else {
@@ -198,6 +228,66 @@ public class AccountCheckMain {
 
 
     /**
+     * 1000多个问题账号分析 , 不根据业务, 推算正常应该还款的业务
+     *
+     * @param informations
+     * @param reverseQc
+     */
+    public void analyzeOneThousandDkzh(AccountInformations informations, List<Integer> reverseQc) {
+        // 业务记录
+        List<SthousingDetail> details = informations.getDetails();
+        BigDecimal csye = informations.getInitInformation().getCsye();
+        BigDecimal dkyeByCsye = csye;
+        // 根据业务推算的余额 , 减去初始逾期本金对我们系统的业务进行分析 , 计算
+        BigDecimal dkyeByYeWu = csye.subtract(informations.getInitInformation().getCsyqbj());
+
+        // 还款计划
+        List<RepaymentItem> repaymentItems = informations.getRepaymentItems();
+        // 提前还款的业务, 已排序
+        List<SthousingDetail> prepaymentList = listPrepayment(details);
+        // 提前还款次数
+        int preTag = 0;
+        SthousingDetail preDetail = null;
+        for (RepaymentItem repaymentItem : repaymentItems) {
+            preDetail = prepaymentList.get(preTag);
+            if (repaymentItem.getHkrq().getTime() < preDetail.getYwfsrq().getTime()) {
+                logs.append(repaymentItem);
+            } else {
+                logs.append("提前还款   本金: " + preDetail.getBjje() + " 利息: " + preDetail.getLxje() +
+                        " 期末贷款余额: " + repaymentItem.getQcdkye().subtract(preDetail.getBjje()) + "\n");
+                repaymentItems = RepaymentPlan.listRepaymentPlan(repaymentItem.getQcdkye().subtract(preDetail.getBjje()),
+                        informations.getSthousingAccount().getDkffrq(),
+                        informations.getSthousingAccount().getDkqs().intValue() - repaymentItem.getHkqc(),
+                        informations.getSthousingAccount().getDkll(),
+                        RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()),
+                        repaymentItem.getHkqc(),
+                        RepaymentMonthRateScale.YES);
+                preTag++;
+            }
+        }
+
+
+    }
+
+
+    /**
+     * 获取提前还款的业务,并根据提前还款的业务发生日期进行排序
+     *
+     * @param details
+     * @return
+     */
+    public List<SthousingDetail> listPrepayment(List<SthousingDetail> details) {
+        List<SthousingDetail> prepaymentList = new ArrayList<>();
+        for (SthousingDetail detail : details) {
+            if (LoanBusinessType.提前还款.getCode().equals(detail.getDkywmxlx())) {
+                prepaymentList.add(detail);
+            }
+        }
+        Collections.sort(prepaymentList, Comparator.comparing(SthousingDetail::getYwfsrq));
+        return prepaymentList;
+    }
+
+    /**
      * 有些业务没有连续扣款, 那么根据业务推算余额进行计算利息 , 一个账号多的利息(参考)
      *
      * @param informations
@@ -226,7 +316,7 @@ public class AccountCheckMain {
                 isCsYw = true;
                 continue;
             }
-            if (isCsYw){
+            if (isCsYw) {
                 logs.append("推算导入系统逾期记录最后余额 - 等于初始余额减初始逾期本金 : " + (dkyeByCsye.subtract(dkyeByYeWu)) + "\n");
                 isCsYw = false;
             }
