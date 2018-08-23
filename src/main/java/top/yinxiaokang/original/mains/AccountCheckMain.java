@@ -32,6 +32,8 @@ public class AccountCheckMain {
      */
     private static StringBuffer logs = new StringBuffer();
 
+    private static String logName = "1400多个贷款账号分析.log";
+
     private static final String KEY_ISGENERATE = "isGenerate";
 
     private static final String KEY_NOTGENERATE = "notGenerate";
@@ -62,6 +64,12 @@ public class AccountCheckMain {
             e.printStackTrace();
         }
 
+        File logFile = new File(logName);
+        if (logFile.isFile() && logFile.exists()) {
+            System.out.println("文件存在, 删除文件!");
+            logFile.delete();
+        }
+
         logs.append("读取总条数: " + importExcel.size() + "\n");
 
         ArrayList<InitInformation> initHasOverdueList = new ArrayList<>();
@@ -84,16 +92,23 @@ public class AccountCheckMain {
         //doAnalyzeWuchaIn5(accountInformationsList, checkMain);
         doAnalyzeOneThousandDkzh(accountInformationsList, checkMain);
         logs.append("读取总条数: " + importExcel.size() + "\n");
-        //String fileName = "initHasOverdueLxCalTest.log";
-        String fileName = "1400多个贷款账号分析.log";
+        logsToFile();
+        System.out.println("结束运行!");
+    }
 
-        try (FileWriter writer = new FileWriter(fileName)) {
+    /**
+     * 写入一部分日志到文件
+     */
+    private static void logsToFile() {
+
+        try (FileWriter writer = new FileWriter(logName, true)) {
+            System.out.print(logs.toString());
             writer.write(logs.toString());
+            logs = new StringBuffer();
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("创建失败!");
         }
-        System.out.println("结束运行!");
     }
 
     /**
@@ -154,6 +169,7 @@ public class AccountCheckMain {
      * @param dealNum
      */
     private static void doAnalyze(AccountCheckMain checkMain, List<AccountInformations> informations, int dealNum) {
+        int writeTag = 0;
         for (AccountInformations item : informations) {
             logs.append("开始分析第 " + (++dealNum) + " 条 \n");
             if (item.getSthousingAccount() == null || item.getSthousingAccount().getDkffrq() == null) continue;
@@ -174,6 +190,9 @@ public class AccountCheckMain {
                 logs.append("本息相反的期次: " + reverseBxQc.toString() + "\n");
             }
             logs.append("结束分析第 " + dealNum + " 条 \n\n");
+            if ((++writeTag) % 100 == 0) {
+                logsToFile();
+            }
         }
     }
 
@@ -247,31 +266,62 @@ public class AccountCheckMain {
         List<SthousingDetail> prepaymentList = listPrepayment(details);
         // 提前还款次数
         int preTag = 0;
-        SthousingDetail preDetail = null;
+        // 现在时间
+        Date now = new Date();
+
+        analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now);
+
+
+    }
+
+    private void analyOneThousand0(AccountInformations informations, List<RepaymentItem> repaymentItems, List<SthousingDetail> prepaymentList, int preTag, Date now) {
+        SthousingDetail preDetail;
         for (RepaymentItem repaymentItem : repaymentItems) {
-            preDetail = prepaymentList.get(preTag);
-            if (repaymentItem.getHkrq().getTime() < preDetail.getYwfsrq().getTime()) {
-                logs.append(repaymentItem);
+            preDetail = null;
+            if (preTag < prepaymentList.size()) {
+                preDetail = prepaymentList.get(preTag);
+            }
+            if (Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(now)) > 0) {
+                break;
+            }
+            if (preDetail == null || Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(preDetail.getYwfsrq())) < 0) {
+                logs.append("正常还款    日期: " + Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()) + "  期次: " + repaymentItem.getHkqc() +
+                        "  本金: " + repaymentItem.getHkbjje() + "  利息: " + repaymentItem.getHklxje() + "  发生额: " + repaymentItem.getFse() +
+                        "  期末余额: " + repaymentItem.getQmdkye() + "\n");
             } else {
-                logs.append("提前还款   本金: " + preDetail.getBjje() + " 利息: " + preDetail.getLxje() +
-                        " 期末贷款余额: " + repaymentItem.getQcdkye().subtract(preDetail.getBjje()) + "\n");
-                repaymentItems = RepaymentPlan.listRepaymentPlan(repaymentItem.getQcdkye().subtract(preDetail.getBjje()),
-                        informations.getSthousingAccount().getDkffrq(),
+                BigDecimal qmdkye = repaymentItem.getQcdkye().subtract(preDetail.getBjje());
+                boolean isJieQing = false;
+
+                if (LoanBusinessType.提前还款.getCode().equals(preDetail.getDkywmxlx())) {
+                    logs.append("提前还款    ");
+                }
+                if (LoanBusinessType.结清.getCode().equals(preDetail.getDkywmxlx())) {
+                    logs.append("结清    ");
+                    isJieQing = true;
+                }
+                logs.append("日期: " + Utils.SDF_YEAR_MONTH_DAY.format(preDetail.getYwfsrq()) + "  期次: " + repaymentItem.getHkqc() +
+                        "  本金: " + preDetail.getBjje() + " 利息: " + preDetail.getLxje() + "  发生额: " + preDetail.getFse() +
+                        "  期末余额: " + qmdkye + "\n");
+                if (isJieQing) {
+                    break;
+                }
+                preTag++;
+                repaymentItems = RepaymentPlan.listRepaymentPlan(qmdkye,
+                        repaymentItem.getHkrq(),
                         informations.getSthousingAccount().getDkqs().intValue() - repaymentItem.getHkqc(),
                         informations.getSthousingAccount().getDkll(),
                         RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()),
                         repaymentItem.getHkqc(),
                         RepaymentMonthRateScale.YES);
-                preTag++;
+                analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now);
+                break;
             }
         }
-
-
     }
 
 
     /**
-     * 获取提前还款的业务,并根据提前还款的业务发生日期进行排序
+     * 获取提前还款或者结清的业务,并根据提前还款的业务发生日期进行排序
      *
      * @param details
      * @return
@@ -279,7 +329,7 @@ public class AccountCheckMain {
     public List<SthousingDetail> listPrepayment(List<SthousingDetail> details) {
         List<SthousingDetail> prepaymentList = new ArrayList<>();
         for (SthousingDetail detail : details) {
-            if (LoanBusinessType.提前还款.getCode().equals(detail.getDkywmxlx())) {
+            if (LoanBusinessType.提前还款.getCode().equals(detail.getDkywmxlx()) || LoanBusinessType.结清.getCode().equals(detail.getDkywmxlx())) {
                 prepaymentList.add(detail);
             }
         }
