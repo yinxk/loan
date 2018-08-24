@@ -33,7 +33,7 @@ public class AccountCheckMain {
      */
     private static StringBuffer logs = new StringBuffer();
     //private static String outFileName = "从30多期跳到170多期";
-    private static String outFileName = "allDkzhDkye";
+    private static String outFileName = "allDkzhDkyePart1";
     //private static String outFileName = "1400多个贷款账号分析";
     /**
      * excel
@@ -122,7 +122,6 @@ public class AccountCheckMain {
             InitInformation initHasOverdue = new InitInformation();
             initHasOverdue.setDkzh((String) m.get("dkzh"));
             initHasOverdue.setCsye(new BigDecimal((String) m.get("csye")));
-            initHasOverdue.setCsqs(new BigDecimal((String) m.get("csqs")));
             initHasOverdue.setCsyqbj(new BigDecimal((String) m.get("csyqbj")));
             initHasOverdueList.add(initHasOverdue);
         }
@@ -138,7 +137,7 @@ public class AccountCheckMain {
         doAnalyzeAllDkzh(accountInformationsList, checkMain);
         logs.append("读取总条数: " + importExcel.size() + "\n");
         logsToFile();
-        listToXlsx();
+//        listToXlsx();
         System.out.println("结束运行!");
     }
 
@@ -267,18 +266,20 @@ public class AccountCheckMain {
             //checkMain.analyzeOneThousandDkzh(item, reverseBxQc);
             BigDecimal dkyeByYw = checkMain.analyzeAllDkzh(item, reverseBxQc);
 
-            AllAccountDkye allAccountDkye = new AllAccountDkye();
-            allAccountDkye.setDkzh(item.getSthousingAccount().getDkzh());
-            allAccountDkye.setDkffrq(item.getSthousingAccount().getDkffrq());
-            allAccountDkye.setDkqs(item.getSthousingAccount().getDkqs());
-            allAccountDkye.setCsdkye(item.getInitInformation().getCsye());
-            allAccountDkye.setCsyqbj(item.getInitInformation().getCsyqbj());
-            allAccountDkye.setCsqs(item.getInitFirstQc().intValue());
-            allAccountDkye.setTsdkye(dkyeByYw);
-            allAccountDkye.setSjdkye(item.getSthousingAccount().getDkye());
-            allAccountDkye.setSubdkye(dkyeByYw.subtract(item.getSthousingAccount().getDkye()));
-            datasetAllAccountDkye.add(allAccountDkye);
+            // region 分析所有的贷款账号的余额与推算余额的差异  但是全部读入内存 , heap 不够啊
+//            AllAccountDkye allAccountDkye = new AllAccountDkye();
+//            allAccountDkye.setDkzh(item.getSthousingAccount().getDkzh());
+//            allAccountDkye.setDkffrq(item.getSthousingAccount().getDkffrq());
+//            allAccountDkye.setDkqs(item.getSthousingAccount().getDkqs());
+//            allAccountDkye.setCsdkye(item.getInitInformation().getCsye());
+//            allAccountDkye.setCsyqbj(item.getInitInformation().getCsyqbj());
+//            allAccountDkye.setCsqs(item.getInitFirstQc().intValue());
+//            allAccountDkye.setTsdkye(dkyeByYw);
+//            allAccountDkye.setSjdkye(item.getSthousingAccount().getDkye());
+//            allAccountDkye.setSubdkye(dkyeByYw.subtract(item.getSthousingAccount().getDkye()));
+//            datasetAllAccountDkye.add(allAccountDkye);
 
+            // endregion
             if (reverseBxQc.size() == 0) {
                 logs.append("本息相反的期次: 无\n");
             } else {
