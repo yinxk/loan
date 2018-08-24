@@ -1,8 +1,17 @@
 package top.yinxiaokang.util;
 
+import com.sargeraswang.util.ExcelUtil.ExcelLogs;
+import com.sargeraswang.util.ExcelUtil.ExcelUtil;
 import top.yinxiaokang.original.loan.repayment.RepaymentItem;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author yinxk
@@ -23,5 +32,23 @@ public class Common {
             }
         }
         return null;
+    }
+
+    /**
+     * 读取excel , 返回集合
+     * @param fileName 需要 包含扩展名
+     * @return
+     */
+    public static Collection<Map> xlsToList(String fileName){
+        Collection<Map> importExcel = new ArrayList<>();
+        try {
+            try (InputStream inputStream = new FileInputStream(new File(fileName))) {
+                ExcelLogs logs = new ExcelLogs();
+                importExcel = ExcelUtil.importExcel(Map.class, inputStream, "yyyy/MM/dd HH:mm:ss", logs, 0);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return importExcel;
     }
 }

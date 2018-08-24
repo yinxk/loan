@@ -1,6 +1,5 @@
 package top.yinxiaokang.original.mains;
 
-import com.sargeraswang.util.ExcelUtil.ExcelLogs;
 import com.sargeraswang.util.ExcelUtil.ExcelUtil;
 import top.yinxiaokang.original.LoanRepaymentAlgorithm;
 import top.yinxiaokang.original.Utils;
@@ -9,6 +8,7 @@ import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.SthousingDetail;
 import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.enums.LoanBusinessType;
+import top.yinxiaokang.original.excelbean.AllAccountDkye;
 import top.yinxiaokang.original.excelbean.OneThousand;
 import top.yinxiaokang.original.loan.repayment.RepaymentItem;
 import top.yinxiaokang.original.loan.repayment.RepaymentMethod;
@@ -20,7 +20,6 @@ import top.yinxiaokang.util.Common;
 
 import java.io.*;
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -33,28 +32,43 @@ public class AccountCheckMain {
      * 日志
      */
     private static StringBuffer logs = new StringBuffer();
-    private static String outFileName = "从30多期跳到170多期";
+    //private static String outFileName = "从30多期跳到170多期";
+    private static String outFileName = "allDkzhDkye";
     //private static String outFileName = "1400多个贷款账号分析";
     /**
      * excel
      */
     private static String outXLSXName = outFileName + ".xlsx";
-    private static List<OneThousand> dataset = new ArrayList<>();
+    private static List<OneThousand> datasetOneThousand = new ArrayList<>();
+    private static List<AllAccountDkye> datasetAllAccountDkye = new ArrayList<>();
+    private static List<AllAccountDkye> dataset = datasetAllAccountDkye;
     private static OutputStream outXLSXStream = null;
     private static Map<String, String> KEY_MAP = null;
 
+    //static {
+    //    KEY_MAP = new LinkedHashMap<>();
+    //    KEY_MAP.put("dkzh", "贷款账号");
+    //    KEY_MAP.put("csdkye", "初始贷款余额");
+    //    KEY_MAP.put("csyqbj", "初始逾期本金");
+    //    KEY_MAP.put("hklx", "还款类型");
+    //    KEY_MAP.put("rq", "日期");
+    //    KEY_MAP.put("qc", "期次");
+    //    KEY_MAP.put("fse", "发生额");
+    //    KEY_MAP.put("bj", "本金");
+    //    KEY_MAP.put("lx", "利息");
+    //    KEY_MAP.put("qmdkye", "期末贷款余额");
+    //}
     static {
         KEY_MAP = new LinkedHashMap<>();
         KEY_MAP.put("dkzh", "贷款账号");
+        KEY_MAP.put("dkffrq", "贷款发放日期");
+        KEY_MAP.put("dkqs", "贷款期数");
         KEY_MAP.put("csdkye", "初始贷款余额");
         KEY_MAP.put("csyqbj", "初始逾期本金");
-        KEY_MAP.put("hklx", "还款类型");
-        KEY_MAP.put("rq", "日期");
-        KEY_MAP.put("qc", "期次");
-        KEY_MAP.put("fse", "发生额");
-        KEY_MAP.put("bj", "本金");
-        KEY_MAP.put("lx", "利息");
-        KEY_MAP.put("qmdkye", "期末贷款余额");
+        KEY_MAP.put("csqs", "应该开始期数");
+        KEY_MAP.put("tsdkye", "推算贷款余额");
+        KEY_MAP.put("sjdkye", "实际贷款余额");
+        KEY_MAP.put("subdkye", "推算-实际(贷款余额)");
     }
 
     private static String logName = outFileName + ".log";
@@ -85,19 +99,14 @@ public class AccountCheckMain {
         AccountCheckMain checkMain = new AccountCheckMain();
 
 //        File f = new File("src/test/resources/1000多个问题贷款账号.xlsx");
-        File f = new File("src/test/resources/从30多期跳到170多期.xlsx");
+//        File f = new File("");
         //File f = new File("src/test/resources/初始有逾期.xlsx");
         //File f = new File("src/test/resources/20180821-误差5块以内的.xlsx");
+        //String fileName = "src/test/resources/从30多期跳到170多期.xlsx";
+        String fileName = "src/test/resources/包含所有的账号的初始余额和导入的逾期本金.xlsx";
 
-        Collection<Map> importExcel = new ArrayList<>();
-        try {
-            try (InputStream inputStream = new FileInputStream(f)) {
-                ExcelLogs logs = new ExcelLogs();
-                importExcel = ExcelUtil.importExcel(Map.class, inputStream, "yyyy/MM/dd HH:mm:ss", logs, 0);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Collection<Map> importExcel = Common.xlsToList(fileName);
+
 
         File logFile = new File(logName);
         if (logFile.isFile() && logFile.exists()) {
@@ -125,7 +134,8 @@ public class AccountCheckMain {
         }
         //doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
         //doAnalyzeWuchaIn5(accountInformationsList, checkMain);
-        doAnalyzeOneThousandDkzh(accountInformationsList, checkMain);
+        //doAnalyzeOneThousandDkzh(accountInformationsList, checkMain);
+        doAnalyzeAllDkzh(accountInformationsList, checkMain);
         logs.append("读取总条数: " + importExcel.size() + "\n");
         logsToFile();
         listToXlsx();
@@ -189,6 +199,19 @@ public class AccountCheckMain {
     }
 
     /**
+     * 所有贷款账号根据初始余额和业务进行分析余额的差异
+     *
+     * @param accountInformationsList
+     * @param checkMain
+     */
+    private static void doAnalyzeAllDkzh(List<AccountInformations> accountInformationsList, AccountCheckMain checkMain) {
+        int dealNum = 0;
+        logs.append("==================================================--start--==========================================\n");
+        doAnalyze(checkMain, accountInformationsList, dealNum);
+        logs.append("==================================================--end--==========================================\n");
+    }
+
+    /**
      * 对于初始有逾期的进行分析
      *
      * @param accountInformationsList
@@ -233,14 +256,29 @@ public class AccountCheckMain {
                     " , 贷款期数: " + item.getSthousingAccount().getDkqs() +
                     " , 初始期数正确性: " + (item.getInitFirstQc().compareTo(item.getSthousingAccount().getDkqs()) > 0 ? "错误" : "正确") + " \n");
 
-            OneThousand oneThousand = new OneThousand();
-            oneThousand.setDkzh(item.getSthousingAccount().getDkzh());
-            oneThousand.setCsdkye(item.getInitInformation().getCsye());
-            oneThousand.setCsyqbj(item.getInitInformation().getCsyqbj());
-            dataset.add(oneThousand);
+            //OneThousand oneThousand = new OneThousand();
+            //oneThousand.setDkzh(item.getSthousingAccount().getDkzh());
+            //oneThousand.setCsdkye(item.getInitInformation().getCsye());
+            //oneThousand.setCsyqbj(item.getInitInformation().getCsyqbj());
+            //dataset.add(oneThousand);
+
             //checkMain.analyze(item, reverseBxQc);
             //checkMain.analyzeInitHasOverdueLx(item, reverseBxQc);
-            checkMain.analyzeOneThousandDkzh(item, reverseBxQc);
+            //checkMain.analyzeOneThousandDkzh(item, reverseBxQc);
+            BigDecimal dkyeByYw = checkMain.analyzeAllDkzh(item, reverseBxQc);
+
+            AllAccountDkye allAccountDkye = new AllAccountDkye();
+            allAccountDkye.setDkzh(item.getSthousingAccount().getDkzh());
+            allAccountDkye.setDkffrq(item.getSthousingAccount().getDkffrq());
+            allAccountDkye.setDkqs(item.getSthousingAccount().getDkqs());
+            allAccountDkye.setCsdkye(item.getInitInformation().getCsye());
+            allAccountDkye.setCsyqbj(item.getInitInformation().getCsyqbj());
+            allAccountDkye.setCsqs(item.getInitFirstQc().intValue());
+            allAccountDkye.setTsdkye(dkyeByYw);
+            allAccountDkye.setSjdkye(item.getSthousingAccount().getDkye());
+            allAccountDkye.setSubdkye(dkyeByYw.subtract(item.getSthousingAccount().getDkye()));
+            datasetAllAccountDkye.add(allAccountDkye);
+
             if (reverseBxQc.size() == 0) {
                 logs.append("本息相反的期次: 无\n");
             } else {
@@ -302,6 +340,39 @@ public class AccountCheckMain {
         return reverseQc;
     }
 
+
+    /**
+     * 分析所有的贷款账号, 根据初始余额和已入账的业务进行推算余额是否正常
+     *
+     * @param informations
+     * @param reverseQc
+     * @return 推算贷款余额
+     */
+    public BigDecimal analyzeAllDkzh(AccountInformations informations, List<Integer> reverseQc) {
+        // 业务记录
+        List<SthousingDetail> details = informations.getDetails();
+        BigDecimal csye = informations.getInitInformation().getCsye();
+        BigDecimal dkyeByCsye = csye;
+        BigDecimal dkye = informations.getSthousingAccount().getDkye();
+        BigDecimal sub = BigDecimal.ZERO;
+        for (int i = 0; i < details.size(); i++) {
+            SthousingDetail detail = details.get(i);
+            logs.append(detail);
+            String bxdz = "";
+            if (reverseQc.contains(detail.getDqqc().intValue())) {
+                sub = detail.getLxje();
+                bxdz = "  该期本息倒置";
+            } else {
+                sub = detail.getBjje();
+            }
+
+            dkyeByCsye = dkyeByCsye.subtract(sub);
+            logs.append("  推算期末余额: " + dkyeByCsye + "  贷款余额差额: " + dkyeByCsye.subtract(detail.getXqdkye()) + "\n");
+        }
+        BigDecimal subDkye = dkyeByCsye.subtract(dkye);
+        logs.append("推算贷款余额: " + dkyeByCsye + "  实际贷款余额: " + dkye + "  推-实: " + subDkye + "\n");
+        return dkyeByCsye;
+    }
 
     /**
      * 1000多个问题账号分析 , 不根据业务, 推算正常应该还款的业务
@@ -374,7 +445,7 @@ public class AccountCheckMain {
                 oneThousand.setBj(repaymentItem.getHkbjje());
                 oneThousand.setLx(repaymentItem.getHklxje());
                 oneThousand.setQmdkye(repaymentItem.getQmdkye());
-                dataset.add(oneThousand);
+                datasetOneThousand.add(oneThousand);
             } else {
                 BigDecimal qmdkye = pre.getQmdkye().subtract(preDetail.getBjje());
                 boolean isJieQing = false;
@@ -398,7 +469,7 @@ public class AccountCheckMain {
                 oneThousand.setBj(preDetail.getBjje());
                 oneThousand.setLx(preDetail.getLxje());
                 oneThousand.setQmdkye(qmdkye);
-                dataset.add(oneThousand);
+                datasetOneThousand.add(oneThousand);
                 if (isJieQing) {
                     break;
                 }
@@ -564,12 +635,16 @@ public class AccountCheckMain {
     public AccountInformations toAccountInformations(InitInformation initInformation) {
         AccountInformations accountInformations = new AccountInformations();
         SthousingAccount account = accountCheck.getSthousingAccount(initInformation.getDkzh());
-        // 仅仅针对单个账号
-        try {
-            account.setDkffrq(Utils.SDF_YEAR_MONTH_DAY.parse("2015-01-21"));
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+        //region 仅仅针对那个从30多期跳到170的贷款账号
+        //try {
+        //    account.setDkffrq(Utils.SDF_YEAR_MONTH_DAY.parse("2015-01-21"));
+        //} catch (ParseException e) {
+        //    e.printStackTrace();
+        //}
+        //endregion
+
+        //region 如果可以的话, 使用扩展表的dkxxffrq中的日来作为还款日
+        //endregion
         //System.out.println(account);
         if (account == null)
             return accountInformations;
