@@ -19,6 +19,7 @@ import top.yinxiaokang.util.Common;
 
 import java.io.*;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -32,7 +33,8 @@ public class AccountCheckMain {
      */
     private static StringBuffer logs = new StringBuffer();
 
-    private static String logName = "1400多个贷款账号分析.log";
+    //    private static String logName = "1400多个贷款账号分析.log";
+    private static String logName = "从30多期跳到170多期.log";
 
     private static final String KEY_ISGENERATE = "isGenerate";
 
@@ -50,7 +52,8 @@ public class AccountCheckMain {
 
         AccountCheckMain checkMain = new AccountCheckMain();
 
-        File f = new File("src/test/resources/1000多个问题贷款账号.xlsx");
+//        File f = new File("src/test/resources/1000多个问题贷款账号.xlsx");
+        File f = new File("src/test/resources/从30多期跳到170多期.xlsx");
         //File f = new File("src/test/resources/初始有逾期.xlsx");
         //File f = new File("src/test/resources/20180821-误差5块以内的.xlsx");
 
@@ -267,14 +270,20 @@ public class AccountCheckMain {
         // 提前还款次数
         int preTag = 0;
         // 现在时间
-        Date now = new Date();
+//        Date now = new Date();
 
-        analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now);
+        Date now = null;
+        try {
+            now = Utils.SDF_YEAR_MONTH_DAY.parse("2029-11-29");
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now, false);
 
 
     }
 
-    private void analyOneThousand0(AccountInformations informations, List<RepaymentItem> repaymentItems, List<SthousingDetail> prepaymentList, int preTag, Date now) {
+    private void analyOneThousand0(AccountInformations informations, List<RepaymentItem> repaymentItems, List<SthousingDetail> prepaymentList, int preTag, Date now, boolean isPrePayment) {
         SthousingDetail preDetail;
         for (RepaymentItem repaymentItem : repaymentItems) {
             preDetail = null;
@@ -285,6 +294,10 @@ public class AccountCheckMain {
                 break;
             }
             if (preDetail == null || Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(preDetail.getYwfsrq())) < 0) {
+                // 前一期是提前还款
+                if(isPrePayment){
+
+                }
                 logs.append("正常还款    日期: " + Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()) + "  期次: " + repaymentItem.getHkqc() +
                         "  本金: " + repaymentItem.getHkbjje() + "  利息: " + repaymentItem.getHklxje() + "  发生额: " + repaymentItem.getFse() +
                         "  期末余额: " + repaymentItem.getQmdkye() + "\n");
@@ -313,7 +326,7 @@ public class AccountCheckMain {
                         RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()),
                         repaymentItem.getHkqc(),
                         RepaymentMonthRateScale.YES);
-                analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now);
+                analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now,true);
                 break;
             }
         }
@@ -467,6 +480,12 @@ public class AccountCheckMain {
     public AccountInformations toAccountInformations(InitInformation initInformation) {
         AccountInformations accountInformations = new AccountInformations();
         SthousingAccount account = accountCheck.getSthousingAccount(initInformation.getDkzh());
+        // 仅仅针对单个账号
+        try {
+            account.setDkffrq(Utils.SDF_YEAR_MONTH_DAY.parse("2015-01-21"));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         //System.out.println(account);
         if (account == null)
             return accountInformations;
