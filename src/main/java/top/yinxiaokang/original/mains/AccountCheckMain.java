@@ -33,6 +33,8 @@ public class AccountCheckMain {
      */
     private static StringBuffer logs = new StringBuffer();
 
+
+
     //    private static String logName = "1400多个贷款账号分析.log";
     private static String logName = "从30多期跳到170多期.log";
 
@@ -272,12 +274,13 @@ public class AccountCheckMain {
         // 现在时间
 //        Date now = new Date();
 
-        Date now = null;
+        Date now = new Date();
         try {
             now = Utils.SDF_YEAR_MONTH_DAY.parse("2029-11-29");
         } catch (ParseException e) {
             e.printStackTrace();
         }
+        now = null;
         analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now, null);
 
 
@@ -285,28 +288,40 @@ public class AccountCheckMain {
 
     private void analyOneThousand0(AccountInformations informations, List<RepaymentItem> repaymentItems, List<SthousingDetail> prepaymentList, int preTag, Date now, Date preDetailYwfsrq) {
         SthousingDetail preDetail;
-        for (RepaymentItem repaymentItem : repaymentItems) {
+        for (int i = 0; i < repaymentItems.size(); i++) {
+            RepaymentItem repaymentItem = repaymentItems.get(i);
+            RepaymentItem pre = null;
+            if (i > 0){
+                pre = repaymentItems.get(i - 1);
+            }
             preDetail = null;
             if (preTag < prepaymentList.size()) {
                 preDetail = prepaymentList.get(preTag);
             }
-            if (Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(now)) > 0) {
+            if (now != null && Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(now)) > 0) {
                 break;
             }
+            // 跳过的期次
+//            if (repaymentItem.getHkqc() == 36 || repaymentItem.getHkqc() == 37) {
+//                repaymentItem.setQcdkye(pre.getQmdkye());
+//                repaymentItem.setQmdkye(pre.getQmdkye());
+//                continue;
+//            }
             if (preDetail == null || Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(preDetail.getYwfsrq())) < 0) {
                 // 前一期是提前还款  ,  后面一期的利息要多点
                 if (preDetailYwfsrq != null) {
-                    int lxts = LoanRepaymentAlgorithm.betweenTwoDateDays(preDetailYwfsrq, repaymentItem.getHkrq());
+                    int lxts = LoanRepaymentAlgorithm.differentDaysByMillisecond(preDetailYwfsrq, repaymentItem.getHkrq()) - 30;
                     BigDecimal lx = LoanRepaymentAlgorithm.calInterestByInterestDays(repaymentItem.getQcdkye(),
                             informations.getSthousingAccount().getDkll(), lxts);
                     repaymentItem.setHklxje(repaymentItem.getHklxje().add(lx));
                     repaymentItem.setFse(repaymentItem.getFse().add(lx));
+                    preDetailYwfsrq = null;
                 }
                 logs.append("正常还款    日期: " + Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()) + "  期次: " + repaymentItem.getHkqc() +
-                        "  本金: " + repaymentItem.getHkbjje() + "  利息: " + repaymentItem.getHklxje() + "  发生额: " + repaymentItem.getFse() +
+                        "  发生额: " + repaymentItem.getFse() + "  本金: " + repaymentItem.getHkbjje() + "  利息: " + repaymentItem.getHklxje() +
                         "  期末余额: " + repaymentItem.getQmdkye() + "\n");
             } else {
-                BigDecimal qmdkye = repaymentItem.getQcdkye().subtract(preDetail.getBjje());
+                BigDecimal qmdkye = pre.getQmdkye().subtract(preDetail.getBjje());
                 boolean isJieQing = false;
 
                 if (LoanBusinessType.提前还款.getCode().equals(preDetail.getDkywmxlx())) {
@@ -317,7 +332,7 @@ public class AccountCheckMain {
                     isJieQing = true;
                 }
                 logs.append("日期: " + Utils.SDF_YEAR_MONTH_DAY.format(preDetail.getYwfsrq()) + "  期次: " + repaymentItem.getHkqc() +
-                        "  本金: " + preDetail.getBjje() + " 利息: " + preDetail.getLxje() + "  发生额: " + preDetail.getFse() +
+                        "  发生额: " + preDetail.getFse() + "  本金: " + preDetail.getBjje() + " 利息: " + preDetail.getLxje() +
                         "  期末余额: " + qmdkye + "\n");
                 if (isJieQing) {
                     break;
