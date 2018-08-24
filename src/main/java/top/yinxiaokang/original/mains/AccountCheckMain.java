@@ -41,9 +41,10 @@ public class AccountCheckMain {
     private static String outXLSXName = outFileName + ".xlsx";
     private static List<OneThousand> dataset = new ArrayList<>();
     private static OutputStream outXLSXStream = null;
-    private static final Map<String, String> KEY_MAP = null;
+    private static Map<String, String> KEY_MAP = null;
 
     static {
+        KEY_MAP = new LinkedHashMap<>();
         KEY_MAP.put("dkzh", "贷款账号");
         KEY_MAP.put("csdkye", "初始贷款余额");
         KEY_MAP.put("csyqbj", "初始逾期本金");
@@ -136,7 +137,9 @@ public class AccountCheckMain {
      * 输出到excel
      */
     private static void listToXlsx() {
+        System.out.println("开始=====>" + outXLSXName);
         ExcelUtil.exportExcel(KEY_MAP, dataset, outXLSXStream);
+        System.out.println("结束=====>" + outXLSXName);
         try {
             outXLSXStream.close();
         } catch (IOException e) {

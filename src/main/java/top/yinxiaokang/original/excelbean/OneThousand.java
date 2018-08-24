@@ -27,7 +27,7 @@ public class OneThousand {
     @ExcelCell(index = 4)
     private Date rq;
     @ExcelCell(index = 5)
-    private int qc;
+    private Integer qc;
     @ExcelCell(index = 6)
     private BigDecimal fse;
     @ExcelCell(index = 7)
