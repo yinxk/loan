@@ -228,7 +228,7 @@ public class AccountCheckMain {
             if (LoanBusinessType.提前还款.getCode().equals(detail.getDkywmxlx())) {
                 repaymentItems = RepaymentPlan.listRepaymentPlan(detail.getXqdkye(), informations.getSthousingAccount().getDkffrq()
                         , informations.getSthousingAccount().getDkqs().subtract(detail.getDqqc()).intValue(), informations.getSthousingAccount().getDkll(),
-                        RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()), detail.getDqqc().intValue(), RepaymentMonthRateScale.YES);
+                        RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()), detail.getDqqc().intValue(), RepaymentMonthRateScale.NO);
                 isPreItemPrepayment = true;
             }
             // 提前还款或者结清没有本息倒置的情况, 与还款计划比较, 自动过滤了, 不需要考虑
@@ -278,12 +278,12 @@ public class AccountCheckMain {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now, false);
+        analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now, null);
 
 
     }
 
-    private void analyOneThousand0(AccountInformations informations, List<RepaymentItem> repaymentItems, List<SthousingDetail> prepaymentList, int preTag, Date now, boolean isPrePayment) {
+    private void analyOneThousand0(AccountInformations informations, List<RepaymentItem> repaymentItems, List<SthousingDetail> prepaymentList, int preTag, Date now, Date preDetailYwfsrq) {
         SthousingDetail preDetail;
         for (RepaymentItem repaymentItem : repaymentItems) {
             preDetail = null;
@@ -294,9 +294,13 @@ public class AccountCheckMain {
                 break;
             }
             if (preDetail == null || Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(preDetail.getYwfsrq())) < 0) {
-                // 前一期是提前还款
-                if(isPrePayment){
-
+                // 前一期是提前还款  ,  后面一期的利息要多点
+                if (preDetailYwfsrq != null) {
+                    int lxts = LoanRepaymentAlgorithm.betweenTwoDateDays(preDetailYwfsrq, repaymentItem.getHkrq());
+                    BigDecimal lx = LoanRepaymentAlgorithm.calInterestByInterestDays(repaymentItem.getQcdkye(),
+                            informations.getSthousingAccount().getDkll(), lxts);
+                    repaymentItem.setHklxje(repaymentItem.getHklxje().add(lx));
+                    repaymentItem.setFse(repaymentItem.getFse().add(lx));
                 }
                 logs.append("正常还款    日期: " + Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()) + "  期次: " + repaymentItem.getHkqc() +
                         "  本金: " + repaymentItem.getHkbjje() + "  利息: " + repaymentItem.getHklxje() + "  发生额: " + repaymentItem.getFse() +
@@ -325,8 +329,8 @@ public class AccountCheckMain {
                         informations.getSthousingAccount().getDkll(),
                         RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()),
                         repaymentItem.getHkqc(),
-                        RepaymentMonthRateScale.YES);
-                analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now,true);
+                        RepaymentMonthRateScale.NO);
+                analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now, preDetail.getYwfsrq());
                 break;
             }
         }
@@ -383,7 +387,7 @@ public class AccountCheckMain {
                 logs.append("推算导入系统逾期记录最后余额 - 等于初始余额减初始逾期本金 : " + (dkyeByCsye.subtract(dkyeByYeWu)) + "\n");
                 isCsYw = false;
             }
-            lxItem = LoanRepaymentAlgorithm.calLxByDkye(dkyeByYeWu, informations.getSthousingAccount().getDkll(), RepaymentMonthRateScale.YES);
+            lxItem = LoanRepaymentAlgorithm.calLxByDkye(dkyeByYeWu, informations.getSthousingAccount().getDkll(), RepaymentMonthRateScale.NO);
 
             if (Arrays.asList(LoanBusinessType.结清.getCode(), LoanBusinessType.提前还款.getCode()).contains(detail.getDkywmxlx())) {
                 lxItem = detail.getLxje();
@@ -451,7 +455,7 @@ public class AccountCheckMain {
             if (LoanBusinessType.提前还款.getCode().equals(detail.getDkywmxlx())) {
                 repaymentItems = RepaymentPlan.listRepaymentPlan(dkyeByYeWu, informations.getSthousingAccount().getDkffrq()
                         , informations.getSthousingAccount().getDkqs().subtract(detail.getDqqc()).intValue(), informations.getSthousingAccount().getDkll(),
-                        RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()), detail.getDqqc().intValue(), RepaymentMonthRateScale.YES);
+                        RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()), detail.getDqqc().intValue(), RepaymentMonthRateScale.NO);
             }
             RepaymentItem repaymentItemByDqqc = Common.getRepaymentItemByDqqc(repaymentItems, detail.getDqqc().intValue());
             logs.append(detail);

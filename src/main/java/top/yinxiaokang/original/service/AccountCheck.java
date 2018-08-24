@@ -138,7 +138,7 @@ public class AccountCheck {
         }
         // 初始还款计划,如果后面发生提前还款 , 那么还款计划会发生改变
         List<RepaymentItem> repaymentItems = RepaymentPlan.listRepaymentPlan(dkxffe, dkxffrq, syqs.intValue(), account.getDkll(),
-                RepaymentMethod.getRepaymentMethodByCode(account.getDkhkfs()), yhqs.intValue(), RepaymentMonthRateScale.YES);
+                RepaymentMethod.getRepaymentMethodByCode(account.getDkhkfs()), yhqs.intValue(), RepaymentMonthRateScale.NO);
         return repaymentItems;
     }
 

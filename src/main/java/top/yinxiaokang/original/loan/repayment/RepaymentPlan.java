@@ -37,7 +37,7 @@ public class RepaymentPlan {
         if (repaymentMethod != RepaymentMethod.BX && repaymentMethod != RepaymentMethod.BJ)
             throw new ErrorException(ReturnEnumeration.Parameter_NOT_MATCH, "还款方式");
         if (repaymentMonthRateScale == null)
-            repaymentMonthRateScale = RepaymentMonthRateScale.YES;
+            repaymentMonthRateScale = RepaymentMonthRateScale.NO;
 
         Calendar calendar = Calendar.getInstance();
         int sourceDay = 1;

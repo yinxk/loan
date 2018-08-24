@@ -91,7 +91,7 @@ public class LoanRepaymentAlgorithm {
      * @return 利息
      */
     public final static BigDecimal calInterestByInterestDays(BigDecimal dkye, BigDecimal dkll, int jxts) {
-        BigDecimal dayRate = convertYearRateToDayRate(dkll, RepaymentMonthRateScale.YES);
+        BigDecimal dayRate = convertYearRateToDayRate(dkll, RepaymentMonthRateScale.NO);
         BigDecimal interest = dkye.multiply(dayRate)
                 .multiply(new BigDecimal(jxts));
         return interest.setScale(SCALE_TWO, BigDecimal.ROUND_HALF_UP);
@@ -105,7 +105,7 @@ public class LoanRepaymentAlgorithm {
      * 网上资料显示精确到小数点后12位
      */
     public static BigDecimal convertYearRateToDayRate(BigDecimal yearRate, RepaymentMonthRateScale repaymentMonthRateScale) {
-        BigDecimal dayRate = convertYearRateToMonthRate(yearRate, RepaymentMonthRateScale.NO).divide(new BigDecimal(MONTH_DAYS), SCALE_TWELVE, BigDecimal.ROUND_HALF_UP);
+        BigDecimal dayRate = convertYearRateToMonthRate(yearRate, RepaymentMonthRateScale.NO).divide(new BigDecimal(MONTH_DAYS), SCALE_TEN, BigDecimal.ROUND_HALF_UP);
         if (repaymentMonthRateScale == RepaymentMonthRateScale.YES)
             dayRate = dayRate.setScale(SCALE_EIGHT, BigDecimal.ROUND_HALF_UP);
         return dayRate;
@@ -125,15 +125,15 @@ public class LoanRepaymentAlgorithm {
      * 网上资料显示精确到小数点后12位
      */
     public static BigDecimal convertYearRateToMonthRate(BigDecimal yearRate, RepaymentMonthRateScale repaymentMonthRateScale) {
-        BigDecimal monthRate = yearRate.divide(new BigDecimal(100), SCALE_TWELVE, BigDecimal.ROUND_HALF_UP)
-                .divide(new BigDecimal(YEAR_MONTHS), SCALE_TWELVE, BigDecimal.ROUND_HALF_UP);
+        BigDecimal monthRate = yearRate.divide(new BigDecimal(100), SCALE_TEN, BigDecimal.ROUND_HALF_UP)
+                .divide(new BigDecimal(YEAR_MONTHS), SCALE_TEN, BigDecimal.ROUND_HALF_UP);
         if (repaymentMonthRateScale == RepaymentMonthRateScale.YES)
             monthRate = monthRate.setScale(SCALE_EIGHT, BigDecimal.ROUND_HALF_UP);
         return monthRate;
     }
 
     public static BigDecimal convertYearRateToMonthRate(BigDecimal yearRate) {
-        return convertYearRateToMonthRate(yearRate, RepaymentMonthRateScale.YES);
+        return convertYearRateToMonthRate(yearRate, RepaymentMonthRateScale.NO);
     }
 
     /**
@@ -202,7 +202,7 @@ public class LoanRepaymentAlgorithm {
         // 其中1.5是逾期罚息的倍率 , 根据以前代码来的
         return yqbj.add(yqlx)
                 .multiply(
-                        convertYearRateToDayRate(dknlv, RepaymentMonthRateScale.YES).multiply(new BigDecimal(1.5))
+                        convertYearRateToDayRate(dknlv, RepaymentMonthRateScale.NO).multiply(new BigDecimal(1.5))
                 )
                 .multiply(new BigDecimal(yqts))
                 .setScale(SCALE_TWO, BigDecimal.ROUND_HALF_UP);
@@ -423,7 +423,7 @@ public class LoanRepaymentAlgorithm {
      * @return 利息
      */
     public static BigDecimal calLxByDkye(BigDecimal dkye, BigDecimal dkll) {
-        BigDecimal lx = dkye.multiply(convertYearRateToMonthRate(dkll, RepaymentMonthRateScale.YES));
+        BigDecimal lx = dkye.multiply(convertYearRateToMonthRate(dkll, RepaymentMonthRateScale.NO));
         return lx.setScale(SCALE_TWO, BigDecimal.ROUND_HALF_UP);
     }
 
