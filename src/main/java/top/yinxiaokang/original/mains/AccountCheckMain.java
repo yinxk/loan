@@ -9,6 +9,7 @@ import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.SthousingDetail;
 import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.enums.LoanBusinessType;
+import top.yinxiaokang.original.excelbean.OneThousand;
 import top.yinxiaokang.original.loan.repayment.RepaymentItem;
 import top.yinxiaokang.original.loan.repayment.RepaymentMethod;
 import top.yinxiaokang.original.loan.repayment.RepaymentMonthRateScale;
@@ -32,11 +33,30 @@ public class AccountCheckMain {
      * 日志
      */
     private static StringBuffer logs = new StringBuffer();
+    private static String outFileName = "从30多期跳到170多期";
+    //private static String outFileName = "1400多个贷款账号分析";
+    /**
+     * excel
+     */
+    private static String outXLSXName = outFileName + ".xlsx";
+    private static List<OneThousand> dataset = new ArrayList<>();
+    private static OutputStream outXLSXStream = null;
+    private static final Map<String, String> KEY_MAP = null;
 
+    static {
+        KEY_MAP.put("dkzh", "贷款账号");
+        KEY_MAP.put("csdkye", "初始贷款余额");
+        KEY_MAP.put("csyqbj", "初始逾期本金");
+        KEY_MAP.put("hklx", "还款类型");
+        KEY_MAP.put("rq", "日期");
+        KEY_MAP.put("qc", "期次");
+        KEY_MAP.put("fse", "发生额");
+        KEY_MAP.put("bj", "本金");
+        KEY_MAP.put("lx", "利息");
+        KEY_MAP.put("qmdkye", "期末贷款余额");
+    }
 
-
-    //    private static String logName = "1400多个贷款账号分析.log";
-    private static String logName = "从30多期跳到170多期.log";
+    private static String logName = outFileName + ".log";
 
     private static final String KEY_ISGENERATE = "isGenerate";
 
@@ -48,6 +68,15 @@ public class AccountCheckMain {
      * 误差范围
      */
     private static final BigDecimal ERROR_RANGE = new BigDecimal("0.02");
+
+
+    public AccountCheckMain() {
+        try {
+            outXLSXStream = new FileOutputStream(new File(outXLSXName));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
 
     public static void main(String[] args) {
@@ -98,7 +127,21 @@ public class AccountCheckMain {
         doAnalyzeOneThousandDkzh(accountInformationsList, checkMain);
         logs.append("读取总条数: " + importExcel.size() + "\n");
         logsToFile();
+        listToXlsx();
         System.out.println("结束运行!");
+    }
+
+
+    /**
+     * 输出到excel
+     */
+    private static void listToXlsx() {
+        ExcelUtil.exportExcel(KEY_MAP, dataset, outXLSXStream);
+        try {
+            outXLSXStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -186,6 +229,12 @@ public class AccountCheckMain {
                     " , 贷款发放日期: " + (item.getSthousingAccount().getDkffrq() == null ? "" : Utils.SDF_YEAR_MONTH_DAY.format(item.getSthousingAccount().getDkffrq())) +
                     " , 贷款期数: " + item.getSthousingAccount().getDkqs() +
                     " , 初始期数正确性: " + (item.getInitFirstQc().compareTo(item.getSthousingAccount().getDkqs()) > 0 ? "错误" : "正确") + " \n");
+
+            OneThousand oneThousand = new OneThousand();
+            oneThousand.setDkzh(item.getSthousingAccount().getDkzh());
+            oneThousand.setCsdkye(item.getInitInformation().getCsye());
+            oneThousand.setCsyqbj(item.getInitInformation().getCsyqbj());
+            dataset.add(oneThousand);
             //checkMain.analyze(item, reverseBxQc);
             //checkMain.analyzeInitHasOverdueLx(item, reverseBxQc);
             checkMain.analyzeOneThousandDkzh(item, reverseBxQc);
@@ -274,13 +323,7 @@ public class AccountCheckMain {
         // 现在时间
 //        Date now = new Date();
 
-        Date now = new Date();
-        try {
-            now = Utils.SDF_YEAR_MONTH_DAY.parse("2029-11-29");
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        now = null;
+        Date now = null;
         analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now, null);
 
 
@@ -291,7 +334,7 @@ public class AccountCheckMain {
         for (int i = 0; i < repaymentItems.size(); i++) {
             RepaymentItem repaymentItem = repaymentItems.get(i);
             RepaymentItem pre = null;
-            if (i > 0){
+            if (i > 0) {
                 pre = repaymentItems.get(i - 1);
             }
             preDetail = null;
@@ -320,20 +363,39 @@ public class AccountCheckMain {
                 logs.append("正常还款    日期: " + Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()) + "  期次: " + repaymentItem.getHkqc() +
                         "  发生额: " + repaymentItem.getFse() + "  本金: " + repaymentItem.getHkbjje() + "  利息: " + repaymentItem.getHklxje() +
                         "  期末余额: " + repaymentItem.getQmdkye() + "\n");
+                OneThousand oneThousand = new OneThousand();
+                oneThousand.setHklx("正常还款");
+                oneThousand.setRq(repaymentItem.getHkrq());
+                oneThousand.setQc(repaymentItem.getHkqc());
+                oneThousand.setFse(repaymentItem.getFse());
+                oneThousand.setBj(repaymentItem.getHkbjje());
+                oneThousand.setLx(repaymentItem.getHklxje());
+                oneThousand.setQmdkye(repaymentItem.getQmdkye());
+                dataset.add(oneThousand);
             } else {
                 BigDecimal qmdkye = pre.getQmdkye().subtract(preDetail.getBjje());
                 boolean isJieQing = false;
 
+                OneThousand oneThousand = new OneThousand();
                 if (LoanBusinessType.提前还款.getCode().equals(preDetail.getDkywmxlx())) {
                     logs.append("提前还款    ");
+                    oneThousand.setHklx("提前还款");
                 }
                 if (LoanBusinessType.结清.getCode().equals(preDetail.getDkywmxlx())) {
                     logs.append("结清    ");
+                    oneThousand.setHklx("结清");
                     isJieQing = true;
                 }
                 logs.append("日期: " + Utils.SDF_YEAR_MONTH_DAY.format(preDetail.getYwfsrq()) + "  期次: " + repaymentItem.getHkqc() +
                         "  发生额: " + preDetail.getFse() + "  本金: " + preDetail.getBjje() + " 利息: " + preDetail.getLxje() +
                         "  期末余额: " + qmdkye + "\n");
+                oneThousand.setRq(preDetail.getYwfsrq());
+                oneThousand.setQc(repaymentItem.getHkqc());
+                oneThousand.setFse(preDetail.getFse());
+                oneThousand.setBj(preDetail.getBjje());
+                oneThousand.setLx(preDetail.getLxje());
+                oneThousand.setQmdkye(qmdkye);
+                dataset.add(oneThousand);
                 if (isJieQing) {
                     break;
                 }
