@@ -238,6 +238,9 @@ public class AccountCheckMain {
                 detail.setBjje(overdue.getYqbj());
                 detail.setLxje(overdue.getYqlx());
                 detail.setFxje(overdue.getYqfx());
+                detail.setDqqc(overdue.getYqqc());
+                detail.setYwfsrq(overdue.getSsrq());
+                detail.setDkywmxlx("逾期还款");
                 detail.setFse(overdue.getYqbj().add(overdue.getYqlx()).add(overdue.getYqfx()));
                 dkyeByCsye = dkyeByCsye.subtract(overdue.getYqbj());
                 detail.setXqdkye(dkyeByCsye);
@@ -250,7 +253,7 @@ public class AccountCheckMain {
         BigDecimal subBj = BigDecimal.ZERO;
         BigDecimal subLx = BigDecimal.ZERO;
         BigDecimal subDkye = BigDecimal.ZERO;
-        BigDecimal eachSubFse;
+        BigDecimal eachSubFse = BigDecimal.ZERO;
         BigDecimal eachSubBj;
         BigDecimal eachSubLx;
         BigDecimal eachSubDkye;
@@ -264,16 +267,18 @@ public class AccountCheckMain {
                 detail = details.get(i);
             }
             String log = "%s    日期: %s  期次: %s  发生额: %s  本金: %s  利息: %s  期末余额: %s";
-            String formatLog = String.format(log, shouldDetail.getDkywmxlx(), Utils.SDF_YEAR_MONTH_DAY.format(shouldDetail.getYwfsrq()), shouldDetail.getDqqc(),
+            String formatLog = String.format(log, shouldDetail.getDkywmxlx(), shouldDetail.getYwfsrq() == null ? "------" : Utils.SDF_YEAR_MONTH_DAY.format(shouldDetail.getYwfsrq()), shouldDetail.getDqqc(),
                     shouldDetail.getFse(), shouldDetail.getBjje(), shouldDetail.getLxje(), shouldDetail.getXqdkye());
             logs.append(formatLog);
             if (detail != null) {
                 log = "    %s    业务日期: %s  期次: %s  发生额: %s  本金: %s  利息: %s  期末余额: %s  发生额差(前-后): %s  本金差: %s  利息差: %s  期末余额差: %s";
-                eachSubFse = shouldDetail.getFse().subtract(detail.getFse());
                 eachSubBj = shouldDetail.getBjje().subtract(detail.getBjje());
                 eachSubLx = shouldDetail.getLxje().subtract(detail.getLxje());
                 eachSubDkye = shouldDetail.getXqdkye().subtract(detail.getXqdkye());
-                subFse = subFse.add(eachSubFse);
+                if (shouldDetail.getDqqc().compareTo(informations.getInitFirstQc()) < 0) {
+                    eachSubFse = shouldDetail.getFse().subtract(detail.getFse());
+                    subFse = subFse.add(eachSubFse);
+                }
                 subBj = subBj.add(eachSubBj);
                 subLx = subLx.add(eachSubLx);
                 subDkye = subDkye.add(eachSubDkye);
