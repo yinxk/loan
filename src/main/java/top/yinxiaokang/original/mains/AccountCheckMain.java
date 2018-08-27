@@ -221,8 +221,6 @@ public class AccountCheckMain {
         // 提前还款的业务, 已排序
         List<SthousingDetail> prepaymentList = Common.listPrepayment(details);
 
-        // 提前还款次数
-        int preTag = 0;
         // 现在时间
         Date now = new Date();
 //        Date now = null;
@@ -230,7 +228,7 @@ public class AccountCheckMain {
         // 推算应该发生的业务
         List<SthousingDetail> shouldDetails = new ArrayList<>();
 
-        // 导入系统存在逾期记录
+         //导入系统的时候存在逾期记录
         if (informations.isInitHasOverdue()) {
             List<StOverdue> initOverdueList = informations.getInitOverdueList();
             for (StOverdue overdue : initOverdueList) {
@@ -247,7 +245,7 @@ public class AccountCheckMain {
                 shouldDetails.add(detail);
             }
         }
-        analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now, null, shouldDetails);
+        analyOneThousand0(informations, repaymentItems, prepaymentList, 0, now, null, shouldDetails);
 
         BigDecimal subFse = BigDecimal.ZERO;
         BigDecimal subBj = BigDecimal.ZERO;
@@ -327,7 +325,8 @@ public class AccountCheckMain {
             //    repaymentItem.setQmdkye(pre.getQmdkye());
             //    continue;
             //}
-            if (preDetail == null || Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(preDetail.getYwfsrq())) < 0) {
+            if (preDetail == null ||
+                    Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(preDetail.getYwfsrq())) < 0) {
                 // 前一期是提前还款  ,  后面一期的利息要多点
                 if (preDetailYwfsrq != null) {
                     int lxts = LoanRepaymentAlgorithm.differentDaysByMillisecond(preDetailYwfsrq, repaymentItem.getHkrq()) - 30;
