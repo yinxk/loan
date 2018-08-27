@@ -25,6 +25,11 @@ public class Common {
      */
     public static final BigDecimal ERROR_RANGE = new BigDecimal("0.02");
 
+    /**
+     * 横杠 , 没有信息
+     */
+    public static final String NO_MESS = "--";
+
 
     /**
      * 将读取到的初始的excel的map转换为初始对象List

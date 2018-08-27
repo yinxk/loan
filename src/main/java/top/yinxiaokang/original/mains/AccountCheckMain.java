@@ -19,6 +19,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.util.*;
 
+import static top.yinxiaokang.util.Common.NO_MESS;
 import static top.yinxiaokang.util.FileCommon.*;
 
 /**
@@ -135,6 +136,10 @@ public class AccountCheckMain {
             oneThousand.setDkzh(item.getSthousingAccount().getDkzh());
             oneThousand.setCsdkye(item.getInitInformation().getCsye());
             oneThousand.setCsyqbj(item.getInitInformation().getCsyqbj());
+            oneThousand.setDkffrq(item.getSthousingAccount().getDkffrq());
+            oneThousand.setDkqs(item.getSthousingAccount().getDkqs());
+            oneThousand.setCsqs(item.getInitFirstQc());
+            oneThousand.setCsqszqx((item.getInitFirstQc().compareTo(item.getSthousingAccount().getDkqs()) > 0 ? "错误" : "正确"));
             dataset.add(oneThousand);
             //endregion
 
@@ -142,6 +147,7 @@ public class AccountCheckMain {
             //checkMain.analyzeInitHasOverdueLx(item, reverseBxQc);
             checkMain.analyzeOneThousandDkzh(item, reverseBxQc);
 //            BigDecimal dkyeByYw = checkMain.analyzeAllDkzh(item, reverseBxQc);
+
 
             // region 分析所有的贷款账号的余额与推算余额的差异  但是全部读入内存 , heap 不够啊
 //            AllAccountDkye allAccountDkye = new AllAccountDkye();
@@ -259,48 +265,118 @@ public class AccountCheckMain {
         BigDecimal shouldDkye = csye;
 
 
-        for (int i = 0; i < shouldDetails.size(); i++) {
-            SthousingDetail shouldDetail = shouldDetails.get(i);
+        int size = shouldDetails.size() > details.size() ? shouldDetails.size() : details.size();
+        for (int i = 0; i < size; i++) {
+            SthousingDetail shouldDetail = null;
+            if (i < shouldDetails.size()) {
+                shouldDetail = shouldDetails.get(i);
+            }
             SthousingDetail detail = null;
+            String log1 = "%s    日期: %s  期次: %s  发生额: %s  本金: %s  利息: %s  期末余额: %s";
+            String log2 = "    %s    业务日期: %s  期次: %s  发生额: %s  本金: %s  利息: %s  期末余额: %s  发生额差(前-后): %s  本金差: %s  利息差: %s  期末余额差: %s";
             if (i < details.size()) {
                 detail = details.get(i);
             }
-            String log = "%s    日期: %s  期次: %s  发生额: %s  本金: %s  利息: %s  期末余额: %s";
-            String formatLog = String.format(log, shouldDetail.getDkywmxlx(), shouldDetail.getYwfsrq() == null ? "------" : Utils.SDF_YEAR_MONTH_DAY.format(shouldDetail.getYwfsrq()), shouldDetail.getDqqc(),
-                    shouldDetail.getFse(), shouldDetail.getBjje(), shouldDetail.getLxje(), shouldDetail.getXqdkye());
-            logs.append(formatLog);
-            if (detail != null) {
-                log = "    %s    业务日期: %s  期次: %s  发生额: %s  本金: %s  利息: %s  期末余额: %s  发生额差(前-后): %s  本金差: %s  利息差: %s  期末余额差: %s";
+            OneThousand oneThousand = new OneThousand();
+            if (shouldDetail == null && detail != null) {
+                String formatLog = String.format(log1, NO_MESS, NO_MESS, NO_MESS, NO_MESS, NO_MESS, NO_MESS, NO_MESS);
+                logs.append(formatLog);
+                formatLog = String.format(log2, detail.getDkywmxlx(), Utils.SDF_YEAR_MONTH_DAY.format(detail.getYwfsrq()), detail.getDqqc(),
+                        detail.getFse(), detail.getBjje(), detail.getLxje(), detail.getXqdkye(),
+                        NO_MESS, NO_MESS, NO_MESS, NO_MESS);
+                logs.append(formatLog);
+
+
+                oneThousand.setSjhklx(LoanBusinessType.getNameByCode(detail.getDkywmxlx()));
+                oneThousand.setSjrq(detail.getYwfsrq());
+                oneThousand.setSjqc(detail.getDqqc().intValue());
+                oneThousand.setSjfse(detail.getFse());
+                oneThousand.setSjbj(detail.getBjje());
+                oneThousand.setSjlx(detail.getLxje());
+                oneThousand.setSjqmdkye(detail.getXqdkye());
+                if (reverseQc.contains(detail.getDqqc().intValue())) {
+                    logs.append("    该期本息倒置");
+                    oneThousand.setBz("该期本息倒置");
+                }
+            } else if (shouldDetail != null && detail == null) {
+                String formatLog = String.format(log1, shouldDetail.getDkywmxlx(), shouldDetail.getYwfsrq() == null ? "------" : Utils.SDF_YEAR_MONTH_DAY.format(shouldDetail.getYwfsrq()),
+                        shouldDetail.getDqqc(), shouldDetail.getFse(), shouldDetail.getBjje(), shouldDetail.getLxje(), shouldDetail.getXqdkye());
+                logs.append(formatLog);
+                formatLog = String.format(log2, NO_MESS, NO_MESS, NO_MESS,
+                        NO_MESS, NO_MESS, NO_MESS, NO_MESS,
+                        NO_MESS, NO_MESS, NO_MESS, NO_MESS);
+                logs.append(formatLog);
+                oneThousand.setHklx(shouldDetail.getDkywmxlx());
+                oneThousand.setRq(shouldDetail.getYwfsrq());
+                oneThousand.setQc(shouldDetail.getDqqc().intValue());
+                oneThousand.setFse(shouldDetail.getFse());
+                oneThousand.setBj(shouldDetail.getBjje());
+                oneThousand.setLx(shouldDetail.getLxje());
+                oneThousand.setQmdkye(shouldDetail.getXqdkye());
+
+            } else if (shouldDetail != null && detail != null) {
+                String formatLog = String.format(log1, shouldDetail.getDkywmxlx(), shouldDetail.getYwfsrq() == null ? "------" : Utils.SDF_YEAR_MONTH_DAY.format(shouldDetail.getYwfsrq()),
+                        shouldDetail.getDqqc(), shouldDetail.getFse(), shouldDetail.getBjje(), shouldDetail.getLxje(), shouldDetail.getXqdkye());
+                logs.append(formatLog);
+
                 eachSubBj = shouldDetail.getBjje().subtract(detail.getBjje());
                 eachSubLx = shouldDetail.getLxje().subtract(detail.getLxje());
                 eachSubDkye = shouldDetail.getXqdkye().subtract(detail.getXqdkye());
+
                 if (shouldDetail.getDqqc().compareTo(informations.getInitFirstQc()) < 0) {
                     eachSubFse = shouldDetail.getFse().subtract(detail.getFse());
                     subFse = subFse.add(eachSubFse);
                 }
+
                 subBj = subBj.add(eachSubBj);
                 subLx = subLx.add(eachSubLx);
                 subDkye = subDkye.add(eachSubDkye);
                 shouldDkye = shouldDetail.getXqdkye();
-                formatLog = String.format(log, detail.getDkywmxlx(), Utils.SDF_YEAR_MONTH_DAY.format(detail.getYwfsrq()), detail.getDqqc(),
+                formatLog = String.format(log2, detail.getDkywmxlx(), Utils.SDF_YEAR_MONTH_DAY.format(detail.getYwfsrq()), detail.getDqqc(),
                         detail.getFse(), detail.getBjje(), detail.getLxje(), detail.getXqdkye(),
                         eachSubFse, eachSubBj, eachSubLx, eachSubDkye);
                 logs.append(formatLog);
+
+                oneThousand.setHklx(shouldDetail.getDkywmxlx());
+                oneThousand.setRq(shouldDetail.getYwfsrq());
+                oneThousand.setQc(shouldDetail.getDqqc().intValue());
+                oneThousand.setFse(shouldDetail.getFse());
+                oneThousand.setBj(shouldDetail.getBjje());
+                oneThousand.setLx(shouldDetail.getLxje());
+                oneThousand.setQmdkye(shouldDetail.getXqdkye());
+                oneThousand.setSjhklx(LoanBusinessType.getNameByCode(detail.getDkywmxlx()));
+                oneThousand.setSjrq(detail.getYwfsrq());
+                oneThousand.setSjqc(detail.getDqqc().intValue());
+                oneThousand.setSjfse(detail.getFse());
+                oneThousand.setSjbj(detail.getBjje());
+                oneThousand.setSjlx(detail.getLxje());
+                oneThousand.setSjqmdkye(detail.getXqdkye());
+                oneThousand.setSubfse(eachSubFse);
+                oneThousand.setSubbj(eachSubBj);
+                oneThousand.setSublx(eachSubLx);
+                oneThousand.setSubqmye(eachSubDkye);
+                if (reverseQc.contains(detail.getDqqc().intValue())) {
+                    logs.append("    该期本息倒置");
+                    oneThousand.setBz("该期本息倒置");
+                }
             }
+            datasetOneThousand.add(oneThousand);
+
             logs.append("\n");
 
-            OneThousand oneThousand = new OneThousand();
-            oneThousand.setHklx(shouldDetail.getDkywmxlx());
-            oneThousand.setRq(shouldDetail.getYwfsrq());
-            oneThousand.setQc(shouldDetail.getDqqc().intValue());
-            oneThousand.setFse(shouldDetail.getFse());
-            oneThousand.setBj(shouldDetail.getBjje());
-            oneThousand.setLx(shouldDetail.getLxje());
-            oneThousand.setQmdkye(shouldDetail.getXqdkye());
-            datasetOneThousand.add(oneThousand);
+
         }
-        String log = "发生额总差 : %s, 本金差额: %s , 利息差额: %s , 贷款余额差额: %s  推算应该贷款余额:  %s  实际贷款余额: %s  推-实际: %s \n";
+        String log = "发生额差 : %s, 本金差额: %s , 利息差额: %s , 贷款余额差额: %s  推算应该贷款余额:  %s  实际贷款余额: %s  推-实际: %s \n";
         String format = String.format(log, subFse, subBj, subLx, subDkye, shouldDkye, informations.getSthousingAccount().getDkye(), shouldDkye.subtract(informations.getSthousingAccount().getDkye()));
+        OneThousand oneThousand1 = new OneThousand();
+        oneThousand1.setSubFseTotal(subFse);
+        oneThousand1.setSubBjTotal(subBj);
+        oneThousand1.setSubLxTotal(subLx);
+        oneThousand1.setSubDkyeTotal(subDkye);
+        oneThousand1.setTsdkye(shouldDkye);
+        oneThousand1.setSjdkye(informations.getSthousingAccount().getDkye());
+        oneThousand1.setSubDkye(shouldDkye.subtract(informations.getSthousingAccount().getDkye()));
+        dataset.add(oneThousand1);
         logs.append(format);
     }
 
@@ -348,8 +424,7 @@ public class AccountCheckMain {
                 shouldDetails.add(detail);
 
             } else {
-                System.out.println(pre);
-                BigDecimal qmdkye = pre.getQmdkye().subtract(preDetail.getBjje());
+                BigDecimal qmdkye = pre == null ? repaymentItem.getQcdkye().subtract(preDetail.getBjje()) : pre.getQmdkye().subtract(preDetail.getBjje());
                 boolean isJieQing = false;
                 SthousingDetail detail = new SthousingDetail();
                 if (LoanBusinessType.提前还款.getCode().equals(preDetail.getDkywmxlx())) {
