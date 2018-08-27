@@ -4,6 +4,7 @@ import com.sargeraswang.util.ExcelUtil.ExcelLogs;
 import com.sargeraswang.util.ExcelUtil.ExcelUtil;
 import org.apache.poi.ss.usermodel.*;
 import top.yinxiaokang.original.entity.SthousingDetail;
+import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.enums.LoanBusinessType;
 import top.yinxiaokang.original.loan.repayment.RepaymentItem;
 
@@ -23,6 +24,26 @@ public class Common {
      * 误差范围
      */
     public static final BigDecimal ERROR_RANGE = new BigDecimal("0.02");
+
+
+    /**
+     * 将读取到的初始的excel的map转换为初始对象List
+     *
+     * @param importExcel
+     * @return
+     */
+    public static List<InitInformation> importExcelToInitInformationList(Collection<Map> importExcel) {
+        ArrayList<InitInformation> initHasOverdueList = new ArrayList<>();
+        for (Map m : importExcel) {
+            InitInformation initHasOverdue = new InitInformation();
+            initHasOverdue.setDkzh((String) m.get("dkzh"));
+            initHasOverdue.setCsye(new BigDecimal((String) m.get("csye")));
+            initHasOverdue.setCsyqbj(new BigDecimal((String) m.get("csyqbj")));
+            initHasOverdueList.add(initHasOverdue);
+        }
+        return initHasOverdueList;
+    }
+
 
     /**
      * 根据期次获取对应还款计划的某一期
@@ -77,9 +98,6 @@ public class Common {
     }
 
 
-
-
-
     public static List<Map> importExcel(InputStream inputStream) {
 
         List<Map> result = new ArrayList<>();
@@ -101,8 +119,6 @@ public class Common {
             }
 
         }
-
-
         return result;
     }
 }

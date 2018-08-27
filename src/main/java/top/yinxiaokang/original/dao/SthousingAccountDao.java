@@ -17,8 +17,11 @@ public class SthousingAccountDao extends BaseDao {
     }
 
     public SthousingAccount getAccountByDkzh(String dkzh) throws IllegalAccessException, SQLException, InstantiationException {
-        String sql = "SELECT acc.id, acc.dkffe, acc.DKFFRQ, acc.DKLL, acc.DKQS, acc.DKYE, acc.DKZH, loan.DKHKFS " +
-                "FROM st_housing_personal_account acc INNER JOIN st_housing_personal_loan loan ON acc.contract = loan.id WHERE acc.DKZH = ?";
+        String sql = "SELECT acc.id, acc.dkffe, acc.DKFFRQ, acc.DKLL, acc.DKQS, acc.DKYE, acc.DKZH, loan.DKHKFS, accex.DKGBJHQS, accex.DKGBJHYE, accex.DKXFFRQ " +
+                "FROM st_housing_personal_account acc " +
+                "INNER JOIN st_housing_personal_loan loan ON acc.contract = loan.id " +
+                "INNER JOIN c_loan_housing_personal_account_extension accex ON acc.extenstion = accex.id " +
+                "WHERE acc.DKZH = ?";
         List<SthousingAccount> list = list(SthousingAccount.class, sql, dkzh);
         if (!list.isEmpty()) {
             return list.get(0);

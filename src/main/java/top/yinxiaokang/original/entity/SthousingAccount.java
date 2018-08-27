@@ -1,5 +1,10 @@
 package top.yinxiaokang.original.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -7,6 +12,10 @@ import java.util.Date;
  * @author yinxk
  * @date 2018/8/6 10:48
  */
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class SthousingAccount {
     private String id;
 
@@ -24,69 +33,11 @@ public class SthousingAccount {
 
     private String dkhkfs;
 
-    public String getId() {
-        return id;
-    }
+    private BigDecimal dkgbjhqs;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    private BigDecimal dkgbjhye;
 
-    public BigDecimal getDkffe() {
-        return dkffe;
-    }
-
-    public void setDkffe(BigDecimal dkffe) {
-        this.dkffe = dkffe;
-    }
-
-    public Date getDkffrq() {
-        return dkffrq;
-    }
-
-    public void setDkffrq(Date dkffrq) {
-        this.dkffrq = dkffrq;
-    }
-
-    public BigDecimal getDkll() {
-        return dkll;
-    }
-
-    public void setDkll(BigDecimal dkll) {
-        this.dkll = dkll;
-    }
-
-    public BigDecimal getDkqs() {
-        return dkqs;
-    }
-
-    public void setDkqs(BigDecimal dkqs) {
-        this.dkqs = dkqs;
-    }
-
-    public BigDecimal getDkye() {
-        return dkye;
-    }
-
-    public void setDkye(BigDecimal dkye) {
-        this.dkye = dkye;
-    }
-
-    public String getDkzh() {
-        return dkzh;
-    }
-
-    public void setDkzh(String dkzh) {
-        this.dkzh = dkzh;
-    }
-
-    public String getDkhkfs() {
-        return dkhkfs;
-    }
-
-    public void setDkhkfs(String dkhkfs) {
-        this.dkhkfs = dkhkfs;
-    }
+    private Date dkxffrq;
 
     @Override
     public String toString() {

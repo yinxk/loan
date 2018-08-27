@@ -1,13 +1,11 @@
 package top.yinxiaokang.original.mains;
 
-import com.sargeraswang.util.ExcelUtil.ExcelUtil;
 import top.yinxiaokang.original.LoanRepaymentAlgorithm;
 import top.yinxiaokang.original.Utils;
 import top.yinxiaokang.original.dto.AccountInformations;
 import top.yinxiaokang.original.entity.SthousingDetail;
 import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.enums.LoanBusinessType;
-import top.yinxiaokang.original.excelbean.AllAccountDkye;
 import top.yinxiaokang.original.excelbean.OneThousand;
 import top.yinxiaokang.original.loan.repayment.RepaymentItem;
 import top.yinxiaokang.original.loan.repayment.RepaymentMethod;
@@ -16,9 +14,11 @@ import top.yinxiaokang.original.loan.repayment.RepaymentPlan;
 import top.yinxiaokang.original.service.AccountCheck;
 import top.yinxiaokang.util.Common;
 
-import java.io.*;
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.*;
+
+import static top.yinxiaokang.util.FileCommon.*;
 
 /**
  * @author yinxk
@@ -26,50 +26,6 @@ import java.util.*;
  */
 public class AccountCheckMain {
     private static AccountCheck accountCheck = new AccountCheck();
-    /**
-     * 日志
-     */
-    private static StringBuffer logs = new StringBuffer();
-    private static String outFileName = "从30多期跳到170多期跳过两期";
-//    private static String outFileName = "allDkzhDkyePart1";
-    //private static String outFileName = "1400多个贷款账号分析";
-    /**
-     * excel
-     */
-    private static String outXLSXName = outFileName + ".xlsx";
-    private static List<OneThousand> datasetOneThousand = new ArrayList<>();
-    private static List<AllAccountDkye> datasetAllAccountDkye = new ArrayList<>();
-    private static List<OneThousand> dataset = datasetOneThousand;
-    private static OutputStream outXLSXStream = null;
-    private static Map<String, String> KEY_MAP = null;
-
-    static {
-        KEY_MAP = new LinkedHashMap<>();
-        KEY_MAP.put("dkzh", "贷款账号");
-        KEY_MAP.put("csdkye", "初始贷款余额");
-        KEY_MAP.put("csyqbj", "初始逾期本金");
-        KEY_MAP.put("hklx", "还款类型");
-        KEY_MAP.put("rq", "日期");
-        KEY_MAP.put("qc", "期次");
-        KEY_MAP.put("fse", "发生额");
-        KEY_MAP.put("bj", "本金");
-        KEY_MAP.put("lx", "利息");
-        KEY_MAP.put("qmdkye", "期末贷款余额");
-    }
-//    static {
-//        KEY_MAP = new LinkedHashMap<>();
-//        KEY_MAP.put("dkzh", "贷款账号");
-//        KEY_MAP.put("dkffrq", "贷款发放日期");
-//        KEY_MAP.put("dkqs", "贷款期数");
-//        KEY_MAP.put("csdkye", "初始贷款余额");
-//        KEY_MAP.put("csyqbj", "初始逾期本金");
-//        KEY_MAP.put("csqs", "应该开始期数");
-//        KEY_MAP.put("tsdkye", "推算贷款余额");
-//        KEY_MAP.put("sjdkye", "实际贷款余额");
-//        KEY_MAP.put("subdkye", "推算-实际(贷款余额)");
-//    }
-
-    private static String logName = outFileName + ".log";
 
     private static final String KEY_ISGENERATE = "isGenerate";
 
@@ -78,11 +34,6 @@ public class AccountCheckMain {
     private static final String KEY_PREPAYMENT = "prepayment";
 
     public AccountCheckMain() {
-        try {
-            outXLSXStream = new FileOutputStream(new File(outXLSXName));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
     }
 
 
@@ -90,14 +41,7 @@ public class AccountCheckMain {
 
         AccountCheckMain checkMain = new AccountCheckMain();
 
-//        File f = new File("src/test/resources/1000多个问题贷款账号.xlsx");
-//        File f = new File("");
-        //File f = new File("src/test/resources/初始有逾期.xlsx");
-        //File f = new File("src/test/resources/20180821-误差5块以内的.xlsx");
-        String fileName = "src/test/resources/从30多期跳到170多期.xlsx";
-//        String fileName = "src/test/resources/包含所有的账号的初始余额和导入的逾期本金.xlsx";
-
-        Collection<Map> importExcel = Common.xlsToList(fileName);
+        Collection<Map> importExcel = Common.xlsToList(inFileName);
 
 
         File logFile = new File(logName);
@@ -108,18 +52,10 @@ public class AccountCheckMain {
 
         logs.append("读取总条数: " + importExcel.size() + "\n");
 
-        ArrayList<InitInformation> initHasOverdueList = new ArrayList<>();
-
-        for (Map m : importExcel) {
-            InitInformation initHasOverdue = new InitInformation();
-            initHasOverdue.setDkzh((String) m.get("dkzh"));
-            initHasOverdue.setCsye(new BigDecimal((String) m.get("csye")));
-            initHasOverdue.setCsyqbj(new BigDecimal((String) m.get("csyqbj")));
-            initHasOverdueList.add(initHasOverdue);
-        }
+        List<InitInformation> initInformationList = Common.importExcelToInitInformationList(importExcel);
 
         List<AccountInformations> accountInformationsList = new ArrayList<>();
-        for (InitInformation initInformation : initHasOverdueList) {
+        for (InitInformation initInformation : initInformationList) {
             AccountInformations accountInformations = accountCheck.toAccountInformations(initInformation);
             accountInformationsList.add(accountInformations);
         }
@@ -134,34 +70,7 @@ public class AccountCheckMain {
     }
 
 
-    /**
-     * 输出到excel
-     */
-    private static void listToXlsx() {
-        System.out.println("开始=====>" + outXLSXName);
-        ExcelUtil.exportExcel(KEY_MAP, dataset, outXLSXStream);
-        System.out.println("结束=====>" + outXLSXName);
-        try {
-            outXLSXStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
-    /**
-     * 写入一部分日志到文件
-     */
-    private static void logsToFile() {
-
-        try (FileWriter writer = new FileWriter(logName, true)) {
-            System.out.print(logs.toString());
-            writer.write(logs.toString());
-            logs = new StringBuffer();
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("创建失败!");
-        }
-    }
 
     /**
      * 分析误差在5块内的

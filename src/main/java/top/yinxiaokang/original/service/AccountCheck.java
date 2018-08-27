@@ -60,6 +60,14 @@ public class AccountCheck {
         //endregion
 
         //region 如果可以的话, 使用扩展表的dkxxffrq中的日来作为还款日
+        try {
+            String dkffrqStr = Utils.SDF_YEAR_MONTH_DAY.format(account.getDkffrq());
+            String dkxffrqStr = Utils.SDF_YEAR_MONTH_DAY.format(account.getDkxffrq());
+            String nowDkffrqStr = dkffrqStr.substring(0, 8) + dkxffrqStr.substring(8, 2);
+            account.setDkffrq(Utils.SDF_YEAR_MONTH_DAY.parse(nowDkffrqStr));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         //endregion
         //System.out.println(account);
         if (account == null)
