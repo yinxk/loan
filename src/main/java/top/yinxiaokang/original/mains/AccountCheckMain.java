@@ -230,10 +230,10 @@ public class AccountCheckMain {
         analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now, null, shouldDetails);
 
 
-        BigDecimal subFse = null;
-        BigDecimal subBj = null;
-        BigDecimal subLx = null;
-        BigDecimal subDkye = null;
+        BigDecimal subFse = BigDecimal.ZERO;
+        BigDecimal subBj = BigDecimal.ZERO;
+        BigDecimal subLx = BigDecimal.ZERO;
+        BigDecimal subDkye = BigDecimal.ZERO;
         BigDecimal eachSubFse;
         BigDecimal eachSubBj;
         BigDecimal eachSubLx;
@@ -261,9 +261,9 @@ public class AccountCheckMain {
                 subBj = subBj.add(eachSubBj);
                 subLx = subLx.add(eachSubLx);
                 subDkye = subDkye.add(eachSubDkye);
-                //shouldDkye = shouldDkye.subtract()
-                formatLog = String.format(log, shouldDetail.getDkywmxlx(), Utils.SDF_YEAR_MONTH_DAY.format(shouldDetail.getYwfsrq()), shouldDetail.getDqqc(),
-                        shouldDetail.getFse(), shouldDetail.getBjje(), shouldDetail.getLxje(), shouldDetail.getXqdkye(),
+                shouldDkye = shouldDetail.getXqdkye();
+                formatLog = String.format(log, detail.getDkywmxlx(), Utils.SDF_YEAR_MONTH_DAY.format(detail.getYwfsrq()), detail.getDqqc(),
+                        detail.getFse(), detail.getBjje(), detail.getLxje(), detail.getXqdkye(),
                         eachSubFse, eachSubBj, eachSubLx, eachSubDkye);
                 logs.append(formatLog);
             }
@@ -279,8 +279,8 @@ public class AccountCheckMain {
             oneThousand.setQmdkye(shouldDetail.getXqdkye());
             datasetOneThousand.add(oneThousand);
         }
-        String log ="发生额总差 : %s, 本金差额: %s , 利息差额: %s , 贷款余额差额: %s \n ";
-        String format = String.format(log, subFse, subBj, subLx, subDkye);
+        String log = "发生额总差 : %s, 本金差额: %s , 利息差额: %s , 贷款余额差额: %s  推算应该贷款余额:  %s  实际贷款余额: %s  推-实际: %s \n";
+        String format = String.format(log, subFse, subBj, subLx, subDkye, shouldDkye, informations.getSthousingAccount().getDkye(), shouldDkye.subtract(informations.getSthousingAccount().getDkye()));
         logs.append(format);
     }
 
