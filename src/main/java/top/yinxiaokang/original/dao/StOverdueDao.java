@@ -19,7 +19,7 @@ public class StOverdueDao extends BaseDao {
         String sql = "SELECT over.dkzh,over.SSRQ,over.YQBJ,over.YQLX,over.YQFX,over.YQQC,overex.YWZT " +
                 "FROM st_housing_overdue_registration over " +
                 "INNER JOIN c_housing_overdue_registration_extension overex ON over.extenstion=overex.id " +
-                "WHERE over.DKZH=?";
+                "WHERE over.DKZH=? AND over.deleted = 0 AND overex.deleted = 0";
         List<StOverdue> list = list(StOverdue.class, sql, dkzh);
         return list;
     }

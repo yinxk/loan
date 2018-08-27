@@ -21,7 +21,7 @@ public class SthousingAccountDao extends BaseDao {
                 "FROM st_housing_personal_account acc " +
                 "INNER JOIN st_housing_personal_loan loan ON acc.contract = loan.id " +
                 "INNER JOIN c_loan_housing_personal_account_extension accex ON acc.extenstion = accex.id " +
-                "WHERE acc.DKZH = ?";
+                "WHERE acc.DKZH = ? AND acc.deleted = 0";
         List<SthousingAccount> list = list(SthousingAccount.class, sql, dkzh);
         if (!list.isEmpty()) {
             return list.get(0);
