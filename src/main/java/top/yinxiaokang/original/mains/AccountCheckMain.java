@@ -60,51 +60,20 @@ public class AccountCheckMain {
             accountInformationsList.add(accountInformations);
         }
         //doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
-        //doAnalyzeWuchaIn5(accountInformationsList, checkMain);
-        doAnalyzeOneThousandDkzh(accountInformationsList, checkMain);
-//        doAnalyzeAllDkzh(accountInformationsList, checkMain);
+        doAnalyze(accountInformationsList, checkMain);
         logs.append("读取总条数: " + importExcel.size() + "\n");
         logsToFile();
         listToXlsx();
         System.out.println("结束运行!");
     }
 
-
-
-
     /**
-     * 分析误差在5块内的
+     * 一般情况
      *
      * @param accountInformationsList
      * @param checkMain
      */
-    private static void doAnalyzeWuchaIn5(List<AccountInformations> accountInformationsList, AccountCheckMain checkMain) {
-        int dealNum = 0;
-        logs.append("==================================================--start--==========================================\n");
-        doAnalyze(checkMain, accountInformationsList, dealNum);
-        logs.append("==================================================--end--==========================================\n");
-    }
-
-    /**
-     * 1000多个有问题的贷款账号
-     *
-     * @param accountInformationsList
-     * @param checkMain
-     */
-    private static void doAnalyzeOneThousandDkzh(List<AccountInformations> accountInformationsList, AccountCheckMain checkMain) {
-        int dealNum = 0;
-        logs.append("==================================================--start--==========================================\n");
-        doAnalyze(checkMain, accountInformationsList, dealNum);
-        logs.append("==================================================--end--==========================================\n");
-    }
-
-    /**
-     * 所有贷款账号根据初始余额和业务进行分析余额的差异
-     *
-     * @param accountInformationsList
-     * @param checkMain
-     */
-    private static void doAnalyzeAllDkzh(List<AccountInformations> accountInformationsList, AccountCheckMain checkMain) {
+    private static void doAnalyze(List<AccountInformations> accountInformationsList, AccountCheckMain checkMain) {
         int dealNum = 0;
         logs.append("==================================================--start--==========================================\n");
         doAnalyze(checkMain, accountInformationsList, dealNum);
@@ -341,7 +310,6 @@ public class AccountCheckMain {
             }
         }
     }
-
 
 
     /**
