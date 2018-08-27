@@ -5,21 +5,23 @@ import top.yinxiaokang.original.LoanRepaymentAlgorithm;
 import top.yinxiaokang.original.Utils;
 import top.yinxiaokang.original.dao.SthousingAccountDao;
 import top.yinxiaokang.original.dao.SthousingDetailDao;
+import top.yinxiaokang.original.dto.AccountInformations;
 import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.SthousingDetail;
+import top.yinxiaokang.original.entity.excel.InitInformation;
+import top.yinxiaokang.original.enums.LoanBusinessType;
 import top.yinxiaokang.original.loan.repayment.RepaymentItem;
 import top.yinxiaokang.original.loan.repayment.RepaymentMethod;
 import top.yinxiaokang.original.loan.repayment.RepaymentMonthRateScale;
 import top.yinxiaokang.original.loan.repayment.RepaymentPlan;
 import top.yinxiaokang.others.CurrentPeriodRange;
+import top.yinxiaokang.util.Common;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author yinxk
@@ -39,6 +41,48 @@ public class AccountCheck {
         sthousingAccountDao = new SthousingAccountDao(connection);
         sthousingDetailDao = new SthousingDetailDao(connection);
     }
+
+    /**
+     * 将每个账号有关的信息转换整理
+     *
+     * @param initInformation
+     * @return
+     */
+    public AccountInformations toAccountInformations(InitInformation initInformation) {
+        AccountInformations accountInformations = new AccountInformations();
+        SthousingAccount account = getSthousingAccount(initInformation.getDkzh());
+        //region 仅仅针对那个从30多期跳到170的贷款账号
+        //try {
+        //    account.setDkffrq(Utils.SDF_YEAR_MONTH_DAY.parse("2015-01-21"));
+        //} catch (ParseException e) {
+        //    e.printStackTrace();
+        //}
+        //endregion
+
+        //region 如果可以的话, 使用扩展表的dkxxffrq中的日来作为还款日
+        //endregion
+        //System.out.println(account);
+        if (account == null)
+            return accountInformations;
+        List<CurrentPeriodRange> ranges = listHSRange(account, null);
+        BigDecimal yhqs = yhqs(ranges);
+        BigDecimal initFirstQc = yhqs.add(BigDecimal.ONE);
+        // 该账号已入账的业务记录
+        List<SthousingDetail> sthousingDetails = listDetails(account);
+        Collections.sort(sthousingDetails, Comparator.comparing(SthousingDetail::getDqqc));
+        // 还款计划
+        List<RepaymentItem> repaymentItems = repaymentItems(account, ranges, initInformation.getCsye(), initInformation.getCsyqbj(), true);
+        accountInformations.setSthousingAccount(account);
+        accountInformations.setCurrentPeriodRanges(ranges);
+        accountInformations.setYhqs(yhqs);
+        accountInformations.setSyqs(syqs(yhqs, account));
+        accountInformations.setInitFirstQc(initFirstQc);
+        accountInformations.setDetails(sthousingDetails);
+        accountInformations.setInitInformation(initInformation);
+        accountInformations.setRepaymentItems(repaymentItems);
+        return accountInformations;
+    }
+
 
     /**
      * 根据贷款账号查询贷款信息
@@ -105,6 +149,56 @@ public class AccountCheck {
         }
         return yhqs;
 
+    }
+
+
+    /**
+     * 获取本息反了的期次(只能参考)
+     *
+     * @param informations
+     * @return
+     */
+    public List<Integer> analyzeReverseBx(AccountInformations informations) {
+        List<Integer> reverseQc = new ArrayList<>();
+        List<RepaymentItem> repaymentItems = repaymentItems(informations.getSthousingAccount(),
+                informations.getCurrentPeriodRanges(),
+                informations.getInitInformation().getCsye(),
+                informations.getInitInformation().getCsyqbj(),
+                false);
+        // 前一项是否为提前还款
+        boolean isPreItemPrepayment = false;
+        // 已经根据期次顺序排序
+        List<SthousingDetail> details = informations.getDetails();
+        for (SthousingDetail detail : details) {
+            // 过滤不是我们系统的期次的业务
+            if (detail.getDqqc().compareTo(informations.getInitFirstQc()) < 0)
+                continue;
+            RepaymentItem item = Common.getRepaymentItemByDqqc(repaymentItems, detail.getDqqc().intValue());
+            if (item == null)
+                continue;
+
+            // 存在提前还款 , 需要新的还款计划 , 根据业务中提前还款剩余的余额进行推算, 期次也是 ,如果该业务的期次或者期末余额有一项不对, 那么提前还款后的本息倒置得不到有效的结果
+            if (LoanBusinessType.提前还款.getCode().equals(detail.getDkywmxlx())) {
+                repaymentItems = RepaymentPlan.listRepaymentPlan(detail.getXqdkye(), informations.getSthousingAccount().getDkffrq()
+                        , informations.getSthousingAccount().getDkqs().subtract(detail.getDqqc()).intValue(), informations.getSthousingAccount().getDkll(),
+                        RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()), detail.getDqqc().intValue(), RepaymentMonthRateScale.NO);
+                isPreItemPrepayment = true;
+            }
+            // 提前还款或者结清没有本息倒置的情况, 与还款计划比较, 自动过滤了, 不需要考虑
+
+            // 前一项为提前还款 , 由于提前还款后第一期利息比还款计划多, 那么只能比较本金来 , 可能是本息颠倒
+            if (isPreItemPrepayment) {
+                isPreItemPrepayment = false;
+                if (item.getHkbjje().subtract(detail.getLxje()).abs().compareTo(Common.ERROR_RANGE) <= 0) {
+                    reverseQc.add(detail.getDqqc().intValue());
+                }
+            } else if (item.getHkbjje().subtract(detail.getLxje()).abs().compareTo(Common.ERROR_RANGE) <= 0
+                    && item.getHklxje().subtract(detail.getBjje()).abs().compareTo(Common.ERROR_RANGE) <= 0) {
+                reverseQc.add(detail.getDqqc().intValue());
+            }
+
+        }
+        return reverseQc;
     }
 
 
