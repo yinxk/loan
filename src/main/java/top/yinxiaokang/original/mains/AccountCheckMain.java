@@ -3,6 +3,7 @@ package top.yinxiaokang.original.mains;
 import top.yinxiaokang.original.LoanRepaymentAlgorithm;
 import top.yinxiaokang.original.Utils;
 import top.yinxiaokang.original.dto.AccountInformations;
+import top.yinxiaokang.original.entity.StOverdue;
 import top.yinxiaokang.original.entity.SthousingDetail;
 import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.enums.LoanBusinessType;
@@ -219,16 +220,31 @@ public class AccountCheckMain {
         List<RepaymentItem> repaymentItems = informations.getRepaymentItems();
         // 提前还款的业务, 已排序
         List<SthousingDetail> prepaymentList = Common.listPrepayment(details);
+
         // 提前还款次数
         int preTag = 0;
         // 现在时间
-//        Date now = new Date();
+        Date now = new Date();
+//        Date now = null;
 
-        Date now = null;
         // 推算应该发生的业务
         List<SthousingDetail> shouldDetails = new ArrayList<>();
-        analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now, null, shouldDetails);
 
+        // 导入系统存在逾期记录
+        if (informations.isInitHasOverdue()) {
+            List<StOverdue> initOverdueList = informations.getInitOverdueList();
+            for (StOverdue overdue : initOverdueList) {
+                SthousingDetail detail = new SthousingDetail();
+                detail.setBjje(overdue.getYqbj());
+                detail.setLxje(overdue.getYqlx());
+                detail.setFxje(overdue.getYqfx());
+                detail.setFse(overdue.getYqbj().add(overdue.getYqlx()).add(overdue.getYqfx()));
+                dkyeByCsye = dkyeByCsye.subtract(overdue.getYqbj());
+                detail.setXqdkye(dkyeByCsye);
+                shouldDetails.add(detail);
+            }
+        }
+        analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now, null, shouldDetails);
 
         BigDecimal subFse = BigDecimal.ZERO;
         BigDecimal subBj = BigDecimal.ZERO;
@@ -300,12 +316,12 @@ public class AccountCheckMain {
             if (now != null && Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(now)) > 0) {
                 break;
             }
-            // 跳过的期次
-            if (repaymentItem.getHkqc() == 36 || repaymentItem.getHkqc() == 37) {
-                repaymentItem.setQcdkye(pre.getQmdkye());
-                repaymentItem.setQmdkye(pre.getQmdkye());
-                continue;
-            }
+            //// 跳过的期次
+            //if (repaymentItem.getHkqc() == 36 || repaymentItem.getHkqc() == 37) {
+            //    repaymentItem.setQcdkye(pre.getQmdkye());
+            //    repaymentItem.setQmdkye(pre.getQmdkye());
+            //    continue;
+            //}
             if (preDetail == null || Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(preDetail.getYwfsrq())) < 0) {
                 // 前一期是提前还款  ,  后面一期的利息要多点
                 if (preDetailYwfsrq != null) {

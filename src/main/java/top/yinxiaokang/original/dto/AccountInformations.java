@@ -1,6 +1,7 @@
 package top.yinxiaokang.original.dto;
 
 import lombok.*;
+import top.yinxiaokang.original.entity.StOverdue;
 import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.SthousingDetail;
 import top.yinxiaokang.original.entity.excel.InitInformation;
@@ -24,6 +25,8 @@ public class AccountInformations {
 
     private List<CurrentPeriodRange> currentPeriodRanges;
 
+    private List<StOverdue> initOverdueList;
+
     private BigDecimal yhqs;
 
     private BigDecimal syqs;
@@ -45,6 +48,11 @@ public class AccountInformations {
      * 是否提前还款
      */
     private boolean isPrepayment;
+
+    /**
+     * 是否导入的时候存在逾期
+     */
+    private boolean isInitHasOverdue = false;
 
 
 }

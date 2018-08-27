@@ -3,9 +3,11 @@ package top.yinxiaokang.original.service;
 import top.yinxiaokang.original.Conn;
 import top.yinxiaokang.original.LoanRepaymentAlgorithm;
 import top.yinxiaokang.original.Utils;
+import top.yinxiaokang.original.dao.StOverdueDao;
 import top.yinxiaokang.original.dao.SthousingAccountDao;
 import top.yinxiaokang.original.dao.SthousingDetailDao;
 import top.yinxiaokang.original.dto.AccountInformations;
+import top.yinxiaokang.original.entity.StOverdue;
 import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.SthousingDetail;
 import top.yinxiaokang.original.entity.excel.InitInformation;
@@ -34,12 +36,46 @@ public class AccountCheck {
 
     private SthousingAccountDao sthousingAccountDao = null;
     private SthousingDetailDao sthousingDetailDao = null;
+    private StOverdueDao stOverdueDao = null;
 
     public AccountCheck() {
         Conn conn = new Conn();
         connection = conn.getConnection();
         sthousingAccountDao = new SthousingAccountDao(connection);
         sthousingDetailDao = new SthousingDetailDao(connection);
+        stOverdueDao = new StOverdueDao(connection);
+    }
+
+    /**
+     * 根据贷款账号查询逾期信息 , 逾期里面没有发现除了已作废这类状态, 根据期次排序
+     *
+     * @param dkzh
+     * @return
+     */
+    public List<StOverdue> listOverdueByDkzh(String dkzh) {
+        List<StOverdue> stOverdues = null;
+        try {
+            stOverdues = stOverdueDao.listByDkzh(dkzh);
+            Collections.sort(stOverdues,Comparator.comparing(StOverdue::getYqqc));
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        }
+        return stOverdues;
+    }
+
+
+    public List<StOverdue> listInitOverdue(List<StOverdue> overdues,BigDecimal initFirstQc) {
+        List<StOverdue> initOverdues = new ArrayList<>();
+        for (StOverdue overdue : overdues) {
+            if (initFirstQc.compareTo(overdue.getYqqc()) > 0) {
+                initOverdues.add(overdue);
+            }
+        }
+        return initOverdues;
     }
 
     /**
@@ -51,6 +87,10 @@ public class AccountCheck {
     public AccountInformations toAccountInformations(InitInformation initInformation) {
         AccountInformations accountInformations = new AccountInformations();
         SthousingAccount account = getSthousingAccount(initInformation.getDkzh());
+        // 初始逾期本金大于0 , 则导入系统存在逾期记录
+        if (initInformation.getCsyqbj().compareTo(BigDecimal.ZERO) > 0) {
+            accountInformations.setInitHasOverdue(true);
+        }
 
         //region 如果可以的话, 使用扩展表的dkxxffrq中的日来作为还款日
         try {
@@ -68,6 +108,12 @@ public class AccountCheck {
         List<CurrentPeriodRange> ranges = listHSRange(account, null);
         BigDecimal yhqs = yhqs(ranges);
         BigDecimal initFirstQc = yhqs.add(BigDecimal.ONE);
+        if (accountInformations.isInitHasOverdue()) {
+            List<StOverdue> stOverdues = listOverdueByDkzh(account.getDkzh());
+            List<StOverdue> initOverdues = listInitOverdue(stOverdues, initFirstQc);
+            accountInformations.setInitOverdueList(initOverdues);
+        }
+
         // 该账号已入账的业务记录
         List<SthousingDetail> sthousingDetails = listDetails(account);
         Collections.sort(sthousingDetails, Comparator.comparing(SthousingDetail::getDqqc));
