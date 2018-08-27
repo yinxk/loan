@@ -1,9 +1,6 @@
 package top.yinxiaokang.original.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -16,6 +13,7 @@ import java.util.Date;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class SthousingAccount {
     private String id;
 
@@ -39,15 +37,4 @@ public class SthousingAccount {
 
     private Date dkxffrq;
 
-    @Override
-    public String toString() {
-        return "SthousingAccount{" +
-                "dkzh=" + dkzh +
-                ", dkffrq=" + dkffrq +
-                ", dkll=" + dkll +
-                ", dkqs=" + dkqs +
-                ", dkffe=" + dkffe +
-                ", dkye='" + dkye + '\'' +
-                '}';
-    }
 }

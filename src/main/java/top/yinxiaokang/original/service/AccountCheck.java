@@ -56,7 +56,7 @@ public class AccountCheck {
         List<StOverdue> stOverdues = null;
         try {
             stOverdues = stOverdueDao.listByDkzh(dkzh);
-            Collections.sort(stOverdues,Comparator.comparing(StOverdue::getYqqc));
+            Collections.sort(stOverdues, Comparator.comparing(StOverdue::getYqqc));
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (SQLException e) {
@@ -68,7 +68,7 @@ public class AccountCheck {
     }
 
 
-    public List<StOverdue> listInitOverdue(List<StOverdue> overdues,BigDecimal initFirstQc) {
+    public List<StOverdue> listInitOverdue(List<StOverdue> overdues, BigDecimal initFirstQc) {
         List<StOverdue> initOverdues = new ArrayList<>();
         for (StOverdue overdue : overdues) {
             if (initFirstQc.compareTo(overdue.getYqqc()) > 0) {
@@ -85,26 +85,25 @@ public class AccountCheck {
      * @return
      */
     public AccountInformations toAccountInformations(InitInformation initInformation) {
+        System.out.println("处理  " + initInformation);
         AccountInformations accountInformations = new AccountInformations();
         SthousingAccount account = getSthousingAccount(initInformation.getDkzh());
         // 初始逾期本金大于0 , 则导入系统存在逾期记录
         if (initInformation.getCsyqbj().compareTo(BigDecimal.ZERO) > 0) {
             accountInformations.setInitHasOverdue(true);
         }
-
-        //region 如果可以的话, 使用扩展表的dkxxffrq中的日来作为还款日
-        try {
-            String dkffrqStr = Utils.SDF_YEAR_MONTH_DAY.format(account.getDkffrq());
-            String dkxffrqStr = Utils.SDF_YEAR_MONTH_DAY.format(account.getDkxffrq());
-            String nowDkffrqStr = dkffrqStr.substring(0, 7) + dkxffrqStr.substring(7, 10);
-            account.setDkffrq(Utils.SDF_YEAR_MONTH_DAY.parse(nowDkffrqStr));
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        //endregion
-        //System.out.println(account);
         if (account == null)
-            return accountInformations;
+            return null;
+        //region 如果可以的话, 使用扩展表的dkxxffrq中的日来作为还款日
+//        try {
+//            String dkffrqStr = Utils.SDF_YEAR_MONTH_DAY.format(account.getDkffrq());
+//            String dkxffrqStr = Utils.SDF_YEAR_MONTH_DAY.format(account.getDkxffrq());
+//            String nowDkffrqStr = dkffrqStr.substring(0, 7) + dkxffrqStr.substring(7, 10);
+//            account.setDkffrq(Utils.SDF_YEAR_MONTH_DAY.parse(nowDkffrqStr));
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//        }
+        //endregion
         List<CurrentPeriodRange> ranges = listHSRange(account, null);
         BigDecimal yhqs = yhqs(ranges);
         BigDecimal initFirstQc = yhqs.add(BigDecimal.ONE);

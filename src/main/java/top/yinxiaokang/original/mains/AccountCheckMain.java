@@ -61,6 +61,7 @@ public class AccountCheckMain {
         List<AccountInformations> accountInformationsList = new ArrayList<>();
         for (InitInformation initInformation : initInformationList) {
             AccountInformations accountInformations = accountCheck.toAccountInformations(initInformation);
+            if (accountInformations == null) continue;
             accountInformationsList.add(accountInformations);
         }
         //doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
@@ -228,7 +229,7 @@ public class AccountCheckMain {
         // 推算应该发生的业务
         List<SthousingDetail> shouldDetails = new ArrayList<>();
 
-         //导入系统的时候存在逾期记录
+        //导入系统的时候存在逾期记录
         if (informations.isInitHasOverdue()) {
             List<StOverdue> initOverdueList = informations.getInitOverdueList();
             for (StOverdue overdue : initOverdueList) {
@@ -347,6 +348,7 @@ public class AccountCheckMain {
                 shouldDetails.add(detail);
 
             } else {
+                System.out.println(pre);
                 BigDecimal qmdkye = pre.getQmdkye().subtract(preDetail.getBjje());
                 boolean isJieQing = false;
                 SthousingDetail detail = new SthousingDetail();

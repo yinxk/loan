@@ -34,12 +34,14 @@ public class Common {
      */
     public static List<InitInformation> importExcelToInitInformationList(Collection<Map> importExcel) {
         ArrayList<InitInformation> initHasOverdueList = new ArrayList<>();
+        int i = 0;
         for (Map m : importExcel) {
             InitInformation initHasOverdue = new InitInformation();
             initHasOverdue.setDkzh((String) m.get("dkzh"));
             initHasOverdue.setCsye(new BigDecimal((String) m.get("csye")));
             initHasOverdue.setCsyqbj(new BigDecimal((String) m.get("csyqbj")));
             initHasOverdueList.add(initHasOverdue);
+            System.out.println("转换excel导入的map为 初始信息对象  " + ++i);
         }
         return initHasOverdueList;
     }
