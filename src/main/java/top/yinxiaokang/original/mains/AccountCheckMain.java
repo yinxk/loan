@@ -50,9 +50,12 @@ public class AccountCheckMain {
             logFile.delete();
         }
 
-        logs.append("读取总条数: " + importExcel.size() + "\n");
+        int size = importExcel.size();
+        logs.append("读取总条数: " + size + "\n");
 
         List<InitInformation> initInformationList = Common.importExcelToInitInformationList(importExcel);
+        // 置空, 让虚拟机GC的时候清理掉
+        importExcel = null;
 
         List<AccountInformations> accountInformationsList = new ArrayList<>();
         for (InitInformation initInformation : initInformationList) {
@@ -61,7 +64,7 @@ public class AccountCheckMain {
         }
         //doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
         doAnalyze(accountInformationsList, checkMain);
-        logs.append("读取总条数: " + importExcel.size() + "\n");
+        logs.append("读取总条数: " + size + "\n");
         logsToFile();
         listToXlsx();
         System.out.println("结束运行!");
@@ -222,12 +225,67 @@ public class AccountCheckMain {
 //        Date now = new Date();
 
         Date now = null;
-        analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now, null);
+        // 推算应该发生的业务
+        List<SthousingDetail> shouldDetails = new ArrayList<>();
+        analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now, null, shouldDetails);
 
 
+        BigDecimal subFse = null;
+        BigDecimal subBj = null;
+        BigDecimal subLx = null;
+        BigDecimal subDkye = null;
+        BigDecimal eachSubFse;
+        BigDecimal eachSubBj;
+        BigDecimal eachSubLx;
+        BigDecimal eachSubDkye;
+        BigDecimal shouldDkye = csye;
+
+
+        for (int i = 0; i < shouldDetails.size(); i++) {
+            SthousingDetail shouldDetail = shouldDetails.get(i);
+            SthousingDetail detail = null;
+            if (i < details.size()) {
+                detail = details.get(i);
+            }
+            String log = "%s    日期: %s  期次: %s  发生额: %s  本金: %s  利息: %s  期末余额: %s";
+            String formatLog = String.format(log, shouldDetail.getDkywmxlx(), Utils.SDF_YEAR_MONTH_DAY.format(shouldDetail.getYwfsrq()), shouldDetail.getDqqc(),
+                    shouldDetail.getFse(), shouldDetail.getBjje(), shouldDetail.getLxje(), shouldDetail.getXqdkye());
+            logs.append(formatLog);
+            if (detail != null) {
+                log = "    %s    业务日期: %s  期次: %s  发生额: %s  本金: %s  利息: %s  期末余额: %s  发生额差(前-后): %s  本金差: %s  利息差: %s  期末余额差: %s";
+                eachSubFse = shouldDetail.getFse().subtract(detail.getFse());
+                eachSubBj = shouldDetail.getBjje().subtract(detail.getBjje());
+                eachSubLx = shouldDetail.getLxje().subtract(detail.getLxje());
+                eachSubDkye = shouldDetail.getXqdkye().subtract(detail.getXqdkye());
+                subFse = subFse.add(eachSubFse);
+                subBj = subBj.add(eachSubBj);
+                subLx = subLx.add(eachSubLx);
+                subDkye = subDkye.add(eachSubDkye);
+                //shouldDkye = shouldDkye.subtract()
+                formatLog = String.format(log, shouldDetail.getDkywmxlx(), Utils.SDF_YEAR_MONTH_DAY.format(shouldDetail.getYwfsrq()), shouldDetail.getDqqc(),
+                        shouldDetail.getFse(), shouldDetail.getBjje(), shouldDetail.getLxje(), shouldDetail.getXqdkye(),
+                        eachSubFse, eachSubBj, eachSubLx, eachSubDkye);
+                logs.append(formatLog);
+            }
+            logs.append("\n");
+
+            OneThousand oneThousand = new OneThousand();
+            oneThousand.setHklx(shouldDetail.getDkywmxlx());
+            oneThousand.setRq(shouldDetail.getYwfsrq());
+            oneThousand.setQc(shouldDetail.getDqqc().intValue());
+            oneThousand.setFse(shouldDetail.getFse());
+            oneThousand.setBj(shouldDetail.getBjje());
+            oneThousand.setLx(shouldDetail.getLxje());
+            oneThousand.setQmdkye(shouldDetail.getXqdkye());
+            datasetOneThousand.add(oneThousand);
+        }
+        String log ="发生额总差 : %s, 本金差额: %s , 利息差额: %s , 贷款余额差额: %s \n ";
+        String format = String.format(log, subFse, subBj, subLx, subDkye);
+        logs.append(format);
     }
 
-    private void analyOneThousand0(AccountInformations informations, List<RepaymentItem> repaymentItems, List<SthousingDetail> prepaymentList, int preTag, Date now, Date preDetailYwfsrq) {
+    private void analyOneThousand0(AccountInformations informations, List<RepaymentItem> repaymentItems,
+                                   List<SthousingDetail> prepaymentList, int preTag, Date now, Date preDetailYwfsrq, List<SthousingDetail> shouldDetails) {
         SthousingDetail preDetail;
         for (int i = 0; i < repaymentItems.size(); i++) {
             RepaymentItem repaymentItem = repaymentItems.get(i);
@@ -258,42 +316,35 @@ public class AccountCheckMain {
                     repaymentItem.setFse(repaymentItem.getFse().add(lx));
                     preDetailYwfsrq = null;
                 }
-                logs.append("正常还款    日期: " + Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()) + "  期次: " + repaymentItem.getHkqc() +
-                        "  发生额: " + repaymentItem.getFse() + "  本金: " + repaymentItem.getHkbjje() + "  利息: " + repaymentItem.getHklxje() +
-                        "  期末余额: " + repaymentItem.getQmdkye() + "\n");
-                OneThousand oneThousand = new OneThousand();
-                oneThousand.setHklx("正常还款");
-                oneThousand.setRq(repaymentItem.getHkrq());
-                oneThousand.setQc(repaymentItem.getHkqc());
-                oneThousand.setFse(repaymentItem.getFse());
-                oneThousand.setBj(repaymentItem.getHkbjje());
-                oneThousand.setLx(repaymentItem.getHklxje());
-                oneThousand.setQmdkye(repaymentItem.getQmdkye());
-                datasetOneThousand.add(oneThousand);
+                SthousingDetail detail = new SthousingDetail();
+                detail.setDkywmxlx("正常还款");
+                detail.setYwfsrq(repaymentItem.getHkrq());
+                detail.setDqqc(new BigDecimal(repaymentItem.getHkqc().intValue()));
+                detail.setFse(repaymentItem.getFse());
+                detail.setBjje(repaymentItem.getHkbjje());
+                detail.setLxje(repaymentItem.getHklxje());
+                detail.setXqdkye(repaymentItem.getQmdkye());
+                shouldDetails.add(detail);
+
             } else {
                 BigDecimal qmdkye = pre.getQmdkye().subtract(preDetail.getBjje());
                 boolean isJieQing = false;
-
-                OneThousand oneThousand = new OneThousand();
+                SthousingDetail detail = new SthousingDetail();
                 if (LoanBusinessType.提前还款.getCode().equals(preDetail.getDkywmxlx())) {
-                    logs.append("提前还款    ");
-                    oneThousand.setHklx("提前还款");
+                    detail.setDkywmxlx("提前还款");
                 }
                 if (LoanBusinessType.结清.getCode().equals(preDetail.getDkywmxlx())) {
-                    logs.append("结清    ");
-                    oneThousand.setHklx("结清");
+                    detail.setDkywmxlx("结清");
                     isJieQing = true;
                 }
-                logs.append("日期: " + Utils.SDF_YEAR_MONTH_DAY.format(preDetail.getYwfsrq()) + "  期次: " + repaymentItem.getHkqc() +
-                        "  发生额: " + preDetail.getFse() + "  本金: " + preDetail.getBjje() + " 利息: " + preDetail.getLxje() +
-                        "  期末余额: " + qmdkye + "\n");
-                oneThousand.setRq(preDetail.getYwfsrq());
-                oneThousand.setQc(repaymentItem.getHkqc());
-                oneThousand.setFse(preDetail.getFse());
-                oneThousand.setBj(preDetail.getBjje());
-                oneThousand.setLx(preDetail.getLxje());
-                oneThousand.setQmdkye(qmdkye);
-                datasetOneThousand.add(oneThousand);
+
+                detail.setYwfsrq(preDetail.getYwfsrq());
+                detail.setDqqc(new BigDecimal(repaymentItem.getHkqc().intValue()));
+                detail.setFse(preDetail.getFse());
+                detail.setBjje(preDetail.getBjje());
+                detail.setLxje(preDetail.getLxje());
+                detail.setXqdkye(qmdkye);
+                shouldDetails.add(detail);
                 if (isJieQing) {
                     break;
                 }
@@ -305,7 +356,7 @@ public class AccountCheckMain {
                         RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()),
                         repaymentItem.getHkqc(),
                         RepaymentMonthRateScale.NO);
-                analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now, preDetail.getYwfsrq());
+                analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now, preDetail.getYwfsrq(), shouldDetails);
                 break;
             }
         }
