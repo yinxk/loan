@@ -29,6 +29,9 @@ public class Common {
      * 横杠 , 没有信息
      */
     public static final String NO_MESS = "--";
+    public static final String NO_MESS_CHINESE = "————";
+    public static final String FULL_TWO_SPACE = "　　";
+    public static final String FULL_SPACE = "　";
 
 
     /**

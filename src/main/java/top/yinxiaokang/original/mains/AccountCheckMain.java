@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 import static top.yinxiaokang.util.Common.NO_MESS;
+import static top.yinxiaokang.util.Common.NO_MESS_CHINESE;
 import static top.yinxiaokang.util.FileCommon.*;
 
 /**
@@ -257,7 +258,7 @@ public class AccountCheckMain {
                 detail.setFxje(overdue.getYqfx());
                 detail.setDqqc(overdue.getYqqc());
                 detail.setYwfsrq(overdue.getSsrq());
-                detail.setDkywmxlx("逾期还款(导入的)");
+                detail.setDkywmxlx("初始导入");
                 detail.setFse(overdue.getYqbj().add(overdue.getYqlx()));
                 dkyeByCsye = dkyeByCsye.subtract(overdue.getYqbj());
                 detail.setXqdkye(dkyeByCsye);
@@ -284,18 +285,18 @@ public class AccountCheckMain {
                 shouldDetail = shouldDetails.get(i);
             }
             SthousingDetail detail = null;
-            String log1 = "%s    日期: %s  期次: %s  发生额: %s  本金: %s  利息: %s  期末余额: %s";
-            String log2 = "    %s    业务日期: %s  期次: %s  发生额(去罚息): %s  本金: %s  利息: %s  期末余额: %s  发生额差(前-后): %s  本金差: %s  利息差: %s  期末余额差: %s";
+            String log1 = "%-4s  日期: %-12s  期次: %-3s  发生额: %-10s  本金: %-10s  利息: %-10s  期末余额: %-20s";
+            String log2 = "%-4s  业务日期: %-12s  期次: %-3s  发生额(去罚): %-10s  本金: %-10s  利息: %-10s  期末余额: %-20s  发生额差(前-后): %-10s  本金差: %-10s  利息差: %-10s  期末余额差: %-10s";
             if (i < details.size()) {
                 detail = details.get(i);
             }
             OneThousand oneThousand = new OneThousand();
             BigDecimal detailFse = BigDecimal.ZERO;
             if (shouldDetail == null && detail != null) {
-                String formatLog = String.format(log1, NO_MESS, NO_MESS, NO_MESS, NO_MESS, NO_MESS, NO_MESS, NO_MESS);
+                String formatLog = String.format(log1, NO_MESS_CHINESE, NO_MESS, NO_MESS, NO_MESS, NO_MESS, NO_MESS, NO_MESS);
                 logs.append(formatLog);
                 detailFse = detail.getBjje().add(detail.getLxje());
-                formatLog = String.format(log2, LoanBusinessType.getNameByCode(detail.getDkywmxlx()), Utils.SDF_YEAR_MONTH_DAY.format(detail.getYwfsrq()), detail.getDqqc(),
+                formatLog = String.format(log2, "06".equals(detail.getDkywmxlx()) ? Common.FULL_SPACE + "结清" + Common.FULL_SPACE : LoanBusinessType.getNameByCode(detail.getDkywmxlx()), Utils.SDF_YEAR_MONTH_DAY.format(detail.getYwfsrq()), detail.getDqqc(),
                         detailFse, detail.getBjje(), detail.getLxje(), detail.getXqdkye(),
                         NO_MESS, NO_MESS, NO_MESS, NO_MESS);
                 logs.append(formatLog);
@@ -316,7 +317,7 @@ public class AccountCheckMain {
                 String formatLog = String.format(log1, shouldDetail.getDkywmxlx(), shouldDetail.getYwfsrq() == null ? "------" : Utils.SDF_YEAR_MONTH_DAY.format(shouldDetail.getYwfsrq()),
                         shouldDetail.getDqqc(), shouldDetail.getFse(), shouldDetail.getBjje(), shouldDetail.getLxje(), shouldDetail.getXqdkye());
                 logs.append(formatLog);
-                formatLog = String.format(log2, NO_MESS, NO_MESS, NO_MESS,
+                formatLog = String.format(log2, NO_MESS_CHINESE, NO_MESS, NO_MESS,
                         NO_MESS, NO_MESS, NO_MESS, NO_MESS,
                         NO_MESS, NO_MESS, NO_MESS, NO_MESS);
                 logs.append(formatLog);
@@ -347,7 +348,7 @@ public class AccountCheckMain {
                 subLx = subLx.add(eachSubLx);
                 subDkye = subDkye.add(eachSubDkye);
                 shouldDkye = shouldDetail.getXqdkye();
-                formatLog = String.format(log2, LoanBusinessType.getNameByCode(detail.getDkywmxlx()), Utils.SDF_YEAR_MONTH_DAY.format(detail.getYwfsrq()), detail.getDqqc(),
+                formatLog = String.format(log2, "06".equals(detail.getDkywmxlx()) ? Common.FULL_SPACE + "结清" + Common.FULL_SPACE : LoanBusinessType.getNameByCode(detail.getDkywmxlx()), Utils.SDF_YEAR_MONTH_DAY.format(detail.getYwfsrq()), detail.getDqqc(),
                         detailFse, detail.getBjje(), detail.getLxje(), detail.getXqdkye(),
                         eachSubFse, eachSubBj, eachSubLx, eachSubDkye);
                 logs.append(formatLog);
@@ -446,7 +447,7 @@ public class AccountCheckMain {
                     detail.setDkywmxlx("提前还款");
                 }
                 if (LoanBusinessType.结清.getCode().equals(preDetail.getDkywmxlx())) {
-                    detail.setDkywmxlx("结清");
+                    detail.setDkywmxlx(Common.FULL_SPACE + "结清" + Common.FULL_SPACE);
                     isJieQing = true;
                 }
 
