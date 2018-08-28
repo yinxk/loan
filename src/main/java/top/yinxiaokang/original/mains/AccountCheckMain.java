@@ -323,7 +323,7 @@ public class AccountCheckMain {
                 eachSubLx = shouldDetail.getLxje().subtract(detail.getLxje());
                 eachSubDkye = shouldDetail.getXqdkye().subtract(detail.getXqdkye());
 
-                if (shouldDetail.getDqqc().compareTo(informations.getInitFirstQc()) < 0) {
+                if (shouldDetail.getDqqc().compareTo(informations.getInitFirstQc()) > 0) {
                     eachSubFse = shouldDetail.getFse().subtract(detail.getFse());
                     subFse = subFse.add(eachSubFse);
                 }
