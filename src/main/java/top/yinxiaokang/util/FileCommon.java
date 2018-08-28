@@ -70,7 +70,7 @@ public class FileCommon {
         KEY_MAP.put("sjhklx", "实际还款类型");
         KEY_MAP.put("sjrq", "实际日期");
         KEY_MAP.put("sjqc", "实际期次");
-        KEY_MAP.put("sjfse", "实际发生额");
+        KEY_MAP.put("sjfse", "实际发生额(去掉罚息)");
         KEY_MAP.put("sjbj", "实际本金");
         KEY_MAP.put("sjlx", "实际利息");
         KEY_MAP.put("sjqmdkye", "实际期末贷款余额");

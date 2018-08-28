@@ -58,19 +58,31 @@ public class AccountCheckMain {
         List<InitInformation> initInformationList = Common.importExcelToInitInformationList(importExcel);
         // 置空, 让虚拟机GC的时候清理掉
         importExcel = null;
-
+        List<InitInformation> errorList = new ArrayList<>();
         List<AccountInformations> accountInformationsList = new ArrayList<>();
         for (InitInformation initInformation : initInformationList) {
             AccountInformations accountInformations = accountCheck.toAccountInformations(initInformation);
-            if (accountInformations == null) continue;
+            if (accountInformations == null) {
+                errorList.add(initInformation);
+                continue;
+            }
             accountInformationsList.add(accountInformations);
         }
         //doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
         doAnalyze(accountInformationsList, checkMain);
         logs.append("读取总条数: " + size + "\n");
+        if (errorList.size() > 0) {
+            logs.append("错误信息 :");
+            for (InitInformation initInformation : errorList) {
+                logs.append(initInformation);
+            }
+            logs.append("\n");
+        }
         logsToFile();
         listToXlsx();
-        System.out.println("结束运行!");
+        System.out.println("************************************************************************************************************************************************************");
+        System.out.println("**************************************************************************结束运行!*************************************************************************");
+        System.out.println("************************************************************************************************************************************************************");
     }
 
     /**
@@ -245,8 +257,8 @@ public class AccountCheckMain {
                 detail.setFxje(overdue.getYqfx());
                 detail.setDqqc(overdue.getYqqc());
                 detail.setYwfsrq(overdue.getSsrq());
-                detail.setDkywmxlx("逾期还款");
-                detail.setFse(overdue.getYqbj().add(overdue.getYqlx()).add(overdue.getYqfx()));
+                detail.setDkywmxlx("逾期还款(导入的)");
+                detail.setFse(overdue.getYqbj().add(overdue.getYqlx()));
                 dkyeByCsye = dkyeByCsye.subtract(overdue.getYqbj());
                 detail.setXqdkye(dkyeByCsye);
                 shouldDetails.add(detail);
@@ -273,16 +285,18 @@ public class AccountCheckMain {
             }
             SthousingDetail detail = null;
             String log1 = "%s    日期: %s  期次: %s  发生额: %s  本金: %s  利息: %s  期末余额: %s";
-            String log2 = "    %s    业务日期: %s  期次: %s  发生额: %s  本金: %s  利息: %s  期末余额: %s  发生额差(前-后): %s  本金差: %s  利息差: %s  期末余额差: %s";
+            String log2 = "    %s    业务日期: %s  期次: %s  发生额(去罚息): %s  本金: %s  利息: %s  期末余额: %s  发生额差(前-后): %s  本金差: %s  利息差: %s  期末余额差: %s";
             if (i < details.size()) {
                 detail = details.get(i);
             }
             OneThousand oneThousand = new OneThousand();
+            BigDecimal detailFse = BigDecimal.ZERO;
             if (shouldDetail == null && detail != null) {
                 String formatLog = String.format(log1, NO_MESS, NO_MESS, NO_MESS, NO_MESS, NO_MESS, NO_MESS, NO_MESS);
                 logs.append(formatLog);
-                formatLog = String.format(log2, detail.getDkywmxlx(), Utils.SDF_YEAR_MONTH_DAY.format(detail.getYwfsrq()), detail.getDqqc(),
-                        detail.getFse(), detail.getBjje(), detail.getLxje(), detail.getXqdkye(),
+                detailFse = detail.getBjje().add(detail.getLxje());
+                formatLog = String.format(log2, LoanBusinessType.getNameByCode(detail.getDkywmxlx()), Utils.SDF_YEAR_MONTH_DAY.format(detail.getYwfsrq()), detail.getDqqc(),
+                        detailFse, detail.getBjje(), detail.getLxje(), detail.getXqdkye(),
                         NO_MESS, NO_MESS, NO_MESS, NO_MESS);
                 logs.append(formatLog);
 
@@ -290,7 +304,7 @@ public class AccountCheckMain {
                 oneThousand.setSjhklx(LoanBusinessType.getNameByCode(detail.getDkywmxlx()));
                 oneThousand.setSjrq(detail.getYwfsrq());
                 oneThousand.setSjqc(detail.getDqqc().intValue());
-                oneThousand.setSjfse(detail.getFse());
+                oneThousand.setSjfse(detailFse);
                 oneThousand.setSjbj(detail.getBjje());
                 oneThousand.setSjlx(detail.getLxje());
                 oneThousand.setSjqmdkye(detail.getXqdkye());
@@ -315,6 +329,7 @@ public class AccountCheckMain {
                 oneThousand.setQmdkye(shouldDetail.getXqdkye());
 
             } else if (shouldDetail != null && detail != null) {
+                detailFse = detail.getBjje().add(detail.getLxje());
                 String formatLog = String.format(log1, shouldDetail.getDkywmxlx(), shouldDetail.getYwfsrq() == null ? "------" : Utils.SDF_YEAR_MONTH_DAY.format(shouldDetail.getYwfsrq()),
                         shouldDetail.getDqqc(), shouldDetail.getFse(), shouldDetail.getBjje(), shouldDetail.getLxje(), shouldDetail.getXqdkye());
                 logs.append(formatLog);
@@ -323,8 +338,8 @@ public class AccountCheckMain {
                 eachSubLx = shouldDetail.getLxje().subtract(detail.getLxje());
                 eachSubDkye = shouldDetail.getXqdkye().subtract(detail.getXqdkye());
 
-                if (shouldDetail.getDqqc().compareTo(informations.getInitFirstQc()) > 0) {
-                    eachSubFse = shouldDetail.getFse().subtract(detail.getFse());
+                if (shouldDetail.getDqqc().compareTo(informations.getInitFirstQc()) >= 0) {
+                    eachSubFse = shouldDetail.getFse().subtract(detailFse);
                     subFse = subFse.add(eachSubFse);
                 }
 
@@ -332,8 +347,8 @@ public class AccountCheckMain {
                 subLx = subLx.add(eachSubLx);
                 subDkye = subDkye.add(eachSubDkye);
                 shouldDkye = shouldDetail.getXqdkye();
-                formatLog = String.format(log2, detail.getDkywmxlx(), Utils.SDF_YEAR_MONTH_DAY.format(detail.getYwfsrq()), detail.getDqqc(),
-                        detail.getFse(), detail.getBjje(), detail.getLxje(), detail.getXqdkye(),
+                formatLog = String.format(log2, LoanBusinessType.getNameByCode(detail.getDkywmxlx()), Utils.SDF_YEAR_MONTH_DAY.format(detail.getYwfsrq()), detail.getDqqc(),
+                        detailFse, detail.getBjje(), detail.getLxje(), detail.getXqdkye(),
                         eachSubFse, eachSubBj, eachSubLx, eachSubDkye);
                 logs.append(formatLog);
 
@@ -347,7 +362,7 @@ public class AccountCheckMain {
                 oneThousand.setSjhklx(LoanBusinessType.getNameByCode(detail.getDkywmxlx()));
                 oneThousand.setSjrq(detail.getYwfsrq());
                 oneThousand.setSjqc(detail.getDqqc().intValue());
-                oneThousand.setSjfse(detail.getFse());
+                oneThousand.setSjfse(detailFse);
                 oneThousand.setSjbj(detail.getBjje());
                 oneThousand.setSjlx(detail.getLxje());
                 oneThousand.setSjqmdkye(detail.getXqdkye());
