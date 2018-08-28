@@ -22,7 +22,7 @@ public class ReducePlan {
 
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
-        String fileName = "src/test/resources/20180821-误差5块以内的.xlsx";
+        String fileName = "src/test/resources/20180828-徐灏手动入账账号修复.xlsx";
         Collection<Map> importExcel = Common.xlsToList(fileName);
 
         ArrayList<SthousingAccount> accountArrayList = new ArrayList<>();
