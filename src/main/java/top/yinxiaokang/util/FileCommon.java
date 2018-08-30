@@ -1,13 +1,14 @@
 package top.yinxiaokang.util;
 
-import com.sargeraswang.util.ExcelUtil.ExcelCell;
 import com.sargeraswang.util.ExcelUtil.ExcelUtil;
 import top.yinxiaokang.original.excelbean.AllAccountDkye;
 import top.yinxiaokang.original.excelbean.OneThousand;
 
 import java.io.*;
-import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author yinxk
@@ -36,7 +37,7 @@ public class FileCommon {
     private static String outFileName = "1400多个贷款账号分析";
 
     // region excel
-    public static String outXLSXName = outFileName + ".xlsx";
+    public static String outXLSXName = outFileName + ".xls";
     public static OutputStream outXLSXStream = null;
     public static List<OneThousand> datasetOneThousand = new ArrayList<>();
     public static List<AllAccountDkye> datasetAllAccountDkye = new ArrayList<>();
