@@ -37,6 +37,6 @@ public class SthousingAccount {
 
     private Date dkxffrq;
 
-    private BigDecimal xdqqc;
+    private BigDecimal dqqc;
 
 }

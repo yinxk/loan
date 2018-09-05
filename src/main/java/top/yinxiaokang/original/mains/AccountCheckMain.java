@@ -20,6 +20,8 @@ import top.yinxiaokang.util.Common;
 import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 import static top.yinxiaokang.util.Common.NO_MESS;
@@ -83,7 +85,7 @@ public class AccountCheckMain {
             logs.append("\n");
         }
         logsToFile();
-        listToXlsx();
+//        listToXlsx();
         System.out.println("************************************************************************************************************************************************************");
         System.out.println("**************************************************************************结束运行!*************************************************************************");
         System.out.println("************************************************************************************************************************************************************");
@@ -203,21 +205,33 @@ public class AccountCheckMain {
 
         SthousingAccount sthousingAccount = informations.getSthousingAccount();
         Date dkxffrq = sthousingAccount.getDkxffrq();
-        BigDecimal xdqqc = sthousingAccount.getXdqqc();
+        BigDecimal xdqqc = sthousingAccount.getDqqc();
         Date date = CommLoanAlgorithm.periodOfafterTime(dkxffrq, xdqqc.intValue());
-        LocalDate thisDate = LocalDate.from(date.toInstant());
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int maxDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        LocalDate thisDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-        LocalDate start  = LocalDate.of(year, month, maxDay);
-        LocalDate end = LocalDate.of(year, month, 1);
+        List<StOverdue> stOverdues = accountCheck.listOverdueByDkzh(sthousingAccount.getDkzh());
+        StOverdue firstOver = null;
+        for (StOverdue overdue : stOverdues) {
+            if (!"已入账".equals(overdue.getYwzt())) {
+                firstOver = overdue;
+                break;
+            }
+        }
+
+        LocalDate now = LocalDate.now();
+        LocalDate start = now.with(TemporalAdjusters.firstDayOfMonth());
+        LocalDate end = now.with(TemporalAdjusters.lastDayOfMonth());
 
         // 计算的下一次扣款日期 , 在 该月份以内
         if (thisDate.compareTo(start) >= 0 && thisDate.compareTo(end) <= 0) {
             String s = "扣款日期:  %-10s";
             String format = String.format(s, thisDate);
+            logs.append(format);
+        }
+
+        if (firstOver != null) {
+            String s = "  %s";
+            String format = String.format(s, firstOver);
             logs.append(format);
         }
 
