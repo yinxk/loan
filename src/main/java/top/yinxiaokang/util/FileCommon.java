@@ -34,7 +34,9 @@ public class FileCommon {
      */
 //    private static String outFileName = "从30多期跳到170多期跳过两期";
 //    private static String outFileName = "allDkzhDkyePart1";
-    private static String outFileName = "1400多个贷款账号分析";
+//    private static String outFileName = "1400多个贷款账号分析";
+    private static String outFileName = "1400即将扣款";
+
 
     // region excel
     public static String outXLSXName = outFileName + ".xls";

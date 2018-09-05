@@ -1,9 +1,11 @@
 package top.yinxiaokang.original.mains;
 
+import top.yinxiaokang.original.CommLoanAlgorithm;
 import top.yinxiaokang.original.LoanRepaymentAlgorithm;
 import top.yinxiaokang.original.Utils;
 import top.yinxiaokang.original.dto.AccountInformations;
 import top.yinxiaokang.original.entity.StOverdue;
+import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.SthousingDetail;
 import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.enums.LoanBusinessType;
@@ -17,6 +19,7 @@ import top.yinxiaokang.util.Common;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 
 import static top.yinxiaokang.util.Common.NO_MESS;
@@ -132,6 +135,8 @@ public class AccountCheckMain {
      */
     private static void doAnalyze(AccountCheckMain checkMain, List<AccountInformations> informations, int dealNum) {
         int writeTag = 0;
+        // 对于即将扣款分析, 排序 , 其他不用排序
+        Collections.sort(informations, Comparator.comparing(o -> o.getSthousingAccount().getDkxffrq()));
         for (AccountInformations item : informations) {
             logs.append("开始分析第 " + (++dealNum) + " 条 \n");
             if (item.getSthousingAccount() == null || item.getSthousingAccount().getDkffrq() == null) continue;
@@ -145,20 +150,21 @@ public class AccountCheckMain {
                     " , 初始期数正确性: " + (item.getInitFirstQc().compareTo(item.getSthousingAccount().getDkqs()) > 0 ? "错误" : "正确") + " \n");
 
             //region 对于1000多个账号或者是对于30多期跳到170多期的账号
-            OneThousand oneThousand = new OneThousand();
-            oneThousand.setDkzh(item.getSthousingAccount().getDkzh());
-            oneThousand.setCsdkye(item.getInitInformation().getCsye());
-            oneThousand.setCsyqbj(item.getInitInformation().getCsyqbj());
-            oneThousand.setDkffrq(item.getSthousingAccount().getDkffrq());
-            oneThousand.setDkqs(item.getSthousingAccount().getDkqs());
-            oneThousand.setCsqs(item.getInitFirstQc());
-            oneThousand.setCsqszqx((item.getInitFirstQc().compareTo(item.getSthousingAccount().getDkqs()) > 0 ? "错误" : "正确"));
-            dataset.add(oneThousand);
+            //OneThousand oneThousand = new OneThousand();
+            //oneThousand.setDkzh(item.getSthousingAccount().getDkzh());
+            //oneThousand.setCsdkye(item.getInitInformation().getCsye());
+            //oneThousand.setCsyqbj(item.getInitInformation().getCsyqbj());
+            //oneThousand.setDkffrq(item.getSthousingAccount().getDkffrq());
+            //oneThousand.setDkqs(item.getSthousingAccount().getDkqs());
+            //oneThousand.setCsqs(item.getInitFirstQc());
+            //oneThousand.setCsqszqx((item.getInitFirstQc().compareTo(item.getSthousingAccount().getDkqs()) > 0 ? "错误" : "正确"));
+            //dataset.add(oneThousand);
             //endregion
 
             //checkMain.analyze(item, reverseBxQc);
             //checkMain.analyzeInitHasOverdueLx(item, reverseBxQc);
-            checkMain.analyzeOneThousandDkzh(item, reverseBxQc);
+            //checkMain.analyzeOneThousandDkzh(item, reverseBxQc);
+            checkMain.analyzeOneThousandDkzhFuturePayment(item);
 //            BigDecimal dkyeByYw = checkMain.analyzeAllDkzh(item, reverseBxQc);
 
 
@@ -186,6 +192,38 @@ public class AccountCheckMain {
                 logsToFile();
             }
         }
+    }
+
+    /**
+     * 分析即将发生扣款的时间等
+     *
+     * @param informations
+     */
+    public void analyzeOneThousandDkzhFuturePayment(AccountInformations informations) {
+
+        SthousingAccount sthousingAccount = informations.getSthousingAccount();
+        Date dkxffrq = sthousingAccount.getDkxffrq();
+        BigDecimal xdqqc = sthousingAccount.getXdqqc();
+        Date date = CommLoanAlgorithm.periodOfafterTime(dkxffrq, xdqqc.intValue());
+        LocalDate thisDate = LocalDate.from(date.toInstant());
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int maxDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+        LocalDate start  = LocalDate.of(year, month, maxDay);
+        LocalDate end = LocalDate.of(year, month, 1);
+
+        // 计算的下一次扣款日期 , 在 该月份以内
+        if (thisDate.compareTo(start) >= 0 && thisDate.compareTo(end) <= 0) {
+            String s = "扣款日期:  %-10s";
+            String format = String.format(s, thisDate);
+            logs.append(format);
+        }
+
+        logs.append("\n");
+
+
     }
 
 
