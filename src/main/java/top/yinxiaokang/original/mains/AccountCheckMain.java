@@ -23,7 +23,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static top.yinxiaokang.util.Common.NO_MESS;
 import static top.yinxiaokang.util.Common.NO_MESS_CHINESE;
@@ -86,7 +85,7 @@ public class AccountCheckMain {
             logs.append("\n");
         }
         logsToFile();
-//        listToXlsx();
+        listToXlsx();
         System.out.println("************************************************************************************************************************************************************");
         System.out.println("**************************************************************************结束运行!*************************************************************************");
         System.out.println("************************************************************************************************************************************************************");
@@ -139,7 +138,7 @@ public class AccountCheckMain {
     private static void doAnalyze(AccountCheckMain checkMain, List<AccountInformations> informations, int dealNum) {
         int writeTag = 0;
         // 对于即将扣款分析, 排序 , 其他不用排序
-        Collections.sort(informations, Comparator.comparing(o -> o.getSthousingAccount().getDkxffrq()));
+        //Collections.sort(informations, Comparator.comparing(o -> o.getSthousingAccount().getDkxffrq()));
         for (AccountInformations item : informations) {
             logs.append("开始分析第 " + (++dealNum) + " 条 \n");
             if (item.getSthousingAccount() == null || item.getSthousingAccount().getDkffrq() == null) continue;
@@ -152,20 +151,22 @@ public class AccountCheckMain {
                     " , 贷款期数: " + item.getSthousingAccount().getDkqs() +
                     " , 初始期数正确性: " + (item.getInitFirstQc().compareTo(item.getSthousingAccount().getDkqs()) > 0 ? "错误" : "正确") + " \n");
 
-            //region 对于1000多个账号或者是对于30多期跳到170多期的账号
-            //OneThousand oneThousand = new OneThousand();
-            //oneThousand.setDkzh(item.getSthousingAccount().getDkzh());
-            //oneThousand.setCsdkye(item.getInitInformation().getCsye());
-            //oneThousand.setCsyqbj(item.getInitInformation().getCsyqbj());
-            //oneThousand.setDkffrq(item.getSthousingAccount().getDkffrq());
-            //oneThousand.setDkqs(item.getSthousingAccount().getDkqs());
-            //oneThousand.setCsqs(item.getInitFirstQc());
-            //oneThousand.setCsqszqx((item.getInitFirstQc().compareTo(item.getSthousingAccount().getDkqs()) > 0 ? "错误" : "正确"));
-            //dataset.add(oneThousand);
+            //region 对于1400多个账号或者是对于30多期跳到170多期的账号
+            OneThousand oneThousand = new OneThousand();
+            oneThousand.setDkzh(item.getSthousingAccount().getDkzh());
+            oneThousand.setCsdkye(item.getInitInformation().getCsye());
+            oneThousand.setCsyqbj(item.getInitInformation().getCsyqbj());
+            oneThousand.setDkffrq(item.getSthousingAccount().getDkffrq());
+            oneThousand.setDkqs(item.getSthousingAccount().getDkqs());
+            oneThousand.setCsqs(item.getInitFirstQc());
+            oneThousand.setCsqszqx((item.getInitFirstQc().compareTo(item.getSthousingAccount().getDkqs()) > 0 ? "错误" : "正确"));
+            dataset.add(oneThousand);
             //endregion
 
             //checkMain.analyze(item, reverseBxQc);
             //checkMain.analyzeInitHasOverdueLx(item, reverseBxQc);
+
+            // region 根据条件查询账号
             List<SthousingDetail> details = item.getDetails();
             BigDecimal sum = BigDecimal.ZERO;
             for ( int i = 0 ; i < details.size();i++) {
@@ -175,7 +176,12 @@ public class AccountCheckMain {
                 continue;
             }
             if (item.getInitInformation().getCsyqbj().compareTo(BigDecimal.ZERO) > 0) continue;
+            // endregion
+
+
             checkMain.analyzeOneThousandDkzh(item, reverseBxQc);
+
+
 //            checkMain.analyzeOneThousandDkzhFuturePayment(item);
 //            BigDecimal dkyeByYw = checkMain.analyzeAllDkzh(item, reverseBxQc);
 
@@ -285,7 +291,7 @@ public class AccountCheckMain {
     }
 
     /**
-     * 1000多个问题账号分析 , 不根据业务, 推算正常应该还款的业务
+     * 1400多个问题账号分析 , 不根据业务, 推算正常应该还款的业务
      *
      * @param informations
      * @param reverseQc
@@ -294,7 +300,7 @@ public class AccountCheckMain {
         // 业务记录
         List<SthousingDetail> details = informations.getDetails();
         BigDecimal csye = informations.getInitInformation().getCsye();
-        BigDecimal dkyeByCsye = csye;
+        BigDecimal dkyeByCsye = csye.add(BigDecimal.ZERO);
         // 根据业务推算的余额 , 减去初始逾期本金对我们系统的业务进行分析 , 计算
         BigDecimal dkyeByYeWu = csye.subtract(informations.getInitInformation().getCsyqbj());
 
@@ -326,6 +332,15 @@ public class AccountCheckMain {
                 detail.setXqdkye(dkyeByCsye);
                 shouldDetails.add(detail);
             }
+        }
+
+        if (informations.getInitInformation().getCsyqbj().compareTo(BigDecimal.ZERO) > 0 ) {
+            if (dkyeByCsye.compareTo(dkyeByYeWu) == 0) {
+                logs.append("初始逾期本金和初始导入系统业务本金和相等\n");
+            } else {
+                logs.append("初始逾期本金和初始导入系统业务本金和=========================\n");
+            }
+
         }
         analyOneThousand0(informations, repaymentItems, prepaymentList, 0, now, null, shouldDetails);
 
