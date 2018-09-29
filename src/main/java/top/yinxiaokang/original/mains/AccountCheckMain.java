@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static top.yinxiaokang.util.Common.NO_MESS;
 import static top.yinxiaokang.util.Common.NO_MESS_CHINESE;
@@ -165,8 +166,17 @@ public class AccountCheckMain {
 
             //checkMain.analyze(item, reverseBxQc);
             //checkMain.analyzeInitHasOverdueLx(item, reverseBxQc);
-            //checkMain.analyzeOneThousandDkzh(item, reverseBxQc);
-            checkMain.analyzeOneThousandDkzhFuturePayment(item);
+            List<SthousingDetail> details = item.getDetails();
+            BigDecimal sum = BigDecimal.ZERO;
+            for ( int i = 0 ; i < details.size();i++) {
+                sum = sum.add(details.get(i).getBjje());
+            }
+            if (sum .compareTo( item.getInitInformation().getCsye()) <= 0) {
+                continue;
+            }
+            if (item.getInitInformation().getCsyqbj().compareTo(BigDecimal.ZERO) > 0) continue;
+            checkMain.analyzeOneThousandDkzh(item, reverseBxQc);
+//            checkMain.analyzeOneThousandDkzhFuturePayment(item);
 //            BigDecimal dkyeByYw = checkMain.analyzeAllDkzh(item, reverseBxQc);
 
 
