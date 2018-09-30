@@ -19,6 +19,7 @@ import top.yinxiaokang.util.Common;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
@@ -342,7 +343,10 @@ public class AccountCheckMain {
             }
 
         }
-        analyOneThousand0(informations, repaymentItems, prepaymentList, 0, now, null, shouldDetails);
+        //analyOneThousand0(informations, repaymentItems, prepaymentList, 0, now, null, shouldDetails);
+
+        analyOneThousand11(repaymentItems, shouldDetails, prepaymentList, now, 0);
+        analyOneThousand12(shouldDetails, informations);
 
         BigDecimal subFse = BigDecimal.ZERO;
         BigDecimal subBj = BigDecimal.ZERO;
@@ -473,18 +477,162 @@ public class AccountCheckMain {
         logs.append(format);
     }
 
+    /**
+     * 主要生成shouldDetails , 只是为了把提前还款和结清的数据穿插入其中 ,数据不正确 , 后期在处理shouldDetails
+     *
+     * @param repaymentItems
+     * @param shouldDetails
+     * @param prepaymentList
+     * @param now
+     * @param prepaymentTag
+     */
+    private void analyOneThousand11(List<RepaymentItem> repaymentItems, List<SthousingDetail> shouldDetails,
+                                    List<SthousingDetail> prepaymentList, Date now, int prepaymentTag) {
+        SthousingDetail prepaymentDetail;
+        for (RepaymentItem repaymentItem : repaymentItems) {
+            // 截止日期
+            if (now != null && Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(now)) > 0) {
+                break;
+            }
+
+            prepaymentDetail = null;
+            if (prepaymentTag < prepaymentList.size()) {
+                prepaymentDetail = prepaymentList.get(prepaymentTag);
+            }
+            // 若 不存在提前还款(or结清)业务 或者 该期还款日期在提前还款(or结清)业务发生日期之前, 那么该期计划应该存在
+            if (prepaymentDetail == null ||
+                    Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(prepaymentDetail.getYwfsrq())) < 0) {
+                SthousingDetail detail = new SthousingDetail();
+                detail.setDkywmxlx("正常还款");
+                detail.setYwfsrq(repaymentItem.getHkrq());
+                detail.setDqqc(new BigDecimal(repaymentItem.getHkqc()));
+                detail.setFse(repaymentItem.getFse());
+                detail.setBjje(repaymentItem.getHkbjje());
+                detail.setLxje(repaymentItem.getHklxje());
+                detail.setXqdkye(repaymentItem.getQmdkye());
+                shouldDetails.add(detail);
+            } else {
+                boolean isJieQing = false;
+                SthousingDetail detail = new SthousingDetail();
+                if (LoanBusinessType.提前还款.getCode().equals(prepaymentDetail.getDkywmxlx())) {
+                    detail.setDkywmxlx("提前还款");
+                }
+                if (LoanBusinessType.结清.getCode().equals(prepaymentDetail.getDkywmxlx())) {
+                    detail.setDkywmxlx(Common.FULL_SPACE + "结清" + Common.FULL_SPACE);
+                    isJieQing = true;
+                }
+
+                detail.setYwfsrq(prepaymentDetail.getYwfsrq());
+                detail.setDqqc(new BigDecimal(repaymentItem.getHkqc()));
+                // 主要获取发生额 , 其余值没有意义
+                detail.setFse(prepaymentDetail.getFse());
+                detail.setBjje(BigDecimal.ZERO);
+                detail.setLxje(BigDecimal.ZERO);
+                detail.setXqdkye(BigDecimal.ZERO);
+                shouldDetails.add(detail);
+                if (isJieQing) {
+                    break;
+                }
+                prepaymentTag++;
+            }
+        }
+    }
+
+
+    /**
+     * 根据生成的站位业务, 后期处理
+     * @param shouldDetails 生成的站位业务
+     * @param informations
+     */
+    private void analyOneThousand12(List<SthousingDetail> shouldDetails, AccountInformations informations) {
+        SthousingDetail thisDetail;
+        SthousingDetail preDetail = null;
+        SthousingDetail nextDetail = null;
+        List<RepaymentItem> repaymentItems = null;
+        int repaymentTag = -1 ;
+        for (int i = 0; i < shouldDetails.size(); i++) {
+            thisDetail = shouldDetails.get(i);
+            if (i > 0) {
+                preDetail = shouldDetails.get(i - 1);
+            }
+            if (i < shouldDetails.size() - 1) {
+                nextDetail = shouldDetails.get(i + 1);
+            }
+
+            // 代表重新生成了还款计划
+            if (repaymentItems != null && repaymentTag > -1) {
+                RepaymentItem repaymentItem = repaymentItems.get(repaymentTag);
+                thisDetail.setFse(repaymentItem.getFse());
+                thisDetail.setLxje(repaymentItem.getHklxje());
+                thisDetail.setBjje(repaymentItem.getHkbjje());
+                thisDetail.setXqdkye(repaymentItem.getQmdkye());
+                repaymentTag++;
+            }
+
+            // 在提前还款之前生成的是正确的
+            if ("提前还款".equals(thisDetail.getDkywmxlx())) {
+                BigDecimal qcdkye = preDetail.getXqdkye();
+                int jxts = LoanRepaymentAlgorithm.betweenTwoDateDays(preDetail.getYwfsrq(), thisDetail.getYwfsrq());
+                BigDecimal lx = LoanRepaymentAlgorithm.calInterestByInterestDays(qcdkye, informations.getSthousingAccount().getDkll(), jxts);
+                BigDecimal bjje = thisDetail.getFse().subtract(lx);
+                BigDecimal qmdkye = qcdkye.subtract(bjje);
+
+                thisDetail.setLxje(lx);
+                thisDetail.setBjje(bjje);
+                thisDetail.setXqdkye(qmdkye);
+
+                String dkffrqStr = Utils.SDF_YEAR_MONTH_DAY.format(informations.getSthousingAccount().getDkffrq());
+                String ywfsrqStr = Utils.SDF_YEAR_MONTH_DAY.format(thisDetail.getYwfsrq());
+                String dkxffrqStr = ywfsrqStr.substring(0, 9) + dkffrqStr.substring(9, 11);
+                Date dkxffrq = null;
+                try {
+                    dkxffrq = Utils.SDF_YEAR_MONTH_DAY.parse(dkxffrqStr);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                if (nextDetail != null) {
+                    if ("正常还款".equals(nextDetail.getDkywmxlx())) {
+                        // 生成还款计划
+                        repaymentItems = RepaymentPlan.listRepaymentPlan(qmdkye,
+                                dkxffrq,
+                                informations.getSthousingAccount().getDkqs().intValue() - thisDetail.getDqqc().intValue(),
+                                informations.getSthousingAccount().getDkll(),
+                                RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()),
+                                thisDetail.getDqqc().intValue(),
+                                RepaymentMonthRateScale.NO);
+                        repaymentTag = 0;
+                    }
+                }
+
+            }
+        }
+    }
+
+
+    /**
+     * 安装正常情况推算应该发生的业务(这种思路有点复杂, 并且逻辑混乱)
+     *
+     * @param informations 对于一个账号, 包含组织好的各种信息
+     * @param repaymentItems 还款计划
+     * @param prepaymentList 提前还款,根据业务发生日期排好序的
+     * @param prepaymentTag 提前还款标记
+     * @param now 截止的某一时间
+     * @param preDetailYwfsrq 前一项业务的业务发生日期
+     * @param shouldDetails 应该发生的业务的集合
+     */
     private void analyOneThousand0(AccountInformations informations, List<RepaymentItem> repaymentItems,
-                                   List<SthousingDetail> prepaymentList, int preTag, Date now, Date preDetailYwfsrq, List<SthousingDetail> shouldDetails) {
-        SthousingDetail preDetail;
+                                   List<SthousingDetail> prepaymentList, int prepaymentTag, Date now, Date preDetailYwfsrq, List<SthousingDetail> shouldDetails) {
+        SthousingDetail prepaymentDetail;
         for (int i = 0; i < repaymentItems.size(); i++) {
             RepaymentItem repaymentItem = repaymentItems.get(i);
             RepaymentItem pre = null;
             if (i > 0) {
                 pre = repaymentItems.get(i - 1);
             }
-            preDetail = null;
-            if (preTag < prepaymentList.size()) {
-                preDetail = prepaymentList.get(preTag);
+            prepaymentDetail = null;
+            if (prepaymentTag < prepaymentList.size()) {
+                prepaymentDetail = prepaymentList.get(prepaymentTag);
             }
             if (now != null && Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(now)) > 0) {
                 break;
@@ -495,8 +643,8 @@ public class AccountCheckMain {
             //    repaymentItem.setQmdkye(pre.getQmdkye());
             //    continue;
             //}
-            if (preDetail == null ||
-                    Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(preDetail.getYwfsrq())) < 0) {
+            if (prepaymentDetail == null ||
+                    Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(prepaymentDetail.getYwfsrq())) < 0) {
                 // 前一期是提前还款  ,  后面一期的利息要多点
                 if (preDetailYwfsrq != null) {
                     int lxts = LoanRepaymentAlgorithm.differentDaysByMillisecond(preDetailYwfsrq, repaymentItem.getHkrq()) - 30;
@@ -509,7 +657,7 @@ public class AccountCheckMain {
                 SthousingDetail detail = new SthousingDetail();
                 detail.setDkywmxlx("正常还款");
                 detail.setYwfsrq(repaymentItem.getHkrq());
-                detail.setDqqc(new BigDecimal(repaymentItem.getHkqc().intValue()));
+                detail.setDqqc(new BigDecimal(repaymentItem.getHkqc()));
                 detail.setFse(repaymentItem.getFse());
                 detail.setBjje(repaymentItem.getHkbjje());
                 detail.setLxje(repaymentItem.getHklxje());
@@ -517,28 +665,39 @@ public class AccountCheckMain {
                 shouldDetails.add(detail);
 
             } else {
-                BigDecimal qmdkye = pre == null ? repaymentItem.getQcdkye().subtract(preDetail.getBjje()) : pre.getQmdkye().subtract(preDetail.getBjje());
+                BigDecimal qcdkye = pre == null ? repaymentItem.getQcdkye() : pre.getQmdkye();
+                int lxts = LoanRepaymentAlgorithm.calInterestDays(informations.getSthousingAccount().getDkffrq(), prepaymentDetail.getYwfsrq());
+                if (preDetailYwfsrq != null){
+                    lxts = LoanRepaymentAlgorithm.differentDaysByMillisecond(preDetailYwfsrq, prepaymentDetail.getYwfsrq());
+                }
+                BigDecimal lx = LoanRepaymentAlgorithm.calInterestByInterestDays(qcdkye, informations.getSthousingAccount().getDkll(), lxts);
+                BigDecimal bjje = prepaymentDetail.getFse().subtract(lx);
+                BigDecimal qmdkye = qcdkye.subtract(bjje);
+                //BigDecimal qmdkye = pre == null ? repaymentItem.getQcdkye().subtract(prepaymentDetail.getBjje()) : pre.getQmdkye().subtract(prepaymentDetail.getBjje());
                 boolean isJieQing = false;
                 SthousingDetail detail = new SthousingDetail();
-                if (LoanBusinessType.提前还款.getCode().equals(preDetail.getDkywmxlx())) {
+                if (LoanBusinessType.提前还款.getCode().equals(prepaymentDetail.getDkywmxlx())) {
                     detail.setDkywmxlx("提前还款");
                 }
-                if (LoanBusinessType.结清.getCode().equals(preDetail.getDkywmxlx())) {
+                if (LoanBusinessType.结清.getCode().equals(prepaymentDetail.getDkywmxlx())) {
                     detail.setDkywmxlx(Common.FULL_SPACE + "结清" + Common.FULL_SPACE);
                     isJieQing = true;
                 }
 
-                detail.setYwfsrq(preDetail.getYwfsrq());
-                detail.setDqqc(new BigDecimal(repaymentItem.getHkqc().intValue()));
-                detail.setFse(preDetail.getFse());
-                detail.setBjje(preDetail.getBjje());
-                detail.setLxje(preDetail.getLxje());
+                detail.setYwfsrq(prepaymentDetail.getYwfsrq());
+                detail.setDqqc(new BigDecimal(repaymentItem.getHkqc()));
+                //detail.setFse(prepaymentDetail.getFse());
+                //detail.setBjje(prepaymentDetail.getBjje());
+                //detail.setLxje(prepaymentDetail.getLxje());
+                detail.setFse(prepaymentDetail.getFse());
+                detail.setBjje(bjje);
+                detail.setLxje(lx);
                 detail.setXqdkye(qmdkye);
                 shouldDetails.add(detail);
                 if (isJieQing) {
                     break;
                 }
-                preTag++;
+                prepaymentTag++;
                 repaymentItems = RepaymentPlan.listRepaymentPlan(qmdkye,
                         repaymentItem.getHkrq(),
                         informations.getSthousingAccount().getDkqs().intValue() - repaymentItem.getHkqc(),
@@ -546,7 +705,7 @@ public class AccountCheckMain {
                         RepaymentMethod.getRepaymentMethodByCode(informations.getSthousingAccount().getDkhkfs()),
                         repaymentItem.getHkqc(),
                         RepaymentMonthRateScale.NO);
-                analyOneThousand0(informations, repaymentItems, prepaymentList, preTag, now, preDetail.getYwfsrq(), shouldDetails);
+                analyOneThousand0(informations, repaymentItems, prepaymentList, prepaymentTag, now, prepaymentDetail.getYwfsrq(), shouldDetails);
                 break;
             }
         }
