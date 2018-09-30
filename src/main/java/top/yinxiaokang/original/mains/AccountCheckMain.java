@@ -21,6 +21,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -60,6 +61,7 @@ public class AccountCheckMain {
         }
 
         int size = importExcel.size();
+        logs.append("=============================================写入时间: "+ LocalDateTime.now().toString() + "=============================================\n");
         logs.append("读取总条数: " + size + "\n");
 
         List<InitInformation> initInformationList = Common.importExcelToInitInformationList(importExcel);
@@ -561,17 +563,44 @@ public class AccountCheckMain {
 
             // 代表重新生成了还款计划
             if (repaymentItems != null && repaymentTag > -1) {
+
+
+
                 RepaymentItem repaymentItem = repaymentItems.get(repaymentTag);
                 thisDetail.setFse(repaymentItem.getFse());
                 thisDetail.setLxje(repaymentItem.getHklxje());
                 thisDetail.setBjje(repaymentItem.getHkbjje());
                 thisDetail.setXqdkye(repaymentItem.getQmdkye());
+
+                // 重新生成还款计划之后第一期
+                if (repaymentTag == 0) {
+                    int jxts = LoanRepaymentAlgorithm.betweenTwoDateDays(preDetail.getYwfsrq(), thisDetail.getYwfsrq()) - 30;
+                    BigDecimal lx = LoanRepaymentAlgorithm.calInterestByInterestDays(preDetail.getXqdkye(), informations.getSthousingAccount().getDkll(), jxts);
+                    thisDetail.setFse(thisDetail.getFse().add(lx));
+                    thisDetail.setLxje(thisDetail.getLxje().add(lx));
+                }
                 repaymentTag++;
+            }
+
+            if (thisDetail.getDkywmxlx().contains("结清")) {
+                BigDecimal qcdkye = preDetail == null ?
+                        informations.getInitInformation().getCsye().subtract(informations.getInitInformation().getCsyqbj()) :
+                        preDetail.getXqdkye();
+                int jxts = LoanRepaymentAlgorithm.betweenTwoDateDays(preDetail.getYwfsrq(), thisDetail.getYwfsrq());
+                BigDecimal lx = LoanRepaymentAlgorithm.calInterestByInterestDays(qcdkye, informations.getSthousingAccount().getDkll(), jxts);
+                BigDecimal bjje = qcdkye;
+                BigDecimal qmdkye = qcdkye.subtract(bjje);
+                thisDetail.setFse(bjje.add(lx));
+                thisDetail.setLxje(lx);
+                thisDetail.setBjje(bjje);
+                thisDetail.setXqdkye(qmdkye);
             }
 
             // 在提前还款之前生成的是正确的
             if ("提前还款".equals(thisDetail.getDkywmxlx())) {
-                BigDecimal qcdkye = preDetail.getXqdkye();
+                BigDecimal qcdkye = preDetail == null ?
+                        informations.getInitInformation().getCsye().subtract(informations.getInitInformation().getCsyqbj()) :
+                        preDetail.getXqdkye();
                 int jxts = LoanRepaymentAlgorithm.betweenTwoDateDays(preDetail.getYwfsrq(), thisDetail.getYwfsrq());
                 BigDecimal lx = LoanRepaymentAlgorithm.calInterestByInterestDays(qcdkye, informations.getSthousingAccount().getDkll(), jxts);
                 BigDecimal bjje = thisDetail.getFse().subtract(lx);
@@ -581,9 +610,12 @@ public class AccountCheckMain {
                 thisDetail.setBjje(bjje);
                 thisDetail.setXqdkye(qmdkye);
 
+
                 String dkffrqStr = Utils.SDF_YEAR_MONTH_DAY.format(informations.getSthousingAccount().getDkffrq());
                 String ywfsrqStr = Utils.SDF_YEAR_MONTH_DAY.format(thisDetail.getYwfsrq());
-                String dkxffrqStr = ywfsrqStr.substring(0, 9) + dkffrqStr.substring(9, 11);
+                String str1 = ywfsrqStr.substring(0, 8);
+                String str2 = dkffrqStr.substring(8, 10);
+                String dkxffrqStr = str1 + str2;
                 Date dkxffrq = null;
                 try {
                     dkxffrq = Utils.SDF_YEAR_MONTH_DAY.parse(dkxffrqStr);
