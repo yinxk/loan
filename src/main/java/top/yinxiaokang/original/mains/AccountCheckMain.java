@@ -168,15 +168,15 @@ public class AccountCheckMain {
             //checkMain.analyzeInitHasOverdueLx(item, reverseBxQc);
 
             // region 根据条件查询账号
-            List<SthousingDetail> details = item.getDetails();
-            BigDecimal sum = BigDecimal.ZERO;
-            for ( int i = 0 ; i < details.size();i++) {
-                sum = sum.add(details.get(i).getBjje());
-            }
-            if (sum .compareTo( item.getInitInformation().getCsye()) <= 0) {
-                continue;
-            }
-            if (item.getInitInformation().getCsyqbj().compareTo(BigDecimal.ZERO) > 0) continue;
+            //List<SthousingDetail> details = item.getDetails();
+            //BigDecimal sum = BigDecimal.ZERO;
+            //for ( int i = 0 ; i < details.size();i++) {
+            //    sum = sum.add(details.get(i).getBjje());
+            //}
+            //if (sum .compareTo( item.getInitInformation().getCsye()) <= 0) {
+            //    continue;
+            //}
+            //if (item.getInitInformation().getCsyqbj().compareTo(BigDecimal.ZERO) > 0) continue;
             // endregion
 
 
