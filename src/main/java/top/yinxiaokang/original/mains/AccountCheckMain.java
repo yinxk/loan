@@ -216,6 +216,13 @@ public class AccountCheckMain {
                 logsToFile();
             }
         }
+        //region 对于1400多个账号或者是对于30多期跳到170多期的账号
+        OneThousand oneThousand = new OneThousand();
+        oneThousand.setDkzh("写入时间 : " + DateUtil.common1.format(LocalDateTime.now()));
+
+        dataset.add(oneThousand);
+        //endregion
+
     }
 
     /**
