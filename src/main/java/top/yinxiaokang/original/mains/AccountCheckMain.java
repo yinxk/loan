@@ -16,6 +16,7 @@ import top.yinxiaokang.original.loan.repayment.RepaymentMonthRateScale;
 import top.yinxiaokang.original.loan.repayment.RepaymentPlan;
 import top.yinxiaokang.original.service.AccountCheck;
 import top.yinxiaokang.util.Common;
+import top.yinxiaokang.util.DateUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -61,7 +62,7 @@ public class AccountCheckMain {
         }
 
         int size = importExcel.size();
-        logs.append("=============================================写入时间: "+ LocalDateTime.now().toString() + "=============================================\n");
+        logs.append("=============================================写入时间: "+ DateUtil.common1.format(LocalDateTime.now()) + "=============================================\n");
         logs.append("读取总条数: " + size + "\n");
 
         List<InitInformation> initInformationList = Common.importExcelToInitInformationList(importExcel);
