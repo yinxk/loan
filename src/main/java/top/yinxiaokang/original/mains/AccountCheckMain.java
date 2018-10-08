@@ -347,8 +347,7 @@ public class AccountCheckMain {
         }
         //analyOneThousand0(informations, repaymentItems, prepaymentList, 0, now, null, shouldDetails);
 
-        analyOneThousand11(repaymentItems, shouldDetails, prepaymentList, now, 0);
-        analyOneThousand12(shouldDetails, informations);
+        analyOneThousand1(repaymentItems, shouldDetails, prepaymentList, now, 0, informations);
 
         BigDecimal subFse = BigDecimal.ZERO;
         BigDecimal subBj = BigDecimal.ZERO;
@@ -477,6 +476,13 @@ public class AccountCheckMain {
         oneThousand1.setSubDkye(shouldDkye.subtract(informations.getSthousingAccount().getDkye()));
         dataset.add(oneThousand1);
         logs.append(format);
+    }
+
+
+    private void analyOneThousand1(List<RepaymentItem> repaymentItems, List<SthousingDetail> shouldDetails,
+                                    List<SthousingDetail> prepaymentList, Date now, int prepaymentTag, AccountInformations informations){
+        analyOneThousand11(repaymentItems, shouldDetails, prepaymentList, now, 0);
+        analyOneThousand12(shouldDetails, informations);
     }
 
     /**
