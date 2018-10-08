@@ -342,7 +342,7 @@ public class AccountCheckMain {
             if (dkyeByCsye.compareTo(dkyeByYeWu) == 0) {
                 logs.append("初始逾期本金和初始导入系统业务本金和相等\n");
             } else {
-                logs.append("初始逾期本金和初始导入系统业务本金和=========================\n");
+                logs.append("初始逾期本金和初始导入系统业务本金和不=========================\n");
             }
 
         }
@@ -559,6 +559,7 @@ public class AccountCheckMain {
         SthousingDetail nextDetail = null;
         List<RepaymentItem> repaymentItems = null;
         int repaymentTag = -1 ;
+        String jxtsStr = "期次: %-5s 计息天数 : %-5s\n";
         for (int i = 0; i < shouldDetails.size(); i++) {
             thisDetail = shouldDetails.get(i);
             if (i > 0) {
@@ -567,12 +568,8 @@ public class AccountCheckMain {
             if (i < shouldDetails.size() - 1) {
                 nextDetail = shouldDetails.get(i + 1);
             }
-
             // 代表重新生成了还款计划
             if (repaymentItems != null && repaymentTag > -1) {
-
-
-
                 RepaymentItem repaymentItem = repaymentItems.get(repaymentTag);
                 thisDetail.setFse(repaymentItem.getFse());
                 thisDetail.setLxje(repaymentItem.getHklxje());
@@ -582,6 +579,7 @@ public class AccountCheckMain {
                 // 重新生成还款计划之后第一期
                 if (repaymentTag == 0) {
                     int jxts = LoanRepaymentAlgorithm.betweenTwoDateDays(preDetail.getYwfsrq(), thisDetail.getYwfsrq()) - 30;
+                    logs.append(String.format(jxtsStr, thisDetail.getDqqc(), jxts));
                     BigDecimal lx = LoanRepaymentAlgorithm.calInterestByInterestDays(preDetail.getXqdkye(), informations.getSthousingAccount().getDkll(), jxts);
                     thisDetail.setFse(thisDetail.getFse().add(lx));
                     thisDetail.setLxje(thisDetail.getLxje().add(lx));
@@ -593,7 +591,8 @@ public class AccountCheckMain {
                 BigDecimal qcdkye = preDetail == null ?
                         informations.getInitInformation().getCsye().subtract(informations.getInitInformation().getCsyqbj()) :
                         preDetail.getXqdkye();
-                int jxts = LoanRepaymentAlgorithm.betweenTwoDateDays(preDetail.getYwfsrq(), thisDetail.getYwfsrq());
+                int jxts = LoanRepaymentAlgorithm.differentDaysByMillisecond(preDetail.getYwfsrq(), thisDetail.getYwfsrq());
+                logs.append(String.format(jxtsStr, thisDetail.getDqqc(), jxts));
                 BigDecimal lx = LoanRepaymentAlgorithm.calInterestByInterestDays(qcdkye, informations.getSthousingAccount().getDkll(), jxts);
                 BigDecimal bjje = qcdkye;
                 BigDecimal qmdkye = qcdkye.subtract(bjje);
@@ -610,6 +609,7 @@ public class AccountCheckMain {
                         preDetail.getXqdkye();
                 int jxts = LoanRepaymentAlgorithm.betweenTwoDateDays(preDetail.getYwfsrq(), thisDetail.getYwfsrq());
                 BigDecimal lx = LoanRepaymentAlgorithm.calInterestByInterestDays(qcdkye, informations.getSthousingAccount().getDkll(), jxts);
+                logs.append(String.format(jxtsStr, thisDetail.getDqqc(), jxts));
                 BigDecimal bjje = thisDetail.getFse().subtract(lx);
                 BigDecimal qmdkye = qcdkye.subtract(bjje);
 

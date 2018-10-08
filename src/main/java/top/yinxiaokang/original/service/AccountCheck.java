@@ -332,7 +332,7 @@ public class AccountCheck {
     }
 
     /**
-     * 计算从2017-12-1 到 核算时间(如:2018-8-20)期间的 (期次, 对应开始时间, 结束时间)
+     * 计算从2017-11-30 到 核算时间(如:2018-8-20)期间的 (期次, 对应开始时间, 结束时间)
      *
      * @param account
      * @param hssj    核算时间(核算日期)
@@ -348,7 +348,7 @@ public class AccountCheck {
                 calendar.add(Calendar.DAY_OF_MONTH, -1);
                 hssj = calendar.getTime();
             }
-            Date soutStartDate = Utils.SDF_YEAR_MONTH_DAY.parse("2017-12-01");
+            Date soutStartDate = Utils.SDF_YEAR_MONTH_DAY.parse("2017-11-30");
             List<CurrentPeriodRange> ranges = LoanRepaymentAlgorithm.listHSRange(dkffrq, hssj, soutStartDate);
             return ranges;
         } catch (ParseException e) {
