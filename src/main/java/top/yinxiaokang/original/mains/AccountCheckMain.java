@@ -359,17 +359,46 @@ public class AccountCheckMain {
 
         analyOneThousand1(repaymentItems, shouldDetails, prepaymentList, now, 0, informations);
 
+        // region 发生额差额,本金差额,利息差额,贷款余额差额合计
         BigDecimal subFse = BigDecimal.ZERO;
         BigDecimal subBj = BigDecimal.ZERO;
         BigDecimal subLx = BigDecimal.ZERO;
         BigDecimal subDkye = BigDecimal.ZERO;
+        // endregion
+        // region 每期差额
         BigDecimal eachSubFse = BigDecimal.ZERO;
         BigDecimal eachSubBj;
         BigDecimal eachSubLx;
         BigDecimal eachSubDkye;
+        // endregion
+
+
+        // region 推算 合计
+
+        BigDecimal sumOfShouldFse = BigDecimal.ZERO;
+        BigDecimal sumOfShouldBj = BigDecimal.ZERO;
+        BigDecimal sumOfShouldLx = BigDecimal.ZERO;
+        for (SthousingDetail detail : shouldDetails) {
+            sumOfShouldFse = sumOfShouldFse.add(detail.getFse());
+            sumOfShouldBj = sumOfShouldBj.add(detail.getBjje());
+            sumOfShouldLx = sumOfShouldLx.add(detail.getLxje());
+        }
+        //endregion
+
+        // region 实际 合计
+        BigDecimal sumOfSjFse = BigDecimal.ZERO;
+        BigDecimal sumOfSjBj = BigDecimal.ZERO;
+        BigDecimal sumOfSjLx = BigDecimal.ZERO;
+        for (SthousingDetail detail : details) {
+            sumOfSjFse = sumOfSjFse.add(detail.getFse());
+            sumOfSjBj = sumOfSjBj.add(detail.getBjje());
+            sumOfSjLx = sumOfSjLx.add(detail.getLxje());
+        }
+        // endregion
+
+
+
         BigDecimal shouldDkye = csye;
-
-
         int size = shouldDetails.size() > details.size() ? shouldDetails.size() : details.size();
         for (int i = 0; i < size; i++) {
             SthousingDetail shouldDetail = null;
@@ -477,6 +506,26 @@ public class AccountCheckMain {
         String log = "发生额差 : %s, 本金差额: %s , 利息差额: %s , 贷款余额差额: %s  推算应该贷款余额:  %s  实际贷款余额: %s  推-实际: %s \n";
         String format = String.format(log, subFse, subBj, subLx, subDkye, shouldDkye, informations.getSthousingAccount().getDkye(), shouldDkye.subtract(informations.getSthousingAccount().getDkye()));
         OneThousand oneThousand1 = new OneThousand();
+        // region 推算合计
+        oneThousand1.setHklx("合计");
+        oneThousand1.setFse(sumOfShouldFse);
+        oneThousand1.setBj(sumOfShouldBj);
+        oneThousand1.setLx(sumOfShouldLx);
+        // endregion
+        // region 实际合计
+        oneThousand1.setSjhklx("合计");
+        oneThousand1.setSjfse(sumOfSjFse);
+        oneThousand1.setSjbj(sumOfSjBj);
+        oneThousand1.setSjlx(sumOfSjLx);
+        //endregion
+
+        // region 差额合计
+        oneThousand1.setSubfse(subFse);
+        oneThousand1.setSubbj(subBj);
+        oneThousand1.setSublx(subLx);
+        oneThousand1.setSubDkye(subDkye);
+        // endregion
+
         oneThousand1.setSubFseTotal(subFse);
         oneThousand1.setSubBjTotal(subBj);
         oneThousand1.setSubLxTotal(subLx);
