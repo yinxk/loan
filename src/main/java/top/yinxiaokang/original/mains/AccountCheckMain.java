@@ -588,7 +588,7 @@ public class AccountCheckMain {
                 // 重新生成还款计划之后第一期
                 if (repaymentTag == 0) {
                     int jxts = LoanRepaymentAlgorithm.betweenTwoDateDays(preDetail.getYwfsrq(), thisDetail.getYwfsrq()) - 30;
-                    logs.append(String.format(jxtsStr, thisDetail.getDqqc(), jxts));
+                    logs.append(String.format(jxtsStr, thisDetail.getDqqc(), jxts + 30));
                     BigDecimal lx = LoanRepaymentAlgorithm.calInterestByInterestDays(preDetail.getXqdkye(), informations.getSthousingAccount().getDkll(), jxts);
                     thisDetail.setFse(thisDetail.getFse().add(lx));
                     thisDetail.setLxje(thisDetail.getLxje().add(lx));
