@@ -5,10 +5,8 @@ import top.yinxiaokang.original.excelbean.AllAccountDkye;
 import top.yinxiaokang.original.excelbean.OneThousand;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author yinxk
@@ -34,7 +32,7 @@ public class FileCommon {
      */
 //    private static String outFileName = "从30多期跳到170多期跳过两期";
 //    private static String outFileName = "allDkzhDkyePart1";
-    private static String outFileName = "1400多个贷款账号分析";
+    private static String outFileName = "1427个贷款账号分析" + new SimpleDateFormat("yyyyMMdd").format(new Date());
 //    private static String outFileName = "1400根据需要查询";
 //    private static String outFileName = "1400即将扣款";
 
