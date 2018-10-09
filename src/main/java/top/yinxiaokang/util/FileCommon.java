@@ -84,10 +84,10 @@ public class FileCommon {
 
         KEY_MAP.put("bz", "备注");
 
-        KEY_MAP.put("subFseTotal", "发生额差额合计");
-        KEY_MAP.put("subBjTotal", "本金差额合计");
-        KEY_MAP.put("subLxTotal", "利息差额合计");
-        KEY_MAP.put("subDkyeTotal", "期末贷款余额差额合计");
+//        KEY_MAP.put("subFseTotal", "发生额差额合计");
+//        KEY_MAP.put("subBjTotal", "本金差额合计");
+//        KEY_MAP.put("subLxTotal", "利息差额合计");
+//        KEY_MAP.put("subDkyeTotal", "期末贷款余额差额合计");
 
         KEY_MAP.put("tsdkye", "推算的贷款余额");
         KEY_MAP.put("sjdkye", "实际贷款余额");

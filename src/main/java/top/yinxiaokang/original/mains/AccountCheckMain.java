@@ -390,7 +390,7 @@ public class AccountCheckMain {
         BigDecimal sumOfSjBj = BigDecimal.ZERO;
         BigDecimal sumOfSjLx = BigDecimal.ZERO;
         for (SthousingDetail detail : details) {
-            sumOfSjFse = sumOfSjFse.add(detail.getFse());
+            sumOfSjFse = sumOfSjFse.add(detail.getBjje().add(detail.getLxje()));
             sumOfSjBj = sumOfSjBj.add(detail.getBjje());
             sumOfSjLx = sumOfSjLx.add(detail.getLxje());
         }
@@ -503,8 +503,16 @@ public class AccountCheckMain {
 
 
         }
-        String log = "发生额差 : %s, 本金差额: %s , 利息差额: %s , 贷款余额差额: %s  推算应该贷款余额:  %s  实际贷款余额: %s  推-实际: %s \n";
-        String format = String.format(log, subFse, subBj, subLx, subDkye, shouldDkye, informations.getSthousingAccount().getDkye(), shouldDkye.subtract(informations.getSthousingAccount().getDkye()));
+        String log = "%-37s 发生额: %-10s  本金: %-10s  利息: %-10s  %-26s  %-42s " +
+                "发生额(去罚): %-10s  本金: %-10s  利息: %-10s  %-31s" +
+                "发生额差(合-计): %-10s  本合计: %-10s  利合计: %-10s  贷款余合计: %-10s  " +
+                "推算应该贷款余额: %-10s  实际贷款余额: %-10s  推-实际: %-10s \n";
+        String format = String.format(log,"合计",
+                sumOfShouldFse, sumOfShouldBj, sumOfShouldLx, "-", "-",
+                sumOfSjFse, sumOfSjBj, sumOfSjLx,"-",
+                subFse, subBj, subLx, subDkye, shouldDkye,
+                informations.getSthousingAccount().getDkye(),
+                shouldDkye.subtract(informations.getSthousingAccount().getDkye()));
         OneThousand oneThousand1 = new OneThousand();
         // region 推算合计
         oneThousand1.setHklx("合计");
@@ -523,13 +531,13 @@ public class AccountCheckMain {
         oneThousand1.setSubfse(subFse);
         oneThousand1.setSubbj(subBj);
         oneThousand1.setSublx(subLx);
-        oneThousand1.setSubDkye(subDkye);
+        oneThousand1.setSubqmye(subDkye);
         // endregion
 
-        oneThousand1.setSubFseTotal(subFse);
-        oneThousand1.setSubBjTotal(subBj);
-        oneThousand1.setSubLxTotal(subLx);
-        oneThousand1.setSubDkyeTotal(subDkye);
+//        oneThousand1.setSubFseTotal(subFse);
+//        oneThousand1.setSubBjTotal(subBj);
+//        oneThousand1.setSubLxTotal(subLx);
+//        oneThousand1.setSubDkyeTotal(subDkye);
         oneThousand1.setTsdkye(shouldDkye);
         oneThousand1.setSjdkye(informations.getSthousingAccount().getDkye());
         oneThousand1.setSubDkye(shouldDkye.subtract(informations.getSthousingAccount().getDkye()));

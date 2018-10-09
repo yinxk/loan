@@ -75,21 +75,21 @@ public class OneThousand {
     private String bz;
 
 
-    @ExcelCell(index = 26)
-    private BigDecimal subFseTotal;
-    @ExcelCell(index = 26)
-    private BigDecimal subBjTotal;
-    @ExcelCell(index = 26)
-    private BigDecimal subLxTotal;
-    @ExcelCell(index = 26)
-    private BigDecimal subDkyeTotal;
+//    @ExcelCell(index = 26)
+//    private BigDecimal subFseTotal;
+//    @ExcelCell(index = 26)
+//    private BigDecimal subBjTotal;
+//    @ExcelCell(index = 26)
+//    private BigDecimal subLxTotal;
+//    @ExcelCell(index = 26)
+//    private BigDecimal subDkyeTotal;
 
 
-    @ExcelCell(index = 27)
+    @ExcelCell(index = 26)
     private BigDecimal tsdkye;
-    @ExcelCell(index = 28)
+    @ExcelCell(index = 27)
     private BigDecimal sjdkye;
-    @ExcelCell(index = 29)
+    @ExcelCell(index = 28)
     private BigDecimal subDkye;
 
 }
