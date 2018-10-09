@@ -62,7 +62,7 @@ public class AccountCheckMain {
         }
 
         int size = importExcel.size();
-        logs.append("=============================================写入时间: "+ DateUtil.common1.format(LocalDateTime.now()) + "=============================================\n");
+        logs.append("=============================================写入时间: "+ DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "=============================================\n");
         logs.append("读取总条数: " + size + "\n");
 
         List<InitInformation> initInformationList = Common.importExcelToInitInformationList(importExcel);
@@ -88,12 +88,12 @@ public class AccountCheckMain {
             }
             logs.append("\n");
         }
-        logs.append("=============================================写入完成时间: "+ DateUtil.common1.format(LocalDateTime.now()) + "=============================================\n");
+        logs.append("=============================================写入完成时间: "+ DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "=============================================\n");
         logsToFile();
         listToXlsx();
         System.out.println("************************************************************************************************************************************************************");
         System.out.println("**************************************************************************结束运行!*************************************************************************");
-        System.out.println("********************************************************************" + DateUtil.common1.format(LocalDateTime.now()) + "********************************************************************");
+        System.out.println("********************************************************************" + DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "********************************************************************");
         System.out.println("************************************************************************************************************************************************************");
     }
 
@@ -218,7 +218,7 @@ public class AccountCheckMain {
         }
         //region 对于1400多个账号或者是对于30多期跳到170多期的账号
         OneThousand oneThousand = new OneThousand();
-        oneThousand.setDkzh("写入时间 : " + DateUtil.common1.format(LocalDateTime.now()));
+        oneThousand.setDkzh("写入时间 : " + DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()));
 
         dataset.add(oneThousand);
         //endregion

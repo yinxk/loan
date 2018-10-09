@@ -12,6 +12,7 @@ public class Utils {
      * 非多线程情况, 无所谓
      */
     public final static SimpleDateFormat SDF_YEAR_MONTH_DAY = new SimpleDateFormat("yyyy-MM-dd");
+    public final static SimpleDateFormat SDF_YEAR_MONTH_DAY_HOUR_MIN_SEND = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public static String toLowerCase(String s) {
         char[] chars = s.toCharArray();
