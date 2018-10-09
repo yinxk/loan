@@ -82,9 +82,8 @@ public class ReducePlan {
             System.out.println("正常结束，时间：" + (endTime - startTime) + " ms");
         } catch (Exception e) {
             e.printStackTrace();
-            conn.closeResource(connection, preparedStatement, resultSet);
         } finally {
-            conn.closeResource(connection, preparedStatement, resultSet);
+            Conn.closeResource(connection, preparedStatement, resultSet);
         }
 
 
