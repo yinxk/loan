@@ -23,7 +23,7 @@ public class FileCommon {
     /**
      * 输入文件名称
      */
-    public static String inFileName = "src/test/resources/1400多个问题贷款账号.xlsx";
+    public static String inFileName = "src/test/resources/1427问题账号20181009.xlsx";
     //public static String inFileName = "src/test/resources/初始有逾期.xlsx";
     //public static String inFileName = "src/test/resources/20180821-误差5块以内的.xlsx";
     //public static String inFileName = "src/test/resources/包含所有的账号的初始余额和导入的逾期本金.xlsx";
