@@ -22,16 +22,22 @@ public class ReducePlan {
 
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
-        String fileName = "src/test/resources/20180828-徐灏手动入账账号修复.xlsx";
-        Collection<Map> importExcel = Common.xlsToList(fileName);
-
         ArrayList<SthousingAccount> accountArrayList = new ArrayList<>();
+        // region 通过excel进行第一期更新
+//        String fileName = "src/test/resources/20180828-徐灏手动入账账号修复.xlsx";
+//        Collection<Map> importExcel = Common.xlsToList(fileName);
+//        for (Map m : importExcel) {
+//            SthousingAccount account = new SthousingAccount();
+//            account.setDkzh((String) m.get("dkzh"));
+//            accountArrayList.add(account);
+//        }
+        // endregion
 
-        for (Map m : importExcel) {
-            SthousingAccount account = new SthousingAccount();
-            account.setDkzh((String) m.get("dkzh"));
-            accountArrayList.add(account);
-        }
+        // region 直接通过贷款账号进行更新
+        SthousingAccount account1 = new SthousingAccount();
+        account1.setDkzh("23846057000001207");
+        accountArrayList.add(account1);
+        // endregion
 
         Conn conn = new Conn();
         Connection connection = conn.getConnection();
