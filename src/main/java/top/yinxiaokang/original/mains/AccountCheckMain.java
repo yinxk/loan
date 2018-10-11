@@ -657,7 +657,7 @@ public class AccountCheckMain {
                 BigDecimal qcdkye = preDetail == null ?
                         informations.getInitInformation().getCsye().subtract(informations.getInitInformation().getCsyqbj()) :
                         preDetail.getXqdkye();
-                int jxts = LoanRepaymentAlgorithm.differentDaysByMillisecond(preDetail.getYwfsrq(), thisDetail.getYwfsrq());
+                int jxts = LoanRepaymentAlgorithm.betweenTwoDateDays(preDetail.getYwfsrq(), thisDetail.getYwfsrq());
                 logs.append(String.format(jxtsStr, thisDetail.getDqqc(), jxts));
                 BigDecimal lx = LoanRepaymentAlgorithm.calInterestByInterestDays(qcdkye, informations.getSthousingAccount().getDkll(), jxts);
                 BigDecimal bjje = qcdkye;
