@@ -22,7 +22,10 @@ public class DoSql {
                 e1.printStackTrace();
             }
             e.printStackTrace();
+        } finally {
+            Conn.closeResource(connection, null, null);
         }
+        System.out.println("结束运行");
 
     }
 
