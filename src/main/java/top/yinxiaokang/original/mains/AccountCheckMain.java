@@ -54,6 +54,8 @@ public class AccountCheckMain {
 
         Collection<Map> importExcel = Common.xlsToList(inFileName);
 
+        Collection<Map> oneDayMap = Common.xlsToList(inFileNameOneDay);
+
 
         File logFile = new File(logName);
         if (logFile.isFile() && logFile.exists()) {
@@ -78,6 +80,18 @@ public class AccountCheckMain {
             }
             accountInformationsList.add(accountInformations);
         }
+
+        // region 过滤账号
+        Iterator<AccountInformations> iterator = accountInformationsList.iterator();
+        while (iterator.hasNext()) {
+            AccountInformations next = iterator.next();
+            boolean dkzhInOneDayMap = Common.isDkzhInOneDayMap(next.getSthousingAccount().getDkzh(), oneDayMap);
+            if (!dkzhInOneDayMap) {
+                iterator.remove();
+            }
+        }
+        //endregion
+
         //doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
         doAnalyze(accountInformationsList, checkMain);
         logs.append("读取总条数: " + size + "\n");

@@ -35,6 +35,25 @@ public class Common {
 
 
     /**
+     * 判断贷款账号是否存在每天的map中
+     * @param dkzh
+     * @param oneDayMap
+     * @return
+     */
+    public static boolean isDkzhInOneDayMap(String dkzh, Collection<Map> oneDayMap) {
+        Iterator<Map> iterator = oneDayMap.iterator();
+        boolean isIn = false;
+        while (iterator.hasNext()) {
+            Map next = iterator.next();
+            if (dkzh.equals(((String) next.get("dkzh")))) {
+                isIn = true;
+            }
+        }
+        return isIn;
+    }
+
+
+    /**
      * 将读取到的初始的excel的map转换为初始对象List
      *
      * @param importExcel
