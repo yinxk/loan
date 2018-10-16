@@ -38,7 +38,7 @@ public class FileCommon {
 //    private static String outFileName = "从30多期跳到170多期跳过两期";
 //    private static String outFileName = "allDkzhDkyePart1";
 //    private static String outFileName = "1427个贷款账号分析" + new SimpleDateFormat("yyyyMMdd").format(new Date());
-    private static String outFileName = new SimpleDateFormat("yyyyMMdd").format(new Date()) + "应该正常扣款";
+    private static String outFileName = new SimpleDateFormat("yyyy-MM-dd-").format(new Date()) + "应该正常扣款";
 //    private static String outFileName = "1400根据需要查询";
 //    private static String outFileName = "1400即将扣款";
 
