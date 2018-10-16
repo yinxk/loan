@@ -18,14 +18,15 @@ public class FileCommon {
      */
     public static StringBuffer logs = new StringBuffer();
 
+    private static String inFileSrc = "src/test/resources/";
 
-    public static String inFileNameOneDay = "src/test/resources/2018-10-15-应该正常扣款账号-oneday.xlsx";
+    public static String inFileNameOneDay = inFileSrc +"2018-10-16-应该正常扣款账号-oneday.xlsx";
 
 
     /**
      * 输入文件名称
      */
-    public static String inFileName = "src/test/resources/1427问题账号20181009.xlsx";
+    public static String inFileName = inFileSrc + "1427问题账号20181009.xlsx";
     //public static String inFileName = "src/test/resources/初始有逾期.xlsx";
     //public static String inFileName = "src/test/resources/20180821-误差5块以内的.xlsx";
     //public static String inFileName = "src/test/resources/包含所有的账号的初始余额和导入的逾期本金.xlsx";
@@ -37,7 +38,7 @@ public class FileCommon {
 //    private static String outFileName = "从30多期跳到170多期跳过两期";
 //    private static String outFileName = "allDkzhDkyePart1";
 //    private static String outFileName = "1427个贷款账号分析" + new SimpleDateFormat("yyyyMMdd").format(new Date());
-    private static String outFileName = new SimpleDateFormat("yyyy-MM-dd-").format(new Date()) + "应该正常扣款";
+    private static String outFileName = new SimpleDateFormat("yyyyMMdd").format(new Date()) + "应该正常扣款";
 //    private static String outFileName = "1400根据需要查询";
 //    private static String outFileName = "1400即将扣款";
 
