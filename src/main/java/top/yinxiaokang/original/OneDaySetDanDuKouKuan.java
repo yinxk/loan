@@ -26,12 +26,16 @@ public class OneDaySetDanDuKouKuan {
 
             OneDaySetDanDuKouKuan oneDaySetDanDuKouKuan = new OneDaySetDanDuKouKuan();
             Iterator<Map> iterator = oneDayMap.iterator();
+            int sum = 0 ;
             while (iterator.hasNext()) {
                 Map next = iterator.next();
                 String dkzh = (String)next.get("dkzh");
                 int i = oneDaySetDanDuKouKuan.UpdateAccountToDanDuKouKuan(dkzh, connection);
+                sum += i;
                 System.out.println("贷款账号: " + dkzh + "    更新了 " + i + "行");
             }
+            System.out.println("总共更新了 : " + sum);
+
             connection.commit();
         } catch (SQLException e) {
             try {
