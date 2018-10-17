@@ -20,7 +20,7 @@ public class FileCommon {
 
     private static String inFileSrc = "src/test/resources/";
 
-    public static String inFileNameOneDay = inFileSrc +"2018-10-16-应该正常扣款账号-oneday.xlsx";
+    public static String inFileNameOneDay = inFileSrc +"2018-10-17-应该正常扣款账号-oneday.xlsx";
 
 
     /**
