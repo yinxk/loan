@@ -6,6 +6,9 @@ import top.yinxiaokang.original.excelbean.OneThousand;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 
 /**
@@ -20,7 +23,7 @@ public class FileCommon {
 
     private static String inFileSrc = "src/test/resources/";
 
-    public static String inFileNameOneDay = inFileSrc +"2018-10-17-应该正常扣款账号-oneday.xlsx";
+    public static String inFileNameOneDay = inFileSrc +"2018-10-16-应该正常扣款账号-oneday.xlsx";
 
 
     /**
@@ -38,7 +41,13 @@ public class FileCommon {
 //    private static String outFileName = "从30多期跳到170多期跳过两期";
 //    private static String outFileName = "allDkzhDkyePart1";
 //    private static String outFileName = "1427个贷款账号分析" + new SimpleDateFormat("yyyyMMdd").format(new Date());
-    private static String outFileName = new SimpleDateFormat("yyyy-MM-dd-").format(new Date()) + "应该正常扣款";
+    private static String yesterdayStr = null;
+            static {
+                LocalDate localDate = LocalDate.now();
+                localDate = localDate.plusDays(-1);
+                yesterdayStr = DateTimeFormatter.ofPattern("yyyy-MM-dd-").format(localDate);
+            }
+    private static String outFileName = yesterdayStr + "业务推算和实际业务-标红代表 10月份期次未入账";
 //    private static String outFileName = "1400根据需要查询";
 //    private static String outFileName = "1400即将扣款";
 
