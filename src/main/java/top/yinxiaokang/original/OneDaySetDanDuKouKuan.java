@@ -24,6 +24,11 @@ public class OneDaySetDanDuKouKuan {
         try {
             connection.setAutoCommit(false);
 
+            new DoSql().doUpdate(connection, "UPDATE c_loan_housing_personal_account_extension accex \n" +
+                    "SET accex.loanHousingPersonalPausedVice = NULL \n" +
+                    "WHERE\n" +
+                    "\taccex.loanHousingPersonalPausedVice = 'dandukoukuan'");
+
             OneDaySetDanDuKouKuan oneDaySetDanDuKouKuan = new OneDaySetDanDuKouKuan();
             Iterator<Map> iterator = oneDayMap.iterator();
             int sum = 0 ;
