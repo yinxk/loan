@@ -174,6 +174,7 @@ public class AccountCheckMain {
             //region 对于1400多个账号或者是对于30多期跳到170多期的账号
             OneThousand oneThousand = new OneThousand();
             oneThousand.setDkzh(item.getSthousingAccount().getDkzh());
+            oneThousand.setJkrxm(item.getCLoanHousingPersonInformationBasic().getJkrxm());
             oneThousand.setCsdkye(item.getInitInformation().getCsye());
             oneThousand.setCsyqbj(item.getInitInformation().getCsyqbj());
             oneThousand.setDkffrq(item.getSthousingAccount().getDkffrq());
