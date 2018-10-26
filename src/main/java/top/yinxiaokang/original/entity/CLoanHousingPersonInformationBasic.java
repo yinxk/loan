@@ -2,6 +2,8 @@ package top.yinxiaokang.original.entity;
 
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Setter
 @Getter
 @NoArgsConstructor
@@ -16,7 +18,7 @@ public class CLoanHousingPersonInformationBasic {
     private String jkrzjlx;
     private String jkrzjhm;
     private String sjhm;
-    private String yhqs;
+    private BigDecimal yhqs;
     private String ywwd;
     private String coborrower;
     private String loancontract;

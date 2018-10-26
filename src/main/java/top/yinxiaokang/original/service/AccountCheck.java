@@ -3,10 +3,12 @@ package top.yinxiaokang.original.service;
 import top.yinxiaokang.original.Conn;
 import top.yinxiaokang.original.LoanRepaymentAlgorithm;
 import top.yinxiaokang.original.Utils;
+import top.yinxiaokang.original.dao.CLoanHousingPersonInformationBasicDao;
 import top.yinxiaokang.original.dao.StOverdueDao;
 import top.yinxiaokang.original.dao.SthousingAccountDao;
 import top.yinxiaokang.original.dao.SthousingDetailDao;
 import top.yinxiaokang.original.dto.AccountInformations;
+import top.yinxiaokang.original.entity.CLoanHousingPersonInformationBasic;
 import top.yinxiaokang.original.entity.StOverdue;
 import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.SthousingDetail;
@@ -37,6 +39,7 @@ public class AccountCheck {
     private SthousingAccountDao sthousingAccountDao = null;
     private SthousingDetailDao sthousingDetailDao = null;
     private StOverdueDao stOverdueDao = null;
+    private CLoanHousingPersonInformationBasicDao cLoanHousingPersonInformationBasicDao;
 
     public AccountCheck() {
         Conn conn = new Conn();
@@ -44,6 +47,27 @@ public class AccountCheck {
         sthousingAccountDao = new SthousingAccountDao(connection);
         sthousingDetailDao = new SthousingDetailDao(connection);
         stOverdueDao = new StOverdueDao(connection);
+        cLoanHousingPersonInformationBasicDao = new CLoanHousingPersonInformationBasicDao(connection);
+    }
+
+    /**
+     * 根据贷款账号获取basic
+     *
+     * @param dkzh
+     * @return
+     */
+    public CLoanHousingPersonInformationBasic getBasicByDkzh(String dkzh) {
+        try {
+            CLoanHousingPersonInformationBasic basicByDkzh = cLoanHousingPersonInformationBasicDao.getBasicByDkzh(dkzh);
+            return basicByDkzh;
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
