@@ -5,11 +5,12 @@ import top.yinxiaokang.original.excelbean.AllAccountDkye;
 import top.yinxiaokang.original.excelbean.OneThousand;
 
 import java.io.*;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author yinxk
@@ -69,6 +70,7 @@ public class FileCommon {
         }
         KEY_MAP = new LinkedHashMap<>();
         KEY_MAP.put("dkzh", "贷款账号");
+        KEY_MAP.put("jkrxm", "借款人姓名");
         KEY_MAP.put("csdkye", "初始贷款余额");
         KEY_MAP.put("csyqbj", "初始逾期本金");
         KEY_MAP.put("dkffrq", "贷款发放日期");

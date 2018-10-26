@@ -118,6 +118,8 @@ public class AccountCheck {
         }
         if (account == null)
             return null;
+        CLoanHousingPersonInformationBasic basic = getBasicByDkzh(initInformation.getDkzh());
+        accountInformations.setCLoanHousingPersonInformationBasic(basic);
         //region 如果可以的话, 使用扩展表的dkxxffrq中的日来作为还款日
 //        try {
 //            String dkffrqStr = Utils.SDF_YEAR_MONTH_DAY.format(account.getDkffrq());

@@ -19,59 +19,61 @@ public class OneThousand {
     @ExcelCell(index = 0)
     private String dkzh;
     @ExcelCell(index = 1)
-    private BigDecimal csdkye;
+    private String jkrxm;
     @ExcelCell(index = 2)
-    private BigDecimal csyqbj;
+    private BigDecimal csdkye;
     @ExcelCell(index = 3)
-    private Date dkffrq;
+    private BigDecimal csyqbj;
     @ExcelCell(index = 4)
-    private BigDecimal dkqs;
+    private Date dkffrq;
     @ExcelCell(index = 5)
-    private BigDecimal csqs;
+    private BigDecimal dkqs;
     @ExcelCell(index = 6)
+    private BigDecimal csqs;
+    @ExcelCell(index = 7)
     private String csqszqx;
 
-    @ExcelCell(index = 7)
-    private String hklx;
     @ExcelCell(index = 8)
-    private Date rq;
+    private String hklx;
     @ExcelCell(index = 9)
-    private Integer qc;
+    private Date rq;
     @ExcelCell(index = 10)
-    private BigDecimal fse;
+    private Integer qc;
     @ExcelCell(index = 11)
-    private BigDecimal bj;
+    private BigDecimal fse;
     @ExcelCell(index = 12)
-    private BigDecimal lx;
+    private BigDecimal bj;
     @ExcelCell(index = 13)
+    private BigDecimal lx;
+    @ExcelCell(index = 14)
     private BigDecimal qmdkye;
 
 
-    @ExcelCell(index = 14)
-    private String sjhklx;
     @ExcelCell(index = 15)
-    private Date sjrq;
+    private String sjhklx;
     @ExcelCell(index = 16)
-    private Integer sjqc;
+    private Date sjrq;
     @ExcelCell(index = 17)
-    private BigDecimal sjfse;
+    private Integer sjqc;
     @ExcelCell(index = 18)
-    private BigDecimal sjbj;
+    private BigDecimal sjfse;
     @ExcelCell(index = 19)
-    private BigDecimal sjlx;
+    private BigDecimal sjbj;
     @ExcelCell(index = 20)
+    private BigDecimal sjlx;
+    @ExcelCell(index = 21)
     private BigDecimal sjqmdkye;
 
-    @ExcelCell(index = 21)
-    private BigDecimal subfse;
     @ExcelCell(index = 22)
-    private BigDecimal subbj;
+    private BigDecimal subfse;
     @ExcelCell(index = 23)
-    private BigDecimal sublx;
+    private BigDecimal subbj;
     @ExcelCell(index = 24)
+    private BigDecimal sublx;
+    @ExcelCell(index = 25)
     private BigDecimal subqmye;
 
-    @ExcelCell(index = 25)
+    @ExcelCell(index = 26)
     private String bz;
 
 
@@ -85,11 +87,11 @@ public class OneThousand {
 //    private BigDecimal subDkyeTotal;
 
 
-    @ExcelCell(index = 26)
-    private BigDecimal tsdkye;
     @ExcelCell(index = 27)
-    private BigDecimal sjdkye;
+    private BigDecimal tsdkye;
     @ExcelCell(index = 28)
+    private BigDecimal sjdkye;
+    @ExcelCell(index = 29)
     private BigDecimal subDkye;
 
 }

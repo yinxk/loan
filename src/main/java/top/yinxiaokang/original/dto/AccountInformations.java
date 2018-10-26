@@ -1,6 +1,7 @@
 package top.yinxiaokang.original.dto;
 
 import lombok.*;
+import top.yinxiaokang.original.entity.CLoanHousingPersonInformationBasic;
 import top.yinxiaokang.original.entity.StOverdue;
 import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.SthousingDetail;
@@ -34,6 +35,8 @@ public class AccountInformations {
     private BigDecimal initFirstQc;
 
     private List<RepaymentItem> repaymentItems;
+
+    private CLoanHousingPersonInformationBasic cLoanHousingPersonInformationBasic;
 
     /**
      * 是否连续扣款
