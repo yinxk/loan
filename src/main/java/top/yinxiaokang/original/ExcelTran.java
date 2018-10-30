@@ -18,12 +18,12 @@ import java.util.regex.Pattern;
 public class ExcelTran {
 
     private static String pathStr = "C:\\Users\\where\\Desktop\\修账相关数据\\修账\\";
-    private static String fileStr = pathStr + "2018-10-18-业务推算和实际业务-凭证调整数据-加说明";
-    private static String filePathStr = fileStr + ".xls";
+    private static String fileStr = "2018-10-15-业务推算和实际业务-凭证调整数据-加说明";
+    private static String xls = ".xls";
 
     public static void main(String[] args) {
 
-        List<Map<String, Object>> list = ImportExcelUtilLessFour.read(filePathStr, 1, false);
+        List<Map<String, Object>> list = ImportExcelUtilLessFour.read(pathStr + fileStr + xls, 1, false);
         Iterator<Map<String, Object>> iterator = list.iterator();
         while (iterator.hasNext()) {
             Map<String, Object> next = iterator.next();
@@ -63,7 +63,7 @@ public class ExcelTran {
             keyMap.put(next, next);
         }
 
-        try (FileOutputStream fileOutputStream = new FileOutputStream(new File(fileStr + "-转换版.xls"))) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(new File(pathStr + "转换版/" + fileStr + "-转换版" + xls))) {
             ExcelUtil.exportExcel(keyMap, list, fileOutputStream);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
