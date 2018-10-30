@@ -22,7 +22,7 @@ public class FileCommon {
      */
     public static StringBuffer logs = new StringBuffer();
 
-    private static String inFileSrc = "src/test/resources/";
+    public static String inFileSrc = "src/test/resources/";
 
     public static String inFileNameOneDay = inFileSrc +"2018-10-18-应该正常扣款账号-oneday.xlsx";
 
