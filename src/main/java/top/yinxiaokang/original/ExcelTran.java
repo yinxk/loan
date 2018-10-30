@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 public class ExcelTran {
 
     private static String pathStr = "C:\\Users\\where\\Desktop\\修账相关数据\\修账\\";
-    private static String fileStr = "2018-10-15-业务推算和实际业务-凭证调整数据-加说明";
+    private static String fileStr = "2018-10-16-业务推算和实际业务-凭证调整数据-加说明";
     private static String xls = ".xls";
 
     public static void main(String[] args) {
@@ -38,7 +38,6 @@ public class ExcelTran {
         Pattern pattern = Pattern.compile(regex);
 
 
-        Set<String> strings = null;
         int notMatchNumber = 0;
         while (iterator.hasNext()) {
             Map<String, Object> next = iterator.next();
@@ -51,17 +50,19 @@ public class ExcelTran {
             } else {
                 System.out.println("存在没有匹配" + ++notMatchNumber);
             }
-            strings = next.keySet();
         }
+
 
         Map<String, String> keyMap = new LinkedHashMap<>();
 
-        Iterator<String> iterator1 = strings.iterator();
+        keyMap.put("dkzh", "dkzh");
+        keyMap.put("发生额差额合计", "fsecehj");
+        keyMap.put("本金差额合计", "bjcehj");
+        keyMap.put("利息差额合计", "lxcehj");
+        keyMap.put("备注", "bz");
+        keyMap.put("行号", "hh");
 
-        while (iterator1.hasNext()) {
-            String next = iterator1.next();
-            keyMap.put(next, next);
-        }
+
 
         try (FileOutputStream fileOutputStream = new FileOutputStream(new File(pathStr + "转换版/" + fileStr + "-转换版" + xls))) {
             ExcelUtil.exportExcel(keyMap, list, fileOutputStream);
