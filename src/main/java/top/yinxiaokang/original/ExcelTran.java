@@ -1,0 +1,78 @@
+package top.yinxiaokang.original;
+
+import com.sargeraswang.util.ExcelUtil.ExcelUtil;
+import top.yinxiaokang.util.ImportExcelUtilLessFour;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * @author yinxk
+ * @date 2018/10/30 11:45
+ */
+public class ExcelTran {
+
+    private static String pathStr = "C:\\Users\\where\\Desktop\\修账相关数据\\修账\\";
+    private static String fileStr = pathStr + "2018-10-18-业务推算和实际业务-凭证调整数据-加说明";
+    private static String filePathStr = fileStr + ".xls";
+
+    public static void main(String[] args) {
+
+        List<Map<String, Object>> list = ImportExcelUtilLessFour.read(filePathStr, 1, false);
+        Iterator<Map<String, Object>> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            Map<String, Object> next = iterator.next();
+            Object 序号 = next.get("序号");
+            if (!(序号 instanceof Double)) {
+                iterator.remove();
+            }
+
+        }
+        iterator = list.iterator();
+        String regex = "账号：([\\s\\S]*)\n初始贷款余额";
+        Pattern pattern = Pattern.compile(regex);
+
+
+        Set<String> strings = null;
+        int notMatchNumber = 0;
+        while (iterator.hasNext()) {
+            Map<String, Object> next = iterator.next();
+            String 行号 = (String) next.get("行号");
+            Matcher matcher = pattern.matcher(行号);
+            if (matcher.find()) {
+                String group = matcher.group(1);
+                System.out.println("匹配得到的贷款账号: ====" + group + "====");
+                next.put("dkzh", group);
+            } else {
+                System.out.println("存在没有匹配" + ++notMatchNumber);
+            }
+            strings = next.keySet();
+        }
+
+        Map<String, String> keyMap = new LinkedHashMap<>();
+
+        Iterator<String> iterator1 = strings.iterator();
+
+        while (iterator1.hasNext()) {
+            String next = iterator1.next();
+            keyMap.put(next, next);
+        }
+
+        try (FileOutputStream fileOutputStream = new FileOutputStream(new File(fileStr + "-转换版.xls"))) {
+            ExcelUtil.exportExcel(keyMap, list, fileOutputStream);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        System.out.println("转换完成");
+
+    }
+}
