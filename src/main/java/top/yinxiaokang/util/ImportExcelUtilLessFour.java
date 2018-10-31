@@ -70,7 +70,11 @@ public class ImportExcelUtilLessFour {
         return object;
     }
 
-    public static List<Map<String, Object>> read(String filename, Integer sheetAtIndex, boolean isClassPath) {
+    public static List<Map<String, Object>> read(String filename, Integer sheetAtIndex, boolean isClassPath){
+        return read(filename, sheetAtIndex, isClassPath, false);
+    }
+
+    public static List<Map<String, Object>> read(String filename, Integer sheetAtIndex, boolean isClassPath,boolean isFilterAllNullRow) {
         List<Map<String, Object>> list = new ArrayList<>();
         Map<Integer, String> keyMap = new LinkedHashMap<>();
         try (Workbook wb = WorkbookFactory.create(isClassPath ? init(filename) : new File(filename))) {
@@ -102,10 +106,14 @@ public class ImportExcelUtilLessFour {
                         if (cellContent != null) isAllCellNull = false;
                         rowMap.put(keyMap.get(cellColumnIndex), cellContent);
                     }
-                    if (!isAllCellNull) {
-                        list.add(rowMap);
+                    if (isFilterAllNullRow) {
+                        if (!isAllCellNull) {
+                            list.add(rowMap);
+                        } else {
+                            rowMap = null;
+                        }
                     } else {
-                        rowMap = null;
+                        list.add(rowMap);
                     }
                 }
             }
