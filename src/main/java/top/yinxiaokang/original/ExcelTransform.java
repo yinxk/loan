@@ -160,18 +160,19 @@ public class ExcelTransform {
         keyMap.put("dkzh", "dkzh");
         keyMap.put("csye", "csye");
         keyMap.put("本金合计", "tsbjhj");
-        keyMap.put("xzdkye", "xzdkye");
-        keyMap.put("csyqbj", "csyqbj");
-        keyMap.put("dkyesfgx", "dkyesfgx");
-        keyMap.put("fsxd", "fsxd");
+        keyMap.put("xzdkye", "xzdkye");// 修正贷款余额(程序计算)
+        keyMap.put("csyqbj", "csyqbj");// 初始逾期本金
+        keyMap.put("ssdkye", "ssdkye");// 实时贷款余额
+        keyMap.put("dkyesfgx", "dkyesfgx");// 贷款余额是否更新
+        keyMap.put("fsxd", "fsxd"); // 推算修正后余额是否与 凭证推算内容中的余额相等
         keyMap.put("发生额差额合计", "fsecehj");
         keyMap.put("本金差额合计", "bjcehj");
         keyMap.put("利息差额合计", "lxcehj");
         keyMap.put("备注", "bz");
         keyMap.put("说明", "sm");
         keyMap.put("行号", "hh");
-        keyMap.put("tzhye", "tzhye");
-        keyMap.put("tscontent", "tscontent");
+        keyMap.put("tzhye", "tzhye");// 凭证中的 修正后余额(一截内容,不能精确匹配到数字余额)
+        keyMap.put("tscontent", "tscontent");// 推算凭证的内容
 
 
         String[] split = fileName.split("\\.");
@@ -288,11 +289,13 @@ public class ExcelTransform {
             } else {
                 contentMap.put("fsxd", "不相等");
             }
-            if (xzdkye.compareTo(getAccountByDkzh(contentMap.get("dkzh").toString()).getDkye()) == 0) {
+            BigDecimal ssdkye = getAccountByDkzh(contentMap.get("dkzh").toString()).getDkye();
+            if (xzdkye.compareTo(ssdkye) == 0) {
                 contentMap.put("dkyesfgx", "不需要更新");
             } else {
                 contentMap.put("dkyesfgx", "是");
             }
+            contentMap.put("ssdkye", ssdkye);
 
         }
         creatRowAndCell(list, keyMap, sheet1, cellStyle);
