@@ -290,6 +290,7 @@ public class ExcelTransform {
             } else {
                 contentMap.put("fsxd", "不相等");
             }
+            xzdkye = (BigDecimal) contentMap.get("xzdkye");
             BigDecimal ssdkye = getAccountByDkzh(contentMap.get("dkzh").toString()).getDkye();
             if (xzdkye.subtract(ssdkye).abs().compareTo(wucha) < 0) {
                 contentMap.put("dkyesfgx", "不需要更新");
@@ -321,7 +322,7 @@ public class ExcelTransform {
                 if (contentMap.containsKey(key.getKey())) {
                     sheet.autoSizeColumn(j);
                     Cell cell = row.createCell(j++);
-                    cell.setCellStyle(cellStyle);
+                    //cell.setCellStyle(cellStyle);
                     String content = Optional.ofNullable(contentMap.get(key.getKey())).map(Object::toString).orElse("");
                     cell.setCellValue(content);
                 } else {
