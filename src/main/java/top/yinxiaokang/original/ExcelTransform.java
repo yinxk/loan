@@ -173,7 +173,7 @@ public class ExcelTransform {
         keyMap.put("说明", "sm");
         keyMap.put("行号", "hh");
         keyMap.put("tzhye", "tzhye");// 凭证中的 修正后余额(一截内容,不能精确匹配到数字余额)
-        keyMap.put("tscontent", "tscontent");// 推算凭证的内容
+        //keyMap.put("tscontent", "tscontent");// 推算凭证的内容
 
 
         String[] split = fileName.split("\\.");
