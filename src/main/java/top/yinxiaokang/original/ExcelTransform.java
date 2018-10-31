@@ -282,15 +282,15 @@ public class ExcelTransform {
             } else {
                 list5.add(contentMap);
             }
-
+            xzdkye = (BigDecimal) contentMap.get("xzdkye");
             //修正贷款余额是否在调整后余额中存在
             String tzhye = Optional.ofNullable(contentMap.get("tzhye")).map(Object::toString).orElse("");
-            if (tzhye.contains(xzdkye.toString())) {
+            if (tzhye.contains(xzdkye.stripTrailingZeros().toPlainString())) {
                 contentMap.put("fsxd", "是");
             } else {
                 contentMap.put("fsxd", "不相等");
             }
-            xzdkye = (BigDecimal) contentMap.get("xzdkye");
+
             BigDecimal ssdkye = getAccountByDkzh(contentMap.get("dkzh").toString()).getDkye();
             if (xzdkye.subtract(ssdkye).abs().compareTo(wucha) < 0) {
                 contentMap.put("dkyesfgx", "不需要更新");
