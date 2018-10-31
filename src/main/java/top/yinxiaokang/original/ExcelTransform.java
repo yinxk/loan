@@ -25,6 +25,7 @@ import static top.yinxiaokang.util.FileCommon.inFileName;
  */
 public class ExcelTransform {
     private static AccountCheck accountCheck = new AccountCheck();
+    private static BigDecimal wucha = new BigDecimal("0.5");
 
     private static String pathStr = "C:\\修账相关数据\\修账\\";
     private static String fileStr = "2018-10-18-业务推算和实际业务-凭证调整数据-加说明";
@@ -248,7 +249,7 @@ public class ExcelTransform {
         for (int i = 0; i < list.size(); i++) {
             Map<String, Object> contentMap = list.get(i);
             String 备注 = Optional.ofNullable(contentMap.get("备注")).map(Object::toString).orElse("");
-            BigDecimal xzdkye =(BigDecimal) contentMap.get("xzdkye");
+            BigDecimal xzdkye = (BigDecimal) contentMap.get("xzdkye");
 
             if (备注.contains("多扣")) {
                 BigDecimal 发生额差额合计 = Optional.ofNullable(contentMap.get("发生额差额合计")).map(Object::toString).map(BigDecimal::new).orElse(BigDecimal.ZERO);
@@ -290,7 +291,7 @@ public class ExcelTransform {
                 contentMap.put("fsxd", "不相等");
             }
             BigDecimal ssdkye = getAccountByDkzh(contentMap.get("dkzh").toString()).getDkye();
-            if (xzdkye.compareTo(ssdkye) == 0) {
+            if (xzdkye.subtract(ssdkye).abs().compareTo(wucha) < 0) {
                 contentMap.put("dkyesfgx", "不需要更新");
             } else {
                 contentMap.put("dkyesfgx", "是");
