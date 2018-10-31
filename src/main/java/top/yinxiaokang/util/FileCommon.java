@@ -24,7 +24,7 @@ public class FileCommon {
 
     public static String inFileSrc = "src/test/resources/";
 
-    public static String inFileNameOneDay = inFileSrc +"2018-10-18-应该正常扣款账号-oneday.xlsx";
+    public static String inFileNameOneDay = inFileSrc +"2018-10-31-应该正常扣款账号-oneday.xlsx";
 
 
     /**
@@ -48,7 +48,7 @@ public class FileCommon {
                 localDate = localDate.plusDays(-1);
                 yesterdayStr = DateTimeFormatter.ofPattern("yyyy-MM-dd-").format(localDate);
             }
-    private static String outFileName = yesterdayStr + "业务推算和实际业务-标红代表 10月份期次未入账";
+    private static String outFileName = yesterdayStr + "业务推算和实际业务-标红代表不正常";
 //    private static String outFileName = "1400根据需要查询";
 //    private static String outFileName = "1400即将扣款";
 

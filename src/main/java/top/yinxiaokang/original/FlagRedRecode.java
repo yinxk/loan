@@ -90,7 +90,6 @@ public class FlagRedRecode {
         Font font = wb.createFont();
         font.setColor(IndexedColors.RED.getIndex());
         cellStyle.setFont(font);
-        Map<Integer, Integer> maxLength = new HashMap<>();
         try (OutputStream fileOut = new FileOutputStream(pathStrComputer + inFileName + "-标记版" + xls)) {
             Sheet sheet = wb.createSheet();
             Row row0 = sheet.createRow(0);
@@ -98,7 +97,6 @@ public class FlagRedRecode {
             int k = 0;
             while (iterator.hasNext()) {
                 String next = (String) iterator.next();
-                maxLength.put(k, next.getBytes().length * 2 * 100);
                 Cell cell = row0.createCell(k++);
                 cell.setCellValue(next);
             }
@@ -112,13 +110,6 @@ public class FlagRedRecode {
                     Object obj = Optional.ofNullable(value).orElse("");
                     Cell cell = row.createCell(j++);
                     cell.setCellValue(obj.toString());
-                    if (maxLength.containsKey(j)) {
-                        Integer max = maxLength.get(j);
-                        if (max < obj.toString().getBytes().length) {
-                            maxLength.put(j, obj.toString().getBytes().length);
-                        }
-
-                    }
                     for (List<Integer> oneDkzhTags : flagRedTags) {
                         for (Integer tag : oneDkzhTags) {
                             if (tag == i) {
@@ -127,14 +118,6 @@ public class FlagRedRecode {
                         }
                     }
                 }
-
-                Set<Map.Entry<Integer, Integer>> entries = maxLength.entrySet();
-                Iterator<Map.Entry<Integer, Integer>> maxIte = entries.iterator();
-                while (maxIte.hasNext()) {
-                    Map.Entry<Integer, Integer> next = maxIte.next();
-                    sheet.setColumnWidth(next.getKey(), next.getValue());
-                }
-
             }
 
             wb.write(fileOut);
@@ -150,7 +133,7 @@ public class FlagRedRecode {
         Set keyMap = getKeyMap(oneDayDataList);
         List<List<Integer>> flagRedTags = flagRedTags(oneDayDataList, dkzhs);
         toExcel(oneDayDataList, keyMap, flagRedTags);
-        System.out.println("结束运行!");
+        System.out.println("标记运行结束!");
     }
 
 
