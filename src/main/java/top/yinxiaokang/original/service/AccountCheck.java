@@ -2,16 +2,13 @@ package top.yinxiaokang.original.service;
 
 import top.yinxiaokang.original.component.Conn;
 import top.yinxiaokang.original.component.LoanRepaymentAlgorithm;
+import top.yinxiaokang.original.entity.*;
 import top.yinxiaokang.util.Utils;
 import top.yinxiaokang.original.dao.CLoanHousingPersonInformationBasicDao;
 import top.yinxiaokang.original.dao.StOverdueDao;
 import top.yinxiaokang.original.dao.SthousingAccountDao;
 import top.yinxiaokang.original.dao.SthousingDetailDao;
 import top.yinxiaokang.original.dto.AccountInformations;
-import top.yinxiaokang.original.entity.CLoanHousingPersonInformationBasic;
-import top.yinxiaokang.original.entity.StOverdue;
-import top.yinxiaokang.original.entity.SthousingAccount;
-import top.yinxiaokang.original.entity.SthousingDetail;
 import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.enums.LoanBusinessType;
 import top.yinxiaokang.original.loan.repayment.RepaymentItem;
@@ -48,6 +45,19 @@ public class AccountCheck {
         sthousingDetailDao = new SthousingDetailDao(connection);
         stOverdueDao = new StOverdueDao(connection);
         cLoanHousingPersonInformationBasicDao = new CLoanHousingPersonInformationBasicDao(connection);
+    }
+
+    public List<SomedayInformation> listSomedayInformation(Integer kkdayEnd, Date nextkkrqEnd, String initDkzhsStr) {
+        try {
+            return sthousingAccountDao.listSomedayInformation(kkdayEnd, nextkkrqEnd, initDkzhsStr);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**

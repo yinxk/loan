@@ -2,7 +2,6 @@ package top.yinxiaokang.util;
 
 import com.sargeraswang.util.ExcelUtil.ExcelLogs;
 import com.sargeraswang.util.ExcelUtil.ExcelUtil;
-import org.apache.poi.ss.usermodel.*;
 import top.yinxiaokang.original.entity.SthousingDetail;
 import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.enums.LoanBusinessType;
@@ -53,6 +52,11 @@ public class Common {
     }
 
 
+    public static List<InitInformation> listBaseAccountInformation() {
+        List<Map<String, Object>> readList = ImportExcelUtilLessFour.read(Constants.BASE_ACCOUNT_INFORMATION, 0, false, false);
+        return Common.importExcelToInitInformationList(readList);
+    }
+
     /**
      * 将读取到的初始的excel的map转换为初始对象List
      *
@@ -63,14 +67,34 @@ public class Common {
         ArrayList<InitInformation> initHasOverdueList = new ArrayList<>();
         int i = 0;
         for (Map m : importExcel) {
-            InitInformation initHasOverdue = new InitInformation();
-            initHasOverdue.setDkzh((String) m.get("dkzh"));
-            initHasOverdue.setCsye(new BigDecimal((String) m.get("csye")));
-            initHasOverdue.setCsyqbj(new BigDecimal((String) m.get("csyqbj")));
-            initHasOverdueList.add(initHasOverdue);
-            System.out.println("转换excel导入的map为 初始信息对象  " + ++i);
+            i = transformMap2Bean(initHasOverdueList, i, m);
         }
         return initHasOverdueList;
+    }
+
+    /**
+     * 将读取到的初始的excel的map转换为初始对象List
+     *
+     * @param readList
+     * @return
+     */
+    public static List<InitInformation> importExcelToInitInformationList(List<Map<String, Object>> readList) {
+        ArrayList<InitInformation> initHasOverdueList = new ArrayList<>();
+        int i = 0;
+        for (Map m : readList) {
+            i = transformMap2Bean(initHasOverdueList, i, m);
+        }
+        return initHasOverdueList;
+    }
+
+    private static int transformMap2Bean(ArrayList<InitInformation> initHasOverdueList, int i, Map m) {
+        InitInformation initHasOverdue = new InitInformation();
+        initHasOverdue.setDkzh((String) m.get("dkzh"));
+        initHasOverdue.setCsye(new BigDecimal((String) m.get("csye")));
+        initHasOverdue.setCsyqbj(new BigDecimal((String) m.get("csyqbj")));
+        initHasOverdueList.add(initHasOverdue);
+        System.out.println("转换excel导入的map为 初始信息对象  " + ++i);
+        return i;
     }
 
 
@@ -83,7 +107,7 @@ public class Common {
      */
     public static RepaymentItem getRepaymentItemByDqqc(List<RepaymentItem> list, Integer dqqc) {
         for (RepaymentItem item : list) {
-            if (dqqc == item.getHkqc()) {
+            if (dqqc.equals(item.getHkqc())) {
                 return item;
             }
         }
@@ -126,28 +150,4 @@ public class Common {
         return prepaymentList;
     }
 
-
-    public static List<Map> importExcel(InputStream inputStream) {
-
-        List<Map> result = new ArrayList<>();
-        Workbook workBook;
-        try {
-            workBook = WorkbookFactory.create(inputStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return result;
-        }
-
-        Sheet sheet = workBook.getSheetAt(0);
-        Iterator<Row> rowIterator = sheet.rowIterator();
-        while (rowIterator.hasNext()) {
-            Row next = rowIterator.next();
-            Iterator<Cell> iterator = next.iterator();
-            while (iterator.hasNext()) {
-
-            }
-
-        }
-        return result;
-    }
 }
