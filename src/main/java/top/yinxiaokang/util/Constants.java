@@ -112,6 +112,12 @@ public class Constants {
             ACCOUNT_PATH + "/" + TODAY_YEARMONTH_STR;
 
     /**
+     * 今日 应该扣款账号观看版文件路径
+     */
+    public static String TODAY_SHOULD_PAYMENT_ACCOUNT_VIEW =
+            TODAY_ACCOUNT_PATH + "/" + TODAY_STR + "-应该正常扣款账号" + XLS;
+
+    /**
      * 今日 应该扣款账号文件路径
      */
     public static String TODAY_SHOULD_PAYMENT_ACCOUNT =
@@ -131,7 +137,7 @@ public class Constants {
     /**
      * 昨日业务文件名及路径, 不包含扩展名
      */
-    public static String YESTERDAY_SHOULD_PAYMENT_BUSINESS = YESTERDAY_BUSINESS_PATH + "/" + YESTERDAY_STR + "-业务推算和实际业务-标红代表不正常";
+    public static String YESTERDAY_SHOULD_PAYMENT_BUSINESS = YESTERDAY_BUSINESS_PATH + "/" + YESTERDAY_STR + "-业务推算和实际业务";
     /**
      * 昨日业务文件名及路径, 含特定扩展名
      */

@@ -1,6 +1,9 @@
 package top.yinxiaokang.original.mains;
 
+import lombok.extern.slf4j.Slf4j;
 import top.yinxiaokang.original.component.CommLoanAlgorithm;
+import top.yinxiaokang.original.component.FlagRedRecode;
+import top.yinxiaokang.original.component.GetEveryDayAccounts;
 import top.yinxiaokang.original.component.LoanRepaymentAlgorithm;
 import top.yinxiaokang.util.Utils;
 import top.yinxiaokang.original.dto.AccountInformations;
@@ -36,6 +39,7 @@ import static top.yinxiaokang.util.FileCommon.*;
  * @author yinxk
  * @date 2018/8/6 11:45
  */
+@Slf4j
 public class AccountCheckMain {
     private static AccountCheck accountCheck = new AccountCheck();
 
@@ -51,6 +55,20 @@ public class AccountCheckMain {
 
     public static void main(String[] args) {
 
+        // 今天扣款数据
+        new GetEveryDayAccounts().work();
+
+        log.info("今日扣款数据已生成");
+        log.info("休息两秒");
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        log.info("继续干活");
+
+
         AccountCheckMain checkMain = new AccountCheckMain();
 
         Collection<Map> importExcel = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
@@ -65,7 +83,7 @@ public class AccountCheckMain {
         }
 
         int size = importExcel.size();
-        logs.append("=============================================写入时间: "+ DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "=============================================\n");
+        logs.append("=============================================写入时间: " + DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "=============================================\n");
         logs.append("读取总条数: " + size + "\n");
 
         List<InitInformation> initInformationList = Common.importExcelToInitInformationList(importExcel);
@@ -103,9 +121,20 @@ public class AccountCheckMain {
             }
             logs.append("\n");
         }
-        logs.append("=============================================写入完成时间: "+ DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "=============================================\n");
+        logs.append("=============================================写入完成时间: " + DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "=============================================\n");
         logsToFile();
         listToXlsx();
+
+        log.info("再休息两秒");
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        log.info("标红开始");
+        new FlagRedRecode().work();
+
         System.out.println("************************************************************************************************************************************************************");
         System.out.println("**************************************************************************结束运行!*************************************************************************");
         System.out.println("********************************************************************" + DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "********************************************************************");
@@ -363,7 +392,7 @@ public class AccountCheckMain {
             }
         }
 
-        if (informations.getInitInformation().getCsyqbj().compareTo(BigDecimal.ZERO) > 0 ) {
+        if (informations.getInitInformation().getCsyqbj().compareTo(BigDecimal.ZERO) > 0) {
             if (dkyeByCsye.compareTo(dkyeByYeWu) == 0) {
                 logs.append("初始逾期本金和初始导入系统业务本金和相等\n");
             } else {
@@ -411,7 +440,6 @@ public class AccountCheckMain {
             sumOfSjLx = sumOfSjLx.add(detail.getLxje());
         }
         // endregion
-
 
 
         BigDecimal shouldDkye = csye;
@@ -523,9 +551,9 @@ public class AccountCheckMain {
                 "发生额(去罚): %-10s  本金: %-10s  利息: %-10s  %-31s" +
                 "发生额差(合-计): %-10s  本合计: %-10s  利合计: %-10s  贷款余合计: %-10s  " +
                 "推算应该贷款余额: %-10s  实际贷款余额: %-10s  推-实际: %-10s \n";
-        String format = String.format(log,"合计",
+        String format = String.format(log, "合计",
                 sumOfShouldFse, sumOfShouldBj, sumOfShouldLx, "-", "-",
-                sumOfSjFse, sumOfSjBj, sumOfSjLx,"-",
+                sumOfSjFse, sumOfSjBj, sumOfSjLx, "-",
                 subFse, subBj, subLx, subDkye, shouldDkye,
                 informations.getSthousingAccount().getDkye(),
                 shouldDkye.subtract(informations.getSthousingAccount().getDkye()));
@@ -563,7 +591,7 @@ public class AccountCheckMain {
 
 
     private void analyOneThousand1(List<RepaymentItem> repaymentItems, List<SthousingDetail> shouldDetails,
-                                    List<SthousingDetail> prepaymentList, Date now, int prepaymentTag, AccountInformations informations){
+                                   List<SthousingDetail> prepaymentList, Date now, int prepaymentTag, AccountInformations informations) {
         analyOneThousand11(repaymentItems, shouldDetails, prepaymentList, now, 0);
         analyOneThousand12(shouldDetails, informations);
     }
@@ -632,6 +660,7 @@ public class AccountCheckMain {
 
     /**
      * 根据生成的站位业务, 后期处理
+     *
      * @param shouldDetails 生成的站位业务
      * @param informations
      */
@@ -640,7 +669,7 @@ public class AccountCheckMain {
         SthousingDetail preDetail = null;
         SthousingDetail nextDetail = null;
         List<RepaymentItem> repaymentItems = null;
-        int repaymentTag = -1 ;
+        int repaymentTag = -1;
         String jxtsStr = "期次: %-5s 计息天数 : %-5s\n";
         for (int i = 0; i < shouldDetails.size(); i++) {
             thisDetail = shouldDetails.get(i);
@@ -734,13 +763,13 @@ public class AccountCheckMain {
     /**
      * 安装正常情况推算应该发生的业务(这种思路有点复杂, 并且逻辑混乱)
      *
-     * @param informations 对于一个账号, 包含组织好的各种信息
-     * @param repaymentItems 还款计划
-     * @param prepaymentList 提前还款,根据业务发生日期排好序的
-     * @param prepaymentTag 提前还款标记
-     * @param now 截止的某一时间
+     * @param informations    对于一个账号, 包含组织好的各种信息
+     * @param repaymentItems  还款计划
+     * @param prepaymentList  提前还款,根据业务发生日期排好序的
+     * @param prepaymentTag   提前还款标记
+     * @param now             截止的某一时间
      * @param preDetailYwfsrq 前一项业务的业务发生日期
-     * @param shouldDetails 应该发生的业务的集合
+     * @param shouldDetails   应该发生的业务的集合
      */
     private void analyOneThousand0(AccountInformations informations, List<RepaymentItem> repaymentItems,
                                    List<SthousingDetail> prepaymentList, int prepaymentTag, Date now, Date preDetailYwfsrq, List<SthousingDetail> shouldDetails) {
@@ -788,7 +817,7 @@ public class AccountCheckMain {
             } else {
                 BigDecimal qcdkye = pre == null ? repaymentItem.getQcdkye() : pre.getQmdkye();
                 int lxts = LoanRepaymentAlgorithm.calInterestDays(informations.getSthousingAccount().getDkffrq(), prepaymentDetail.getYwfsrq());
-                if (preDetailYwfsrq != null){
+                if (preDetailYwfsrq != null) {
                     lxts = LoanRepaymentAlgorithm.differentDaysByMillisecond(preDetailYwfsrq, prepaymentDetail.getYwfsrq());
                 }
                 BigDecimal lx = LoanRepaymentAlgorithm.calInterestByInterestDays(qcdkye, informations.getSthousingAccount().getDkll(), lxts);

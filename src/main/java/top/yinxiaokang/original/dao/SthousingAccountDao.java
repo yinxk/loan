@@ -68,7 +68,7 @@ public class SthousingAccountDao extends BaseDao {
                 "\t\tLEFT JOIN c_loan_funds_information_basic fbasic ON fbasic.id = basic.fundsBasic \n" +
                 "\tWHERE\n" +
                 "\t\tbasic.DKZHZT <> 3\n" +
-                "\t\tAND acc.DKZH IN (?) \n" +
+                "\t\tAND acc.DKZH IN (" + initDkzhsStr + ") \n" +
                 "\t) a \n" +
                 "WHERE\n" +
                 "\ta.xffday <= ?\n" +
@@ -76,6 +76,6 @@ public class SthousingAccountDao extends BaseDao {
                 "\tAND ?\n" +
                 "ORDER BY nextkkrq DESC";
 
-        return list(SomedayInformation.class, sql, initDkzhsStr, kkdayEnd, Utils.SDF_YEAR_MONTH_DAY.format(nextkkrqEnd));
+        return list(SomedayInformation.class, sql, kkdayEnd, Utils.SDF_YEAR_MONTH_DAY.format(nextkkrqEnd));
     }
 }
