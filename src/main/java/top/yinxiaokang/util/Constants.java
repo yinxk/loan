@@ -114,14 +114,20 @@ public class Constants {
     /**
      * 今日 应该扣款账号观看版文件路径
      */
-    public static String TODAY_SHOULD_PAYMENT_ACCOUNT_VIEW =
+    public static String TODAY_SHOULD_PAYMENT_ACCOUNT_VIEW_XLS =
             TODAY_ACCOUNT_PATH + "/" + TODAY_STR + "-应该正常扣款账号" + XLS;
 
     /**
      * 今日 应该扣款账号文件路径
      */
-    public static String TODAY_SHOULD_PAYMENT_ACCOUNT =
+    public static String TODAY_SHOULD_PAYMENT_ACCOUNT_XLS =
             TODAY_ACCOUNT_PATH + "/" + TODAY_STR + "-应该正常扣款账号-oneday" + XLS;
+
+    /**
+     * 今日 应该扣款账号文件路径
+     */
+    public static String TODAY_SHOULD_PAYMENT_ACCOUNT_LOG =
+            TODAY_ACCOUNT_PATH + "/" + TODAY_STR + "-应该正常扣款账号-oneday" + LOG;
 
 
     /**

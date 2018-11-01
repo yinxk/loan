@@ -16,7 +16,7 @@ import java.util.Map;
 public class OneDaySetDanDuKouKuan {
     public static void main(String[] args) {
 
-        Collection<Map> oneDayMap = Common.xlsToList(Constants.TODAY_SHOULD_PAYMENT_ACCOUNT);
+        Collection<Map> oneDayMap = Common.xlsToList(Constants.TODAY_SHOULD_PAYMENT_ACCOUNT_XLS);
         Conn conn = new Conn();
         Connection connection = conn.getConnection();
 

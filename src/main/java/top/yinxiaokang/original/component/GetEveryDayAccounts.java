@@ -11,7 +11,6 @@ import top.yinxiaokang.util.Common;
 import top.yinxiaokang.util.Constants;
 import top.yinxiaokang.util.DateUtil;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -128,6 +127,33 @@ public class GetEveryDayAccounts {
     }
 
 
+    private void toLogTodayDkzh(List<SomedayInformation> list) {
+        log.info("生成今日贷款账号拼接成的执行SQL需要的字符串");
+        StringBuilder sb = new StringBuilder();
+        boolean isFirst = true;
+        for (SomedayInformation information : list) {
+            if (isFirst) {
+                sb.append("'");
+                sb.append(information.getDkzh());
+                sb.append("'");
+                isFirst = false;
+                continue;
+            }
+            sb.append(",");
+            sb.append("'");
+            sb.append(information.getDkzh());
+            sb.append("'");
+        }
+        byte[] bytes = sb.toString().getBytes();
+
+        try (OutputStream outputStream = new FileOutputStream(Constants.TODAY_SHOULD_PAYMENT_ACCOUNT_LOG)) {
+            outputStream.write(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public void toExcelTodayDkzh(List<SomedayInformation> list) {
         log.info("生成今日仅贷款账号的文件");
 
@@ -139,10 +165,8 @@ public class GetEveryDayAccounts {
 
         Map<String, String> keyMap = new LinkedHashMap<>();
         keyMap.put("dkzh", "dkzh");
-        try (OutputStream outputStream = new FileOutputStream(Constants.TODAY_SHOULD_PAYMENT_ACCOUNT)) {
+        try (OutputStream outputStream = new FileOutputStream(Constants.TODAY_SHOULD_PAYMENT_ACCOUNT_XLS)) {
             ExcelUtil.exportExcel(keyMap, transform, outputStream);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -161,8 +185,6 @@ public class GetEveryDayAccounts {
         keyMap.put("dkzh", "dkzh");
         try (OutputStream outputStream = new FileOutputStream(Constants.YESTERDAY_SHOULD_PAYMENT_ACCOUNT_FAIL)) {
             ExcelUtil.exportExcel(keyMap, transform, outputStream);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -214,19 +236,18 @@ public class GetEveryDayAccounts {
                 break;
             }
         }
-        try (OutputStream outputStream = new FileOutputStream(Constants.TODAY_SHOULD_PAYMENT_ACCOUNT_VIEW)) {
+        try (OutputStream outputStream = new FileOutputStream(Constants.TODAY_SHOULD_PAYMENT_ACCOUNT_VIEW_XLS)) {
             ExcelUtil.exportExcel(keyMap, list, outputStream);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
 
-    public void work(){
+    public void work() {
         List<SomedayInformation> todayAllAccounts = listTodayAllAccounts();
         toExcelTodayDkzh(todayAllAccounts);
+        toLogTodayDkzh(todayAllAccounts);
         toExcelTodayShouldPaymentAccounts(todayAllAccounts);
         List<SomedayInformation> yesterdayAllAccounts = listYesterdayAllAccounts();
         toExceYesterdayDkzh(yesterdayAllAccounts);
