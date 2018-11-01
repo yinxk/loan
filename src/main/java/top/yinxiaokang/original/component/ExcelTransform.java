@@ -70,7 +70,7 @@ public class ExcelTransform {
         ExcelTransform excelTransform = new ExcelTransform();
 
         excelTransform.workFormDiretory();
-        excelTransform.workFormFile();
+//        excelTransform.workFormFile();
 
     }
 
@@ -151,7 +151,7 @@ public class ExcelTransform {
                 String csyqbj = mapFromImportExcelByDkzh.get("csyqbj").toString();
                 next.put("csyqbj", csyqbj);
 
-                System.out.printf("匹配得到的贷款账号: %s , 匹配得到的初始余额: %s \n ", groupDkzh, groupCsye);
+                log.info("匹配得到的贷款账号: {} , 匹配得到的初始余额: {} \n ", groupDkzh, groupCsye);
                 next.put("dkzh", groupDkzh);
                 next.put("csye", groupCsye);
                 next.put("xzdkye", new BigDecimal(groupCsye).subtract(new BigDecimal(next.get("本金合计").toString())));
@@ -280,7 +280,7 @@ public class ExcelTransform {
                     moreTagStr = "其他";
                 }
 
-                System.out.printf("多扣类型分类信息: %s, %s, %s,  ====> %s \n", 发生额差额合计, 本金差额合计, 利息差额合计, moreTagStr);
+                log.info("多扣类型分类信息: {}, {}, {},  ====> {} \n", 发生额差额合计, 本金差额合计, 利息差额合计, moreTagStr);
 
             } else if (备注.contains("少扣")) {
                 list4.add(contentMap);
