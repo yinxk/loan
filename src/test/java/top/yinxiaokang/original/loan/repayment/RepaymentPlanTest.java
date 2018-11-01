@@ -1,7 +1,7 @@
 package top.yinxiaokang.original.loan.repayment;
 
 import org.junit.Test;
-import top.yinxiaokang.original.Utils;
+import top.yinxiaokang.util.Utils;
 
 import java.math.BigDecimal;
 import java.text.ParseException;

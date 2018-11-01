@@ -1,6 +1,6 @@
 package top.yinxiaokang.others;
 
-import top.yinxiaokang.original.Utils;
+import top.yinxiaokang.util.Utils;
 
 import java.util.Date;
 

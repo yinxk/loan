@@ -1,6 +1,6 @@
 package top.yinxiaokang.original.loan.repayment;
 
-import top.yinxiaokang.original.Utils;
+import top.yinxiaokang.util.Utils;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

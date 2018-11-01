@@ -1,8 +1,7 @@
-package top.yinxiaokang.original;
+package top.yinxiaokang.original.component;
 
 import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.others.ReducePlanEntity;
-import top.yinxiaokang.util.Common;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -10,9 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author yinxk

@@ -1,8 +1,8 @@
 package top.yinxiaokang.original.service;
 
-import top.yinxiaokang.original.Conn;
-import top.yinxiaokang.original.LoanRepaymentAlgorithm;
-import top.yinxiaokang.original.Utils;
+import top.yinxiaokang.original.component.Conn;
+import top.yinxiaokang.original.component.LoanRepaymentAlgorithm;
+import top.yinxiaokang.util.Utils;
 import top.yinxiaokang.original.dao.CLoanHousingPersonInformationBasicDao;
 import top.yinxiaokang.original.dao.StOverdueDao;
 import top.yinxiaokang.original.dao.SthousingAccountDao;

@@ -1,4 +1,4 @@
-package top.yinxiaokang.original;
+package top.yinxiaokang.original.component;
 
 /**
  * @author yinxk
@@ -15,7 +15,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import static top.yinxiaokang.original.Utils.SDF_YEAR_MONTH_DAY;
+import static top.yinxiaokang.util.Utils.SDF_YEAR_MONTH_DAY;
 
 /**
  * @author yinxk

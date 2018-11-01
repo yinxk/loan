@@ -1,7 +1,7 @@
 package top.yinxiaokang.original.dao;
 
 import org.junit.Test;
-import top.yinxiaokang.original.Conn;
+import top.yinxiaokang.original.component.Conn;
 import top.yinxiaokang.original.entity.SthousingDetail;
 
 import java.util.Collections;

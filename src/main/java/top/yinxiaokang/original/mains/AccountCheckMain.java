@@ -1,8 +1,8 @@
 package top.yinxiaokang.original.mains;
 
-import top.yinxiaokang.original.CommLoanAlgorithm;
-import top.yinxiaokang.original.LoanRepaymentAlgorithm;
-import top.yinxiaokang.original.Utils;
+import top.yinxiaokang.original.component.CommLoanAlgorithm;
+import top.yinxiaokang.original.component.LoanRepaymentAlgorithm;
+import top.yinxiaokang.util.Utils;
 import top.yinxiaokang.original.dto.AccountInformations;
 import top.yinxiaokang.original.entity.StOverdue;
 import top.yinxiaokang.original.entity.SthousingAccount;

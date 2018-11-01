@@ -1,4 +1,4 @@
-package top.yinxiaokang.original;
+package top.yinxiaokang.original.component;
 
 import top.yinxiaokang.util.Common;
 import top.yinxiaokang.util.Constants;

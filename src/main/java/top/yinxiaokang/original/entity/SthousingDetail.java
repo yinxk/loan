@@ -1,6 +1,6 @@
 package top.yinxiaokang.original.entity;
 
-import top.yinxiaokang.original.Utils;
+import top.yinxiaokang.util.Utils;
 
 import java.math.BigDecimal;
 import java.util.Date;

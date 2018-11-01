@@ -1,6 +1,6 @@
 package top.yinxiaokang.original.loan.repayment;
 
-import top.yinxiaokang.original.LoanRepaymentAlgorithm;
+import top.yinxiaokang.original.component.LoanRepaymentAlgorithm;
 import top.yinxiaokang.others.ErrorException;
 import top.yinxiaokang.others.ReturnEnumeration;
 
