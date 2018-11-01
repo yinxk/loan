@@ -19,12 +19,12 @@ public class FlagRedRecode {
         new FlagRedRecode().work();
     }
 
-    public static String pathStrComputer = "C:\\Users\\where\\Desktop\\修账相关数据\\程序导出\\201810月\\";
-    public static String pathStrHandWork = "C:\\Users\\where\\Desktop\\修账相关数据\\手动导出\\201810月\\";
+    public static String pathStrComputer = "C:\\修账相关数据\\程序导出\\201810月\\";
+    public static String pathStrHandWork = "C:\\修账相关数据\\手动导出\\201810月\\";
     public static String xls = ".xls";
     public static String xlsx = ".xlsx";
-    public static String flagRedFileName = "2018-10-30-扣款之后未入账账号";
-    public static String inFileName = "2018-10-30-业务推算和实际业务-标红代表 10月份期次未入账";
+    public static String flagRedFileName = "2018-10-31-扣款之后未入账账号";
+    public static String inFileName = "2018-10-31-业务推算和实际业务-标红代表不正常";
 
     public List<String> listFlagRedDkzh() {
         List<Map<String, Object>> list = ImportExcelUtilLessFour.read(pathStrHandWork + flagRedFileName + xlsx, 0, false);
