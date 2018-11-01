@@ -19,7 +19,7 @@ public class BaseDaoTest {
         Collection<SthousingDetail> list = baseDao.list(SthousingDetail.class, sql, params);
         long end = System.currentTimeMillis();
         for (SthousingDetail detail : list)
-            log.info(detail);
+            System.out.println(detail);
 
         System.out.printf("所用的时间是 %s \n: "  , (end - start));
     }

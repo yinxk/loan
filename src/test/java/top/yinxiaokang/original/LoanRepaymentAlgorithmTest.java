@@ -23,7 +23,7 @@ public class LoanRepaymentAlgorithmTest {
     public void calLxByDkye() throws Exception {
         BigDecimal dkye = new BigDecimal("2454.53");
         BigDecimal bigDecimal = LoanRepaymentAlgorithm.calLxByDkye(dkye, DKLL, RepaymentMonthRateScale.NO);
-        log.info(bigDecimal);
+        System.out.println(bigDecimal);
     }
 
     @Test
@@ -34,12 +34,12 @@ public class LoanRepaymentAlgorithmTest {
         Date soutStartDate = Utils.SDF_YEAR_MONTH_DAY.parse("2017-12-01");
         CurrentPeriodRange currentPeriodRange = LoanRepaymentAlgorithm.calHSRange(dkffrq, hssj, soutStartDate);
         Assert.assertEquals(6, currentPeriodRange.getCurrentPeriod());
-        log.info(currentPeriodRange);
+        System.out.println(currentPeriodRange);
 
         dkffrq = SIMPLE_DATE_FORMAT.parse("2015-03-20");
         currentPeriodRange = LoanRepaymentAlgorithm.calHSRange(dkffrq, hssj, soutStartDate);
         Assert.assertEquals(33, currentPeriodRange.getCurrentPeriod());
-        log.info(currentPeriodRange);
+        System.out.println(currentPeriodRange);
     }
 
     @Test
