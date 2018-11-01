@@ -1,6 +1,7 @@
 package top.yinxiaokang.original;
 
 import top.yinxiaokang.util.Common;
+import top.yinxiaokang.util.Constants;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,15 +10,13 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
-import static top.yinxiaokang.util.FileCommon.inFileNameOneDay;
-
 /**
  * 设置账号单独扣款
  */
 public class OneDaySetDanDuKouKuan {
     public static void main(String[] args) {
 
-        Collection<Map> oneDayMap = Common.xlsToList(inFileNameOneDay);
+        Collection<Map> oneDayMap = Common.xlsToList(Constants.TODAY_SHOULD_PAYMENT_ACCOUNT);
         Conn conn = new Conn();
         Connection connection = conn.getConnection();
 

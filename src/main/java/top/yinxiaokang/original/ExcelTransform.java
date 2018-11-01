@@ -7,6 +7,7 @@ import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.service.AccountCheck;
 import top.yinxiaokang.others.ErrorException;
 import top.yinxiaokang.util.Common;
+import top.yinxiaokang.util.Constants;
 import top.yinxiaokang.util.ImportExcelUtilLessFour;
 
 import java.io.File;
@@ -17,15 +18,12 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static top.yinxiaokang.util.FileCommon.inFileName;
-
 /**
  * @author yinxk
  * @date 2018/10/30 11:45
  */
 public class ExcelTransform {
     private static AccountCheck accountCheck = new AccountCheck();
-    private static BigDecimal wucha = new BigDecimal("0.5");
 
     private static String pathStr = "C:\\修账相关数据\\修账\\";
     private static String fileStr = "2018-10-18-业务推算和实际业务-凭证调整数据-加说明";
@@ -34,7 +32,7 @@ public class ExcelTransform {
     Collection<Map> importExcel;
 
     public ExcelTransform() {
-        importExcel = Common.xlsToList(inFileName);
+        importExcel = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
     }
 
     private SthousingAccount getAccountByDkzh(String dkzh) {
@@ -292,7 +290,7 @@ public class ExcelTransform {
             }
 
             BigDecimal ssdkye = getAccountByDkzh(contentMap.get("dkzh").toString()).getDkye();
-            if (xzdkye.subtract(ssdkye).abs().compareTo(wucha) < 0) {
+            if (xzdkye.subtract(ssdkye).abs().compareTo(Common.ERROR_RANGE) < 0) {
                 contentMap.put("dkyesfgx", "不需要更新");
             } else {
                 contentMap.put("dkyesfgx", "是");

@@ -5,8 +5,6 @@ import top.yinxiaokang.original.excelbean.AllAccountDkye;
 import top.yinxiaokang.original.excelbean.OneThousand;
 
 import java.io.*;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,39 +20,7 @@ public class FileCommon {
      */
     public static StringBuffer logs = new StringBuffer();
 
-    public static String inFileSrc = "src/test/resources/";
-
-    public static String inFileNameOneDay = "C:/修账相关数据/手动导出/201810月/" +"2018-10-31-应该正常扣款账号-oneday.xlsx";
-
-
-    /**
-     * 输入文件名称
-     */
-    public static String inFileName = inFileSrc + "1427问题账号20181009.xlsx";
-    //public static String inFileName = "src/test/resources/初始有逾期.xlsx";
-    //public static String inFileName = "src/test/resources/20180821-误差5块以内的.xlsx";
-    //public static String inFileName = "src/test/resources/包含所有的账号的初始余额和导入的逾期本金.xlsx";
-//    public static String inFileName = "src/test/resources/从30多期跳到170多期.xlsx";
-
-    /**
-     * 输出文件名称
-     */
-//    private static String outFileName = "从30多期跳到170多期跳过两期";
-//    private static String outFileName = "allDkzhDkyePart1";
-//    private static String outFileName = "1427个贷款账号分析" + new SimpleDateFormat("yyyyMMdd").format(new Date());
-    private static String yesterdayStr = null;
-            static {
-                LocalDate localDate = LocalDate.now();
-                localDate = localDate.plusDays(-1);
-                yesterdayStr = DateTimeFormatter.ofPattern("yyyy-MM-dd-").format(localDate);
-            }
-    private static String outFileName = "C:/修账相关数据/程序导出/201810月/" + yesterdayStr + "业务推算和实际业务-标红代表不正常";
-//    private static String outFileName = "1400根据需要查询";
-//    private static String outFileName = "1400即将扣款";
-
-
     // region excel
-    public static String outXLSXName = outFileName + ".xls";
     public static OutputStream outXLSXStream = null;
     public static List<OneThousand> datasetOneThousand = new ArrayList<>();
     public static List<AllAccountDkye> datasetAllAccountDkye = new ArrayList<>();
@@ -64,7 +30,7 @@ public class FileCommon {
 
     static {
         try {
-            outXLSXStream = new FileOutputStream(new File(outXLSXName));
+            outXLSXStream = new FileOutputStream(new File(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_XLS));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -123,16 +89,14 @@ public class FileCommon {
 //        KEY_MAP.put("subdkye", "推算-实际(贷款余额)");
 //    }
 
-    public static String logName = outFileName + ".log";
-
 
     /**
      * 输出到excel
      */
     public static void listToXlsx() {
-        System.out.println("开始=====>" + outXLSXName);
+        System.out.println("开始=====>" + Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_XLS);
         ExcelUtil.exportExcel(KEY_MAP, dataset, outXLSXStream);
-        System.out.println("结束=====>" + outXLSXName);
+        System.out.println("结束=====>" + Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_XLS);
         try {
             outXLSXStream.close();
         } catch (IOException e) {
@@ -145,7 +109,7 @@ public class FileCommon {
      */
     public static void logsToFile() {
 
-        try (FileWriter writer = new FileWriter(logName, true)) {
+        try (FileWriter writer = new FileWriter(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_LOG, true)) {
             System.out.print(logs.toString());
             writer.write(logs.toString());
             logs = new StringBuffer();

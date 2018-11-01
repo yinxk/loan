@@ -16,6 +16,7 @@ import top.yinxiaokang.original.loan.repayment.RepaymentMonthRateScale;
 import top.yinxiaokang.original.loan.repayment.RepaymentPlan;
 import top.yinxiaokang.original.service.AccountCheck;
 import top.yinxiaokang.util.Common;
+import top.yinxiaokang.util.Constants;
 import top.yinxiaokang.util.DateUtil;
 
 import java.io.File;
@@ -52,12 +53,12 @@ public class AccountCheckMain {
 
         AccountCheckMain checkMain = new AccountCheckMain();
 
-        Collection<Map> importExcel = Common.xlsToList(inFileName);
+        Collection<Map> importExcel = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
 
-        Collection<Map> oneDayMap = Common.xlsToList(inFileNameOneDay);
+        Collection<Map> oneDayMap = Common.xlsToList(Constants.YESTERDAY_SHOULD_PAYMENT_ACCOUNT);
 
 
-        File logFile = new File(logName);
+        File logFile = new File(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_LOG);
         if (logFile.isFile() && logFile.exists()) {
             System.out.println("文件存在, 删除文件!");
             logFile.delete();
