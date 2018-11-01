@@ -256,8 +256,9 @@ public class GetEveryDayAccounts {
 
 
     public static void main(String[] args) {
-        GetEveryDayAccounts getEveryDayAccounts = new GetEveryDayAccounts();
-        getEveryDayAccounts.work();
+        //GetEveryDayAccounts getEveryDayAccounts = new GetEveryDayAccounts();
+        //getEveryDayAccounts.work();
+        log.info("test");
     }
 
 }
