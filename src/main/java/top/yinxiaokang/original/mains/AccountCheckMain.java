@@ -1,10 +1,7 @@
 package top.yinxiaokang.original.mains;
 
 import lombok.extern.slf4j.Slf4j;
-import top.yinxiaokang.original.component.CommLoanAlgorithm;
-import top.yinxiaokang.original.component.FlagRedRecode;
-import top.yinxiaokang.original.component.GetEveryDayAccounts;
-import top.yinxiaokang.original.component.LoanRepaymentAlgorithm;
+import top.yinxiaokang.original.component.*;
 import top.yinxiaokang.util.Utils;
 import top.yinxiaokang.original.dto.AccountInformations;
 import top.yinxiaokang.original.entity.StOverdue;
@@ -136,6 +133,15 @@ public class AccountCheckMain {
 
         log.info("标红开始");
         new FlagRedRecode().work();
+
+        log.error("再休息" + sleepMin + "秒");
+        try {
+            Thread.sleep(sleepMillis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        log.info("单独扣款标记开始");
+        new OneDaySetDanDuKouKuan().work();
 
         log.info("************************************************************************************************************************************************************");
         log.info("**************************************************************************结束运行!*************************************************************************");

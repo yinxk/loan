@@ -17,7 +17,10 @@ import java.util.Map;
 @Slf4j
 public class OneDaySetDanDuKouKuan {
     public static void main(String[] args) {
+        new OneDaySetDanDuKouKuan().work();
+    }
 
+    public void work() {
         Collection<Map> oneDayMap = Common.xlsToList(Constants.TODAY_SHOULD_PAYMENT_ACCOUNT_XLS);
         Conn conn = new Conn();
         Connection connection = conn.getConnection();
@@ -30,13 +33,12 @@ public class OneDaySetDanDuKouKuan {
                     "WHERE\n" +
                     "\taccex.loanHousingPersonalPausedVice = 'dandukoukuan'");
 
-            OneDaySetDanDuKouKuan oneDaySetDanDuKouKuan = new OneDaySetDanDuKouKuan();
             Iterator<Map> iterator = oneDayMap.iterator();
-            int sum = 0 ;
+            int sum = 0;
             while (iterator.hasNext()) {
                 Map next = iterator.next();
-                String dkzh = (String)next.get("dkzh");
-                int i = oneDaySetDanDuKouKuan.UpdateAccountToDanDuKouKuan(dkzh, connection);
+                String dkzh = (String) next.get("dkzh");
+                int i = updateAccountToDanDuKouKuan(dkzh, connection);
                 sum += i;
                 log.info("贷款账号: " + dkzh + "    更新了 " + i + "行");
             }
@@ -54,11 +56,11 @@ public class OneDaySetDanDuKouKuan {
         } finally {
             Conn.closeResource(connection, null, null);
         }
-        log.info("结束运行");
+        log.info("单独扣款标记结束");
     }
 
 
-    public int UpdateAccountToDanDuKouKuan(String dkzh, Connection connection) throws SQLException {
+    public int updateAccountToDanDuKouKuan(String dkzh, Connection connection) throws SQLException {
         String sql = " UPDATE st_housing_personal_account acc INNER JOIN c_loan_housing_personal_account_extension accex ON acc.extenstion=accex.id " +
                 " SET accex.loanHousingPersonalPausedVice='dandukoukuan' WHERE acc.DKZH = ? ";
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
