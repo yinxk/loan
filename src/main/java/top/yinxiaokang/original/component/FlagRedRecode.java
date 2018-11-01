@@ -1,5 +1,6 @@
 package top.yinxiaokang.original.component;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
@@ -15,6 +16,7 @@ import java.util.*;
  * @author yinxk
  * @date 2018/10/30 21:23
  */
+@Slf4j
 public class FlagRedRecode {
     public static void main(String[] args) {
         new FlagRedRecode().work();
@@ -127,7 +129,7 @@ public class FlagRedRecode {
         Set keyMap = getKeyMap(oneDayDataList);
         List<List<Integer>> flagRedTags = flagRedTags(oneDayDataList, dkzhs);
         toExcel(oneDayDataList, keyMap, flagRedTags);
-        System.out.println("标记运行结束!");
+        log.info("标记运行结束!");
     }
 
 
