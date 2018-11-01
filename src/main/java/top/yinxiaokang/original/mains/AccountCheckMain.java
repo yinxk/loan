@@ -59,14 +59,16 @@ public class AccountCheckMain {
         new GetEveryDayAccounts().work();
 
         log.info("今日扣款数据已生成");
-        log.info("休息两秒");
+        int sleepMillis = 4000;
+        int sleepMin = sleepMillis / 1000;
+        log.error("休息" + sleepMin + "秒");
 
         try {
-            Thread.sleep(2000);
+            Thread.sleep(sleepMillis);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        log.info("继续干活");
+        log.error("继续干活");
 
 
         AccountCheckMain checkMain = new AccountCheckMain();
@@ -125,9 +127,9 @@ public class AccountCheckMain {
         logsToFile();
         listToXlsx();
 
-        log.info("再休息两秒");
+        log.error("再休息" + sleepMin + "秒");
         try {
-            Thread.sleep(2000);
+            Thread.sleep(sleepMillis);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
