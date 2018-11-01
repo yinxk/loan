@@ -194,8 +194,8 @@ public class ExcelTransform {
 
         Sheet sheet1 = wb.createSheet("全部");
         Sheet sheet2 = wb.createSheet("本息颠倒");
-        Sheet sheet3 = wb.createSheet("多扣负正负");
-        Sheet sheet6 = wb.createSheet("多扣负负负");
+        Sheet sheet3 = wb.createSheet("多扣 负正负");
+        Sheet sheet6 = wb.createSheet("多扣 负负负 | 负负正");
         Sheet sheet4 = wb.createSheet("少扣");
         Sheet sheet5 = wb.createSheet("其他");
         CellStyle cellStyle = wb.createCellStyle();
@@ -262,10 +262,10 @@ public class ExcelTransform {
                     moreTagStr = "负正负";
                 } else if (发生额差额合计.compareTo(BigDecimal.ZERO) < 0 &&
                         本金差额合计.compareTo(BigDecimal.ZERO) < 0 &&
-                        利息差额合计.compareTo(BigDecimal.ZERO) < 0) {
+                        利息差额合计.compareTo(BigDecimal.ZERO) != 0) {
                     list6.add(contentMap);
                     contentMap.put("xzdkye", xzdkye.subtract(发生额差额合计.abs()));
-                    moreTagStr = "负负负";
+                    moreTagStr = "负负负 | 负负正";
                 } else {
                     list5.add(contentMap);
                     moreTagStr = "其他";
