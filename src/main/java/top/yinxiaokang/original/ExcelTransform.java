@@ -25,9 +25,9 @@ import java.util.regex.Pattern;
 public class ExcelTransform {
     private static AccountCheck accountCheck = new AccountCheck();
 
-    private static String pathStr = "C:\\修账相关数据\\修账\\";
-    private static String fileStr = "2018-10-18-业务推算和实际业务-凭证调整数据-加说明";
-    private static String xls = ".xls";
+    private static String pathStr = Constants.TAKE_ACCOUNT_PATH;
+
+    private static String fileStr = "/2018-10-18-业务推算和实际业务-凭证调整数据-加说明";
 
     Collection<Map> importExcel;
 
@@ -40,6 +40,7 @@ public class ExcelTransform {
         if (sthousingAccount == null) {
             throw new ErrorException("没有查询到该贷款账号: " + dkzh);
         }
+        System.out.println("正在查询贷款账号 : " + dkzh);
         return sthousingAccount;
     }
 
@@ -58,11 +59,10 @@ public class ExcelTransform {
             }
         }
 
-        //excelTransform.doTransform(pathStr + fileStr + xls, fileStr + xls);
+        //excelTransform.doTransform(pathStr + fileStr + Constants.XLS, fileStr + Constants.XLS);
 
         System.out.println("运行结束!");
 
-        //
     }
 
     private Map getMapFromImportExcelByDkzh(String dkzh) {
@@ -178,7 +178,7 @@ public class ExcelTransform {
 
 
         Workbook wb = new HSSFWorkbook();
-        try (FileOutputStream fileOutputStream = new FileOutputStream(new File(pathStr + "转换版/" + split[0] + "-转换版" + xls))) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(new File(Constants.TAKE_ACCOUNT_TRANSFORM_PATH + "/" + split[0] + "-转换版" + Constants.XLS))) {
             //ExcelUtil.exportExcel(keyMap, list, fileOutputStream);
             filterType(firstMes, keyMap, wb);
             wb.write(fileOutputStream);

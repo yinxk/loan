@@ -3,6 +3,7 @@ package top.yinxiaokang.original;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
+import top.yinxiaokang.util.Constants;
 import top.yinxiaokang.util.ImportExcelUtilLessFour;
 
 import java.io.FileOutputStream;
@@ -19,15 +20,8 @@ public class FlagRedRecode {
         new FlagRedRecode().work();
     }
 
-    public static String pathStrComputer = "C:\\修账相关数据\\程序导出\\201810月\\";
-    public static String pathStrHandWork = "C:\\修账相关数据\\手动导出\\201810月\\";
-    public static String xls = ".xls";
-    public static String xlsx = ".xlsx";
-    public static String flagRedFileName = "2018-10-31-扣款之后未入账账号";
-    public static String inFileName = "2018-10-31-业务推算和实际业务-标红代表不正常";
-
-    public List<String> listFlagRedDkzh() {
-        List<Map<String, Object>> list = ImportExcelUtilLessFour.read(pathStrHandWork + flagRedFileName + xlsx, 0, false);
+    public List<String> listFlagRedDkzh(String fileName) {
+        List<Map<String, Object>> list = ImportExcelUtilLessFour.read(fileName, 0, false);
         Iterator<Map<String, Object>> iterator = list.iterator();
         List<String> dkzhs = new ArrayList<>();
         while (iterator.hasNext()) {
@@ -38,8 +32,8 @@ public class FlagRedRecode {
         return dkzhs;
     }
 
-    public List<Map<String, Object>> listOneDayData() {
-        return ImportExcelUtilLessFour.read(pathStrComputer + inFileName + xls, 0, false);
+    public List<Map<String, Object>> listOneDayData(String fileName) {
+        return ImportExcelUtilLessFour.read(fileName, 0, false);
     }
 
     public Set getKeyMap(List<Map<String, Object>> list) {
@@ -90,7 +84,7 @@ public class FlagRedRecode {
         Font font = wb.createFont();
         font.setColor(IndexedColors.RED.getIndex());
         cellStyle.setFont(font);
-        try (OutputStream fileOut = new FileOutputStream(pathStrComputer + inFileName + "-标记版" + xls)) {
+        try (OutputStream fileOut = new FileOutputStream(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS+ "-标记版" + Constants.XLS)) {
             Sheet sheet = wb.createSheet();
             Row row0 = sheet.createRow(0);
             Iterator iterator = keyMap.iterator();
@@ -128,8 +122,8 @@ public class FlagRedRecode {
 
 
     public void work() {
-        List<String> dkzhs = listFlagRedDkzh();
-        List<Map<String, Object>> oneDayDataList = listOneDayData();
+        List<String> dkzhs = listFlagRedDkzh(Constants.YESTERDAY_SHOULD_PAYMENT_ACCOUNT_FAIL);
+        List<Map<String, Object>> oneDayDataList = listOneDayData(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_XLS);
         Set keyMap = getKeyMap(oneDayDataList);
         List<List<Integer>> flagRedTags = flagRedTags(oneDayDataList, dkzhs);
         toExcel(oneDayDataList, keyMap, flagRedTags);

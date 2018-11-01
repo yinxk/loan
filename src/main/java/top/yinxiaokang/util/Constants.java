@@ -25,14 +25,14 @@ public class Constants {
     public static String EVERYDAY_ACCOUNT = "/每日账号分析";
 
     /**
-     * 路径: /201810月
+     * 路径: /修账
      */
-    public static String OCTOBER = "/201810";
+    public static String TAKE_ACCOUNT = "/修账";
 
     /**
-     * 路径: /201811月
+     * 路径: /转换版
      */
-    public static String NOVEMBER = "/201811";
+    public static String TAKE_ACCOUNT_TRANSFORM = "/转换版";
 
     /**
      * 文件扩展名 .xlsx
@@ -99,7 +99,12 @@ public class Constants {
      * 昨日 应该扣款账号文件路径
      */
     public static String YESTERDAY_SHOULD_PAYMENT_ACCOUNT =
-            YESTERDAY_ACCOUNT_PATH + "/" + YESTERDAY_STR + "-应该正常扣款账号-oneday" + XLSX;
+            YESTERDAY_ACCOUNT_PATH + "/" + YESTERDAY_STR + "-应该正常扣款账号-oneday" + XLS;
+    /**
+     * 昨日 应该扣款之后未入账账号文件路径
+     */
+    public static String YESTERDAY_SHOULD_PAYMENT_ACCOUNT_FAIL =
+            YESTERDAY_ACCOUNT_PATH + "/" + YESTERDAY_STR + "-扣款之后未入账账号" + XLS;
     /**
      * 今日 账号 路径
      */
@@ -110,7 +115,7 @@ public class Constants {
      * 今日 应该扣款账号文件路径
      */
     public static String TODAY_SHOULD_PAYMENT_ACCOUNT =
-            TODAY_ACCOUNT_PATH + "/" + TODAY_STR + "-应该正常扣款账号-oneday" + XLSX;
+            TODAY_ACCOUNT_PATH + "/" + TODAY_STR + "-应该正常扣款账号-oneday" + XLS;
 
 
     /**
@@ -135,6 +140,17 @@ public class Constants {
      * 昨日业务文件名及路径, 含特定扩展名
      */
     public static String YESTERDAY_SHOULD_PAYMENT_BUSINESS_XLS = YESTERDAY_SHOULD_PAYMENT_BUSINESS + XLS;
+
+
+    /**
+     * 修账 路径
+     */
+    public static String TAKE_ACCOUNT_PATH = BASE_PATH + TAKE_ACCOUNT;
+
+    /**
+     * 修账 转换版路径
+     */
+    public static String TAKE_ACCOUNT_TRANSFORM_PATH = TAKE_ACCOUNT_PATH + TAKE_ACCOUNT_TRANSFORM;
 
 
     public static void main(String[] args) {
