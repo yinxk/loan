@@ -1,9 +1,12 @@
 package top.yinxiaokang.original.component;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+@Slf4j
 public class DoSql {
 
     public static void main(String[] args) {
@@ -18,14 +21,14 @@ public class DoSql {
             try {
                 connection.rollback();
             } catch (SQLException e1) {
-                System.out.println("回滚失败!");
+                log.info("回滚失败!");
                 e1.printStackTrace();
             }
             e.printStackTrace();
         } finally {
             Conn.closeResource(connection, null, null);
         }
-        System.out.println("结束运行");
+        log.info("结束运行");
 
     }
 
@@ -33,7 +36,7 @@ public class DoSql {
 
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         int i = preparedStatement.executeUpdate();
-        System.out.println("处理更新了: " + i);
+        log.info("处理更新了: " + i);
     }
 
 }

@@ -8,7 +8,7 @@ public class lambda {
         new Thread(() -> {
             int i = 0;
             while (true){
-                System.out.println("do some thing ! " + ++i);
+                log.info("do some thing ! " + ++i);
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {

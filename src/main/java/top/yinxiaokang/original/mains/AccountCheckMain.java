@@ -80,7 +80,7 @@ public class AccountCheckMain {
 
         File logFile = new File(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_LOG);
         if (logFile.isFile() && logFile.exists()) {
-            System.out.println("文件存在, 删除文件!");
+            log.info("文件存在, 删除文件!");
             logFile.delete();
         }
 
@@ -137,10 +137,10 @@ public class AccountCheckMain {
         log.info("标红开始");
         new FlagRedRecode().work();
 
-        System.out.println("************************************************************************************************************************************************************");
-        System.out.println("**************************************************************************结束运行!*************************************************************************");
-        System.out.println("********************************************************************" + DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "********************************************************************");
-        System.out.println("************************************************************************************************************************************************************");
+        log.info("************************************************************************************************************************************************************");
+        log.info("**************************************************************************结束运行!*************************************************************************");
+        log.info("********************************************************************" + DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "********************************************************************");
+        log.info("************************************************************************************************************************************************************");
     }
 
     /**
@@ -167,7 +167,7 @@ public class AccountCheckMain {
         List<AccountInformations> isGenerate = generateOrNotGenerateList.get(KEY_ISGENERATE);
         List<AccountInformations> notGenerate = generateOrNotGenerateList.get(KEY_NOTGENERATE);
         List<AccountInformations> prepayment = generateOrNotGenerateList.get(KEY_PREPAYMENT);
-        System.out.println("存在提前还款业务的账号数量: " + prepayment.size());
+        log.info("存在提前还款业务的账号数量: " + prepayment.size());
         int dealNum = 0;
         logs.append("==================================================start--已经产生业务==========================================\n");
         doAnalyze(checkMain, isGenerate, dealNum);

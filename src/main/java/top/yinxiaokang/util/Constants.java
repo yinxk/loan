@@ -1,5 +1,7 @@
 package top.yinxiaokang.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -7,6 +9,7 @@ import java.time.format.DateTimeFormatter;
  * 常量类
  */
 @SuppressWarnings("SpellCheckingInspection")
+@Slf4j
 public class Constants {
 
     /**
@@ -168,7 +171,7 @@ public class Constants {
     public static void main(String[] args) {
 
         Constants constants = new Constants();
-        System.out.println(constants);
+        log.info("");
     }
 
 }

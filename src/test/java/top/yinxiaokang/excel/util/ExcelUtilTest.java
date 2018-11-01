@@ -24,7 +24,7 @@ public class ExcelUtilTest {
         Collection<Map> importExcel = ExcelUtil.importExcel(Map.class, inputStream, "yyyy/MM/dd HH:mm:ss", logs, 0);
 
 
-        System.out.println("读取总条数: "+importExcel.size());
+        log.info("读取总条数: "+importExcel.size());
 
         for (Map m : importExcel) {
 
@@ -32,17 +32,17 @@ public class ExcelUtilTest {
             //Iterator iterator = set.iterator();
             //while (iterator.hasNext()) {
             //    Object next = iterator.next();
-            //    System.out.println(next.getClass().getName() + "   ");
+            //    log.info(next.getClass().getName() + "   ");
             //}
-            //System.out.println();
+            //log.info();
             //Collection values = m.values();
             //Iterator iterator1 = values.iterator();
             //while (iterator1.hasNext()) {
             //    Object next = iterator1.next();
-            //    System.out.println(next.getClass().getName() + "  ");
+            //    log.info(next.getClass().getName() + "  ");
             //}
-            System.out.println(m);
+            log.info(m);
         }
-        System.out.println("读取总条数: "+importExcel.size());
+        log.info("读取总条数: "+importExcel.size());
     }
 }

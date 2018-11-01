@@ -1,5 +1,6 @@
 package top.yinxiaokang.original.component;
 
+import lombok.extern.slf4j.Slf4j;
 import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.others.ReducePlanEntity;
 
@@ -15,6 +16,7 @@ import java.util.List;
  * @author yinxk
  * @date 2018/7/6 14:11
  */
+@Slf4j
 public class ReducePlan {
 
     public static void main(String[] args) {
@@ -75,14 +77,14 @@ public class ReducePlan {
                     int i = reducePlan.updateLoanAccountPlan(connection, currentBX, bjje, overdueThisPeriodLX, id);
                     if (i > 0) {
                         count++;
-                        System.out.println("更新了id为: " + id + " 的记录  ");
+                        log.info("更新了id为: " + id + " 的记录  ");
                     }
                 }
             }
 
-            System.out.println("总共更新的记录数:" + count);
+            log.info("总共更新的记录数:" + count);
             long endTime = System.currentTimeMillis();
-            System.out.println("正常结束，时间：" + (endTime - startTime) + " ms");
+            log.info("正常结束，时间：" + (endTime - startTime) + " ms");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

@@ -1,5 +1,7 @@
 package top.yinxiaokang.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -13,6 +15,7 @@ import java.util.Map;
  *
  * @author where
  */
+@Slf4j
 public class BeanOrMapUtil {
 
     /**
@@ -67,7 +70,7 @@ public class BeanOrMapUtil {
                 }
             }
         } catch (Exception e) {
-            System.out.println("transBean2Map Error" + e);
+            log.info("transBean2Map Error" + e);
         }
 
         return map;

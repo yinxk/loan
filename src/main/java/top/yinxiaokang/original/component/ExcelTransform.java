@@ -1,5 +1,6 @@
 package top.yinxiaokang.original.component;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
@@ -22,6 +23,7 @@ import java.util.regex.Pattern;
  * @author yinxk
  * @date 2018/10/30 11:45
  */
+@Slf4j
 public class ExcelTransform {
     private static AccountCheck accountCheck = new AccountCheck();
 
@@ -40,13 +42,11 @@ public class ExcelTransform {
         if (sthousingAccount == null) {
             throw new ErrorException("没有查询到该贷款账号: " + dkzh);
         }
-        System.out.println("正在查询贷款账号 : " + dkzh);
+        log.info("正在查询贷款账号 : " + dkzh);
         return sthousingAccount;
     }
 
-    public static void main(String[] args) {
-        ExcelTransform excelTransform = new ExcelTransform();
-
+    public void workFormDiretory() {
         File diretory = new File(pathStr);
         if (!diretory.isDirectory()) {
             throw new RuntimeException("not directory");
@@ -55,13 +55,22 @@ public class ExcelTransform {
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             if (file.isFile()) {
-                excelTransform.doTransform(file.getPath(), file.getName());
+                doTransform(file.getPath(), file.getName());
             }
         }
+        log.info("分类转换excel运行结束!");
+    }
 
-        //excelTransform.doTransform(pathStr + fileStr + Constants.XLS, fileStr + Constants.XLS);
+    public void workFormFile() {
+        doTransform(pathStr + fileStr + Constants.XLS, fileStr + Constants.XLS);
+        log.info("分类转换excel运行结束!");
+    }
 
-        System.out.println("运行结束!");
+    public static void main(String[] args) {
+        ExcelTransform excelTransform = new ExcelTransform();
+
+        excelTransform.workFormDiretory();
+        excelTransform.workFormFile();
 
     }
 
@@ -147,7 +156,7 @@ public class ExcelTransform {
                 next.put("csye", groupCsye);
                 next.put("xzdkye", new BigDecimal(groupCsye).subtract(new BigDecimal(next.get("本金合计").toString())));
             } else {
-                System.out.println("存在没有匹配" + ++notMatchNumber);
+                log.info("存在没有匹配" + ++notMatchNumber);
                 throw new RuntimeException("存在没有匹配");
             }
         }
@@ -187,7 +196,7 @@ public class ExcelTransform {
         }
 
 
-        System.out.println(pathFileName + "=====转换完成=====");
+        log.info(pathFileName + "=====转换完成=====");
     }
 
     private void filterType(List<Map<String, Object>> list, Map<String, String> keyMap, Workbook wb) {

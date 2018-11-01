@@ -17,13 +17,13 @@ public class RepaymentPlanTest {
         BigDecimal dkffe = new BigDecimal("500000");
         Date dkffrq = Utils.SDF_YEAR_MONTH_DAY.parse("2017-10-31");
         int hkqs = 156;
-        System.out.println("=========================");
+        log.info("=========================");
         List<RepaymentItem> repaymentItems1 = RepaymentPlan.listRepaymentPlan(dkffe, dkffrq, hkqs, dknlv, RepaymentMethod.BX, 0, RepaymentMonthRateScale.YES);
         RepaymentItem oddBx = null;
         //for (RepaymentItem item  : repaymentItems1) {
         //    if (oddBx != null)
         //        System.out.printf("本金差额: %s  ",item.getHkbjje().subtract(oddBx.getHkbjje()));
-        //    //System.out.println(item);
+        //    //log.info(item);
         //    oddBx = item;
         //}
         List<RepaymentItem> repaymentItems2 = RepaymentPlan.listRepaymentPlan(dkffe, dkffrq, hkqs, dknlv, RepaymentMethod.BX, null, RepaymentMonthRateScale.NO);
@@ -41,7 +41,7 @@ public class RepaymentPlanTest {
             //System.out.print( repaymentItem1 + "\t" + repaymentItem2 + "\t 本金差额 : "+repaymentItem1.getHkbjje().subtract(repaymentItem2.getHkbjje()) + "\n");
         }
         System.out.printf("利息1总额: %s , 利息2总额: %s , 利息总额差额: %s",sumlx1,sumlx2,sumlx1.subtract(sumlx2));
-        System.out.println("=========================");
+        log.info("=========================");
          //经过上面的比对,计算的月利息 , 月利率保留10位和保留12位计算的结果一致
          //保留8位和保留12位有些期数会相差0.01
          //那么保留8位和保留10也是有些期数会相差0.01
@@ -49,19 +49,19 @@ public class RepaymentPlanTest {
         //repaymentItems1 = repaymentItems2;
 
         //for (RepaymentItem item  : repaymentItems2) {
-        //    //System.out.println(item);
+        //    //log.info(item);
         //}
         //List<RepaymentItem> repaymentItems3 = RepaymentPlan.listRepaymentPlan(dkffe, dkffrq, hkqs, dknlv, RepaymentMethod.BJ, null, RepaymentMonthRateScale.YES);
         //RepaymentItem oddBj = null;
         //for (RepaymentItem item  : repaymentItems3) {
         //    if (oddBj != null)
         //        System.out.printf("月还款额差额: %s   " ,oddBj.getFse().subtract(item.getFse()));
-        //    System.out.println(item);
+        //    log.info(item);
         //    oddBj = item;
         //}
         //List<RepaymentItem> repaymentItems4 = RepaymentPlan.listRepaymentPlan(dkffe, dkffrq, hkqs, dknlv, RepaymentMethod.BJ, null, RepaymentMonthRateScale.NO);
         //for (RepaymentItem item  : repaymentItems4) {
-        //    System.out.println(item);
+        //    log.info(item);
         //}
 
         //LinkedList<HousingfundAccountPlanGetInformation> housingfundAccountPlanGetInformations = CommLoanAlgorithm.repaymentPlan(dkffe, hkqs, RepaymentMethod.BX.getCode(), dknlv, Utils.SDF_YEAR_MONTH_DAY.format(dkffrq));
@@ -78,7 +78,7 @@ public class RepaymentPlanTest {
         //            repaymentItem1.getQmdkye().subtract(new BigDecimal(item.getQMDKYE())));
         //}
         //System.out.printf("利息1总额: %s , 利息2总额: %s , 利息总额差额: %s",sumlx1,sumlx2,sumlx1.subtract(sumlx2));
-        //System.out.println("=========================");
+        //log.info("=========================");
         /**
          * 发现以前的还款计划, 不管是同我的月利率是8为小数或者是16位小数 ,都有一定的差异
          */
@@ -101,7 +101,7 @@ public class RepaymentPlanTest {
         //            repaymentItem1.getQmdkye().subtract(new BigDecimal(item.getQMDKYE())));
         //}
         //System.out.printf("利息1总额: %s , 利息2总额: %s , 利息总额差额: %s",sumlx1,sumlx2,sumlx1.subtract(sumlx2));
-        //System.out.println("=========================");
+        //log.info("=========================");
         /**
          * 那样的计算方式, 通过推算的公式来计算本金 , 可能存在一定的误差 ,这个时候 , 我还是觉得要获取某一期的本金和利息, 应该通过还款计划来, 虽然可能计算量稍微大一点(也不一定)
          */

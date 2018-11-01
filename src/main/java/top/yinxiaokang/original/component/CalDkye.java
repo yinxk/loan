@@ -1,5 +1,6 @@
 package top.yinxiaokang.original.component;
 
+import lombok.extern.slf4j.Slf4j;
 import top.yinxiaokang.others.StringUtil;
 
 import java.math.BigDecimal;
@@ -12,6 +13,7 @@ import java.util.*;
 /**
  * Created by where on 2018/7/31.
  */
+@Slf4j
 public class CalDkye {
     public static void main(String[] args) {
         long startTime = System.currentTimeMillis();
@@ -35,7 +37,7 @@ public class CalDkye {
             Collections.sort(details, Comparator.comparing(Detail::getDqqc));
             BigDecimal[] reverseBXDqqc = calDkye.getReverseBXDqqc(reverseBXDqqcs);
             Iterator<Detail> iterator = details.iterator();
-            System.out.println("推算开始======");
+            log.info("推算开始======");
             while (iterator.hasNext()) {
                 Detail next = iterator.next();
                 boolean reverseQc = calDkye.isReverseQc(reverseBXDqqc, next.getDqqc());
@@ -45,15 +47,15 @@ public class CalDkye {
                 }
                 dkye = dkye.subtract(bjje);
                 System.out.print(next);
-                System.out.println("\t推算余额: "+dkye + "\t差额: "+dkye.subtract(next.getXqdkye()));
+                log.info("\t推算余额: "+dkye + "\t差额: "+dkye.subtract(next.getXqdkye()));
             }
 
-            System.out.println("推算结束======");
+            log.info("推算结束======");
 
-            System.out.println("实际余额: " + accountDkye.toString() + "\t推算余额: "+ dkye.toString() + "\t差额: "+dkye.subtract(accountDkye));
+            log.info("实际余额: " + accountDkye.toString() + "\t推算余额: "+ dkye.toString() + "\t差额: "+dkye.subtract(accountDkye));
 
             long endTime = System.currentTimeMillis();
-            System.out.println("正常结束，时间：" + (endTime - startTime) + " ms");
+            log.info("正常结束，时间：" + (endTime - startTime) + " ms");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

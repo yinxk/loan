@@ -1,5 +1,6 @@
 package top.yinxiaokang.original.component;
 
+import lombok.extern.slf4j.Slf4j;
 import top.yinxiaokang.others.*;
 
 import java.math.BigDecimal;
@@ -12,6 +13,7 @@ import java.util.LinkedList;
 /**
  * Created by Funnyboy on 2017/8/7.
  */
+@Slf4j
 public final class CommLoanAlgorithm {
 
     private final static SimpleDateFormat sim = new SimpleDateFormat("yyyy-MM-dd");
@@ -679,7 +681,7 @@ public final class CommLoanAlgorithm {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(sim.parse("2017-10-31"));
             calendar.add(Calendar.MONTH, 1);
-            System.out.println(sim.format(calendar.getTime()));
+            log.info(sim.format(calendar.getTime()));
         } catch (ParseException e) {
 
         }

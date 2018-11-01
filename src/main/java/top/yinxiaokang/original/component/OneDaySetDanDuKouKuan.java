@@ -1,5 +1,6 @@
 package top.yinxiaokang.original.component;
 
+import lombok.extern.slf4j.Slf4j;
 import top.yinxiaokang.util.Common;
 import top.yinxiaokang.util.Constants;
 
@@ -13,6 +14,7 @@ import java.util.Map;
 /**
  * 设置账号单独扣款
  */
+@Slf4j
 public class OneDaySetDanDuKouKuan {
     public static void main(String[] args) {
 
@@ -36,23 +38,23 @@ public class OneDaySetDanDuKouKuan {
                 String dkzh = (String)next.get("dkzh");
                 int i = oneDaySetDanDuKouKuan.UpdateAccountToDanDuKouKuan(dkzh, connection);
                 sum += i;
-                System.out.println("贷款账号: " + dkzh + "    更新了 " + i + "行");
+                log.info("贷款账号: " + dkzh + "    更新了 " + i + "行");
             }
-            System.out.println("总共更新了 : " + sum);
+            log.info("总共更新了 : " + sum);
 
             connection.commit();
         } catch (SQLException e) {
             try {
                 connection.rollback();
             } catch (SQLException e1) {
-                System.out.println("回滚失败!");
+                log.info("回滚失败!");
                 e1.printStackTrace();
             }
             e.printStackTrace();
         } finally {
             Conn.closeResource(connection, null, null);
         }
-        System.out.println("结束运行");
+        log.info("结束运行");
     }
 
 

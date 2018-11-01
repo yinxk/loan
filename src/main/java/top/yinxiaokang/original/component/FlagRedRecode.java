@@ -129,7 +129,7 @@ public class FlagRedRecode {
         Set keyMap = getKeyMap(oneDayDataList);
         List<List<Integer>> flagRedTags = flagRedTags(oneDayDataList, dkzhs);
         toExcel(oneDayDataList, keyMap, flagRedTags);
-        log.info("标记运行结束!");
+        log.info("标红运行结束!");
     }
 
 

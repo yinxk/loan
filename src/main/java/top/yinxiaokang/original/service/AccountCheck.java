@@ -1,5 +1,6 @@
 package top.yinxiaokang.original.service;
 
+import lombok.extern.slf4j.Slf4j;
 import top.yinxiaokang.original.component.Conn;
 import top.yinxiaokang.original.component.LoanRepaymentAlgorithm;
 import top.yinxiaokang.original.entity.*;
@@ -28,6 +29,7 @@ import java.util.*;
  * @author yinxk
  * @date 2018/8/6 10:57
  */
+@Slf4j
 public class AccountCheck {
 
 
@@ -119,7 +121,7 @@ public class AccountCheck {
      * @return
      */
     public AccountInformations toAccountInformations(InitInformation initInformation) {
-        System.out.println("处理  " + initInformation);
+        log.info("处理  " + initInformation);
         AccountInformations accountInformations = new AccountInformations();
         SthousingAccount account = getSthousingAccount(initInformation.getDkzh());
         // 初始逾期本金大于0 , 则导入系统存在逾期记录

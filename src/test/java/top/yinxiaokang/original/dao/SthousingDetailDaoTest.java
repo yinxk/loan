@@ -17,7 +17,7 @@ public class SthousingDetailDaoTest {
         List<SthousingDetail> sthousingDetails = sthousingDetailDao.listByDkzh(dkzh);
         Collections.sort(sthousingDetails, Comparator.comparing(SthousingDetail::getDqqc));
         for (SthousingDetail detail : sthousingDetails) {
-            System.out.println(detail);
+            log.info(detail);
         }
     }
 

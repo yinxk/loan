@@ -1,5 +1,7 @@
 package top.yinxiaokang.original.component;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,6 +13,7 @@ import java.util.*;
  * @author yinxk
  * @date 2018/8/3 9:06
  */
+@Slf4j
 public class ExchangeOverdueBx {
 
 
@@ -42,23 +45,23 @@ public class ExchangeOverdueBx {
         try {
             List<Overdue> overdueList = exchangeOverdueBx.getOverdueList(dkzh, connection, yqqcs);
             Collections.sort(overdueList,Comparator.comparing(Overdue::getYqqc));
-            System.out.println("=====================即将更新=====================");
+            log.info("=====================即将更新=====================");
             for (Overdue overdue : overdueList) {
                 System.out.println(overdue);
             }
-            System.out.println("=====================开始更新=====================");
+            log.info("=====================开始更新=====================");
 
             //exchangeOverdueBx.exchangeOverdues(overdueList,connection);
 
             overdueList.clear();
             overdueList = exchangeOverdueBx.getOverdueList(dkzh, connection, yqqcs);
             Collections.sort(overdueList,Comparator.comparing(Overdue::getYqqc));
-            System.out.println("=====================更新之后=====================");
+            log.info("=====================更新之后=====================");
             for (Overdue overdue : overdueList) {
                 System.out.println(overdue);
             }
             long endTime = System.currentTimeMillis();
-            System.out.println("正常结束，时间：" + (endTime - startTime) + " ms");
+            log.info("正常结束，时间：" + (endTime - startTime) + " ms");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -71,7 +74,7 @@ public class ExchangeOverdueBx {
     public void exchangeOverdues(List<Overdue> list,Connection connection) throws SQLException {
         for (Overdue overdue : list) {
             int i = updateOverdue(overdue.getId(), overdue.getYqlx(), overdue.getYqbj(), connection);
-            System.out.println("贷款账号: " + overdue.getDkzh() + " , 逾期期次: "+overdue.getYqqc() + " , 更新了 " + i + " 行");
+            log.info("贷款账号: " + overdue.getDkzh() + " , 逾期期次: "+overdue.getYqqc() + " , 更新了 " + i + " 行");
         }
     }
 

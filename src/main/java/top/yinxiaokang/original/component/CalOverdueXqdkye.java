@@ -1,5 +1,7 @@
 package top.yinxiaokang.original.component;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,6 +14,7 @@ import java.util.List;
  * @author yinxk
  * @date 2018/6/19 13:18
  */
+@Slf4j
 public class CalOverdueXqdkye {
 
     public static void main(String[] args)  {
@@ -81,25 +84,25 @@ public class CalOverdueXqdkye {
             }
             // 判断是否支持批处理
             boolean supportBatch = Conn.supportBatch(connection);
-            System.out.println("支持批处理？ " + supportBatch);
+            log.info("支持批处理？ " + supportBatch);
             if (supportBatch) {
                 // 执行一批SQL语句
                 int[] results = Conn.goBatch(connection, updateSqls);
                 // 分析执行的结果
                 for (int i = 0; i < updateSqls.size(); i++) {
                     if (results[i] >= 0) {
-                        System.out.println("\n\n语句: " + updateSqls.get(i) + " \n 执行成功，影响了"
+                        log.info("\n\n语句: " + updateSqls.get(i) + " \n 执行成功，影响了"
                                 + results[i] + "行数据");
                     } else if (results[i] == Statement.SUCCESS_NO_INFO) {
-                        System.out.println("\n\n语句: " + updateSqls.get(i)  + " \n执行成功，影响的行数未知");
+                        log.info("\n\n语句: " + updateSqls.get(i)  + " \n执行成功，影响的行数未知");
                     } else if (results[i] == Statement.EXECUTE_FAILED) {
-                        System.out.println("\n\n语句: " + updateSqls.get(i)  + "\n 执行失败");
+                        log.info("\n\n语句: " + updateSqls.get(i)  + "\n 执行失败");
                     }
                 }
             }
-            System.out.println("应该更新的条数："+ updateSqls.size());
+            log.info("应该更新的条数："+ updateSqls.size());
             long endTime = System.currentTimeMillis();
-            System.out.println("正常结束，时间："+(endTime - startTime) + " ms");
+            log.info("正常结束，时间："+(endTime - startTime) + " ms");
         }catch (Exception e){
             e.printStackTrace();
             conn.closeResource(connection,preparedStatement,resultSet);

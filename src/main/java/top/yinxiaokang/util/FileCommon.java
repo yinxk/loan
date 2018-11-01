@@ -1,6 +1,7 @@
 package top.yinxiaokang.util;
 
 import com.sargeraswang.util.ExcelUtil.ExcelUtil;
+import lombok.extern.slf4j.Slf4j;
 import top.yinxiaokang.original.excelbean.AllAccountDkye;
 import top.yinxiaokang.original.excelbean.OneThousand;
 
@@ -14,6 +15,7 @@ import java.util.Map;
  * @author yinxk
  * @date 2018/8/27 9:52
  */
+@Slf4j
 public class FileCommon {
     /**
      * 文本日志
@@ -94,9 +96,9 @@ public class FileCommon {
      * 输出到excel
      */
     public static void listToXlsx() {
-        System.out.println("开始=====>" + Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_XLS);
+        log.info("开始=====>" + Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_XLS);
         ExcelUtil.exportExcel(KEY_MAP, dataset, outXLSXStream);
-        System.out.println("结束=====>" + Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_XLS);
+        log.info("结束=====>" + Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_XLS);
         try {
             outXLSXStream.close();
         } catch (IOException e) {
@@ -115,7 +117,7 @@ public class FileCommon {
             logs = new StringBuffer();
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("创建失败!");
+            log.info("创建失败!");
         }
     }
 }
