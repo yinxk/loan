@@ -22,7 +22,7 @@ public class GetEveryDayAccounts {
 
     public GetEveryDayAccounts() {
         StringBuilder sb = new StringBuilder(600);
-        List<InitInformation> initInformations = Common.listBaseAccountInformation();
+        List<InitInformation> initInformations = Common.listBaseAccountInformationByExcelUtil();
         boolean isFirst = true;
         for (InitInformation initInformation : initInformations) {
             if (isFirst) {
@@ -55,6 +55,10 @@ public class GetEveryDayAccounts {
 
 
     public static void main(String[] args) {
+        GetEveryDayAccounts getEveryDayAccounts = new GetEveryDayAccounts();
+        List<SomedayInformation> somedayInformations1 = getEveryDayAccounts.listSomedayInformationLastMonth();
+        List<SomedayInformation> somedayInformations2 = getEveryDayAccounts.listSomedayInformationToday();
+        List<SomedayInformation> somedayInformations3 = getEveryDayAccounts.listSomedayInformationYesterday();
         log.info("test");
     }
 

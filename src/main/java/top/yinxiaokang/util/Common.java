@@ -2,6 +2,7 @@ package top.yinxiaokang.util;
 
 import com.sargeraswang.util.ExcelUtil.ExcelLogs;
 import com.sargeraswang.util.ExcelUtil.ExcelUtil;
+import lombok.extern.slf4j.Slf4j;
 import top.yinxiaokang.original.entity.SthousingDetail;
 import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.enums.LoanBusinessType;
@@ -18,6 +19,7 @@ import java.util.*;
  * @author yinxk
  * @date 2018/8/21 10:05
  */
+@Slf4j
 public class Common {
     /**
      * 误差范围
@@ -35,6 +37,7 @@ public class Common {
 
     /**
      * 判断贷款账号是否存在每天的map中
+     *
      * @param dkzh
      * @param oneDayMap
      * @return
@@ -55,6 +58,11 @@ public class Common {
     public static List<InitInformation> listBaseAccountInformation() {
         List<Map<String, Object>> readList = ImportExcelUtilLessFour.read(Constants.BASE_ACCOUNT_INFORMATION, 0, false, false);
         return Common.importExcelToInitInformationList(readList);
+    }
+
+    public static List<InitInformation> listBaseAccountInformationByExcelUtil() {
+        Collection<Map> maps = xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
+        return Common.importExcelToInitInformationList(maps);
     }
 
     /**
@@ -93,7 +101,7 @@ public class Common {
         initHasOverdue.setCsye(new BigDecimal((String) m.get("csye")));
         initHasOverdue.setCsyqbj(new BigDecimal((String) m.get("csyqbj")));
         initHasOverdueList.add(initHasOverdue);
-        System.out.println("转换excel导入的map为 初始信息对象  " + ++i);
+        log.info("转换excel导入的map为 初始信息对象  " + ++i);
         return i;
     }
 

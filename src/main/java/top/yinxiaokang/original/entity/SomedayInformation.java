@@ -2,6 +2,9 @@ package top.yinxiaokang.original.entity;
 
 import lombok.*;
 
+import java.math.BigDecimal;
+import java.util.Date;
+
 @Setter
 @Getter
 @NoArgsConstructor
@@ -13,11 +16,11 @@ public class SomedayInformation {
 
     private String dkffrq;
 
-    private String qc;
+    private BigDecimal qc;
 
-    private String dkxffrq;
+    private Date dkxffrq;
 
-    private String dqqc;
+    private BigDecimal dqqc;
 
     private String nextkkrq;
 

@@ -5,9 +5,12 @@ package top.yinxiaokang.original.component;
  * @date 2018/6/15 9:32
  */
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.sql.*;
 import java.util.List;
 
+@Slf4j
 public class Conn {
     // b4
     private static final String DRIVER = "com.mysql.jdbc.Driver";
@@ -17,22 +20,22 @@ public class Conn {
 
     {
         try {
-            System.out.println("加载驱动开始...");
+            log.info("加载驱动开始...");
             Class.forName(DRIVER);
-            System.out.println("加载驱动结束...");
+            log.info("加载驱动结束...");
         } catch (ClassNotFoundException e) {
-            System.out.println("加载驱动失败...");
+            log.info("加载驱动失败...");
         }
     }
 
     public Connection getConnection() {
         Connection conn = null;
         try {
-            System.out.println("获取连接开始...");
+            log.info("获取连接开始...");
             conn = DriverManager.getConnection(URL, NAME, PASSWORD);
-            System.out.println("获取到的连接 : " + conn.toString());
+            log.info("获取到的连接 : " + conn.toString());
         } catch (SQLException e) {
-            System.out.println("获取连接失败...");
+            log.info("获取连接失败...");
         }
         return conn;
     }

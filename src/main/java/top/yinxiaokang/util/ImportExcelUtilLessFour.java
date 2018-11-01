@@ -1,5 +1,6 @@
 package top.yinxiaokang.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -16,6 +17,7 @@ import java.util.*;
  * @author yinxk
  * @date 2018/10/29 21:00
  */
+@Slf4j
 public class ImportExcelUtilLessFour {
     private static File init(String fileName) {
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
@@ -70,11 +72,11 @@ public class ImportExcelUtilLessFour {
         return object;
     }
 
-    public static List<Map<String, Object>> read(String filename, Integer sheetAtIndex, boolean isClassPath){
+    public static List<Map<String, Object>> read(String filename, Integer sheetAtIndex, boolean isClassPath) {
         return read(filename, sheetAtIndex, isClassPath, false);
     }
 
-    public static List<Map<String, Object>> read(String filename, Integer sheetAtIndex, boolean isClassPath,boolean isFilterAllNullRow) {
+    public static List<Map<String, Object>> read(String filename, Integer sheetAtIndex, boolean isClassPath, boolean isFilterAllNullRow) {
         List<Map<String, Object>> list = new ArrayList<>();
         Map<Integer, String> keyMap = new LinkedHashMap<>();
         try (Workbook wb = WorkbookFactory.create(isClassPath ? init(filename) : new File(filename))) {
@@ -123,6 +125,7 @@ public class ImportExcelUtilLessFour {
         } catch (InvalidFormatException e) {
             e.printStackTrace();
         }
+        log.info("读取 " + filename + "结束!");
         return list;
     }
 }

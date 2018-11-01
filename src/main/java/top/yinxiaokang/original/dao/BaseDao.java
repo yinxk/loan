@@ -1,5 +1,6 @@
 package top.yinxiaokang.original.dao;
 
+import lombok.extern.slf4j.Slf4j;
 import top.yinxiaokang.util.BeanOrMapUtil;
 
 import java.sql.Connection;
@@ -14,6 +15,7 @@ import java.util.*;
  * 至于之前的 , 就先那样吧 <br />
  * 封装通用的查询方法 , 使用的地方很多
  */
+@Slf4j
 public class BaseDao {
     /**
      * 数据库连接
@@ -61,6 +63,8 @@ public class BaseDao {
         for (int i = 0; i < paras.length; i++) {
             ps.setObject(i + 1, paras[i]);
         }
+        log.info(sql);
+        log.info("parameters : " + Arrays.asList(paras));
         return ps.executeQuery();
     }
 
@@ -79,6 +83,7 @@ public class BaseDao {
         for (int i = 0; i < paras.length; i++) {
             ps.setObject(i + 1, paras[i]);
         }
+        log.info(sql, paras);
         return ps.executeUpdate();
     }
 
