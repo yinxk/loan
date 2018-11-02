@@ -2,6 +2,7 @@ package top.yinxiaokang.original.component;
 
 import com.sargeraswang.util.ExcelUtil.ExcelUtil;
 import lombok.extern.slf4j.Slf4j;
+import top.yinxiaokang.original.entity.CLoanHousingPersonInformationBasic;
 import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.service.AccountCheck;
@@ -21,6 +22,7 @@ import java.util.Map;
 public class ActualAccountDkye {
     AccountCheck accountCheck = new AccountCheck();
     List<SthousingAccount> sthousingAccounts;
+    List<CLoanHousingPersonInformationBasic> basicList;
 
 
     private String initBaseAccountDkzhAppendedString() {
@@ -42,9 +44,12 @@ public class ActualAccountDkye {
         Map<String, String> keyMap = new LinkedHashMap<>();
         keyMap.put("dkzh", "dkzh");
         keyMap.put("dkye", "dkye");
+        keyMap.put("jkrxm", "jkrxm");
         List<Map<String, Object>> contentList = new ArrayList<>();
         for (SthousingAccount sthousingAccount : sthousingAccounts) {
             Map<String, Object> stringObjectMap = BeanOrMapUtil.transBean2Map(sthousingAccount);
+            CLoanHousingPersonInformationBasic basicByDkzh = accountCheck.getBasicByDkzh(sthousingAccount.getDkzh());
+            stringObjectMap.put("jkrxm", basicByDkzh.getJkrxm());
             contentList.add(stringObjectMap);
         }
         try (OutputStream outputStream = new FileOutputStream(Constants.BASE_ACCOUNT_INFORMATION_SSDKYE)) {
