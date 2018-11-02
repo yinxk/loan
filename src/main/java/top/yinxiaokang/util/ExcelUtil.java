@@ -7,14 +7,12 @@ import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.DateUtil;
+import top.yinxiaokang.original.dto.ExcelReadReturn;
 import top.yinxiaokang.original.interfaces.RowAndCellProcess;
 
 import java.io.*;
 import java.net.URL;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @SuppressWarnings("Duplicates")
 @Slf4j
@@ -56,7 +54,23 @@ public class ExcelUtil {
             sb.append(split[split.length - 1]);
             outFileName = sb.toString();
         }
-        readAndWriteExcel(inFilename, updateSheetAt, isClassPath, outFileName, rowAndCellProcess);
+        excelReaderAndWriter(inFilename, updateSheetAt, isClassPath, outFileName, rowAndCellProcess);
+    }
+
+    public static ExcelReadReturn readExcel(String inFilename, Integer sheetAt, boolean isClassPath) {
+        ExcelReadReturn excelReadReturn = new ExcelReadReturn();
+        List<Map<String, Object>> content = new ArrayList<>();
+        excelReadReturn.setContent(content);
+        excelReader(inFilename, sheetAt, isClassPath, (row, columnMapFirstColumnContent, propertyIndexMapColumnIndex) -> {
+            excelReadReturn.setPropertyIndexMapColumnIndex(propertyIndexMapColumnIndex);
+            excelReadReturn.setColumnMapFirstColumnContent(columnMapFirstColumnContent);
+            for (Cell cell : row) {
+                Map<String, Object> rowContent = new LinkedHashMap<>();
+                rowContent.put(columnMapFirstColumnContent.get(cell.getColumnIndex()), getCellContent(cell));
+                content.add(rowContent);
+            }
+        });
+        return excelReadReturn;
     }
 
 
@@ -67,7 +81,7 @@ public class ExcelUtil {
      * @param sheetAt     需要读写的sheet序号
      * @param isClassPath 文件是否在类路径下
      */
-    private static void readAndWriteExcel(String inFilename, Integer sheetAt, boolean isClassPath, String outFileName, RowAndCellProcess rowAndCellProcess) {
+    private static void excelReaderAndWriter(String inFilename, Integer sheetAt, boolean isClassPath, String outFileName, RowAndCellProcess rowAndCellProcess) {
         Objects.requireNonNull(inFilename);
         try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
             read(sheetAt, rowAndCellProcess, wb);
@@ -88,7 +102,7 @@ public class ExcelUtil {
      * @param sheetAt     需要读取的sheet序号
      * @param isClassPath 文件是否在类路径下
      */
-    private static void readExcel(String inFilename, Integer sheetAt, boolean isClassPath, RowAndCellProcess rowAndCellProcess) {
+    private static void excelReader(String inFilename, Integer sheetAt, boolean isClassPath, RowAndCellProcess rowAndCellProcess) {
         Objects.requireNonNull(inFilename);
         try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
             read(sheetAt, rowAndCellProcess, wb);
@@ -104,9 +118,11 @@ public class ExcelUtil {
         Sheet sheet = wb.getSheetAt(sheetAt);
         boolean isFirst = true;
         Map<Integer, String> keyMap = new LinkedHashMap<>();
+        Map<Integer, Integer> proMapColumn = new LinkedHashMap<>();
         for (Row row : sheet) {
             if (isFirst) {
                 isFirst = false;
+                int propertyIndex = 0;
                 int nullKeyNum = 0;
                 for (Cell cell : row) {
                     cell.setCellType(CellType.STRING);
@@ -117,15 +133,19 @@ public class ExcelUtil {
                     } else {
                         keyMap.put(cellColumnIndex, cellContent);
                     }
+                    proMapColumn.put(propertyIndex++, cellColumnIndex);
                 }
                 continue;
             }
-            for (Cell cell : row) {
-                rowAndCellProcess.process(row, cell, getCellContent(cell), keyMap);
-            }
+            rowAndCellProcess.process(row, keyMap, proMapColumn);
         }
     }
 
+
+    public static String getStringCellContent(Cell cell) {
+        cell.setCellType(CellType.STRING);
+        return cell.getStringCellValue();
+    }
 
     /**
      * 获取可能的content类型
@@ -133,7 +153,7 @@ public class ExcelUtil {
      * @param cell 单元格
      * @return
      */
-    private static Object getCellContent(Cell cell) {
+    public static Object getCellContent(Cell cell) {
         if (cell == null
                 || (cell.getCellTypeEnum() == CellType.STRING && StringUtils.isBlank(cell
                 .getStringCellValue()))) {

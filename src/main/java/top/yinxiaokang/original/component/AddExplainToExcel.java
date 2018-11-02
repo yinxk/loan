@@ -1,6 +1,7 @@
 package top.yinxiaokang.original.component;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Cell;
 import top.yinxiaokang.util.Common;
 import top.yinxiaokang.util.Constants;
 import top.yinxiaokang.util.ExcelUtil;
@@ -9,6 +10,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Slf4j
@@ -34,25 +36,27 @@ public class AddExplainToExcel {
         Pattern patternDkzh = Pattern.compile(regexDkzh);
         Pattern patternNumber = Pattern.compile(regexNumber);
         ExcelUtil.copyExcelAndUpdate(inFileName, 1, false, outFileName,
-                (row, cell, content, keyMap) -> {
-                    //
-                    //Matcher matcher = patternNumber.matcher(value);
-                    //if (matcher.find()) {
-                    //    Matcher matcherDkzh = patternDkzh.matcher(ExcelUtil.getStringCellValue(row.getCell(1)));
-                    //    if (matcherDkzh.find()) {
-                    //        String dkzh = matcherDkzh.group(1);
-                    //        Map jkrxmByDkzh = getJkrxmByDkzh(dkzh);
-                    //        Cell cell10 = row.getCell(10);
-                    //        String cellValue = ExcelUtil.getStringCellValue(cell10);
-                    //        String prefix = "用于调整 %s %s %s";
-                    //        cellValue = String.format(prefix, jkrxmByDkzh.get("dkzh"), jkrxmByDkzh.get("jkrxm"), cellValue);
-                    //        cell10.setCellValue(cellValue);
-                    //        log.info("写入" + dkzh + "的值为: " + cellValue);
-                    //    } else {
-                    //        throw new RuntimeException("匹配出错");
-                    //    }
-                    //
-                    //}
+                (row, keyMap, proIndexMapColIndex) -> {
+                    System.out.println(row);
+                    System.out.println(keyMap);
+                    System.out.println(proIndexMapColIndex);
+                    Matcher matcher = patternNumber.matcher(ExcelUtil.getStringCellContent(row.getCell(proIndexMapColIndex.get(0))));
+                    if (matcher.find()) {
+                        Matcher matcherDkzh = patternDkzh.matcher(ExcelUtil.getStringCellContent(row.getCell(proIndexMapColIndex.get(1))));
+                        if (matcherDkzh.find()) {
+                            String dkzh = matcherDkzh.group(1);
+                            Map jkrxmByDkzh = getJkrxmByDkzh(dkzh);
+                            Cell cell10 = row.getCell(proIndexMapColIndex.get(10));
+                            String cellValue = ExcelUtil.getStringCellContent(cell10);
+                            String prefix = "用于调整 %s %s %s";
+                            cellValue = String.format(prefix, jkrxmByDkzh.get("dkzh"), jkrxmByDkzh.get("jkrxm"), cellValue);
+                            cell10.setCellValue(cellValue);
+                            log.info("写入" + dkzh + "的值为: " + cellValue);
+                        } else {
+                            throw new RuntimeException("匹配出错");
+                        }
+
+                    }
 
                 });
     }
@@ -72,7 +76,7 @@ public class AddExplainToExcel {
     }
 
     private void workFromFile() {
-        addExplainToExcel(Constants.TAKE_ACCOUNT_SHOULD_FILLING_IN_DATA_PATH + "/2018-10-14-业务推算和实际业务-凭证调整数据-加说明.xls", null);
+        addExplainToExcel(Constants.TAKE_ACCOUNT_SHOULD_FILLING_IN_DATA_PATH + "/2018-10-15-业务推算和实际业务-凭证调整数据-加说明.xls", null);
     }
 
     public void work() {
