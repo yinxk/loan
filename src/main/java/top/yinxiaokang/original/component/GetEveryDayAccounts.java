@@ -139,7 +139,7 @@ public class GetEveryDayAccounts {
                 isFirst = false;
                 continue;
             }
-            sb.append(",");
+            sb.append(",\n");
             sb.append("'");
             sb.append(information.getDkzh());
             sb.append("'");
