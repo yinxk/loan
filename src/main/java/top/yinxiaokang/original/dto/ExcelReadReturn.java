@@ -15,8 +15,9 @@ import java.util.Map;
 @NoArgsConstructor
 @ToString
 public class ExcelReadReturn {
-    Map<Integer, Integer> propertyIndexMapColumnIndex;
-    Map<Integer, String> columnMapFirstColumnContent;
+    Map<Integer, String> colIndexMapContent;
+    Map<String, Integer> contentMapColIndex;
+    Map<Integer, Integer> proIndexMapColIndex;
     List<Map<String, Object>> content;
 
 }

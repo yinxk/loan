@@ -9,6 +9,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.DateUtil;
 import top.yinxiaokang.original.dto.ExcelReadReturn;
 import top.yinxiaokang.original.interfaces.RowAndCellProcess;
+import top.yinxiaokang.others.ErrorException;
 
 import java.io.*;
 import java.net.URL;
@@ -61,12 +62,13 @@ public class ExcelUtil {
         ExcelReadReturn excelReadReturn = new ExcelReadReturn();
         List<Map<String, Object>> content = new ArrayList<>();
         excelReadReturn.setContent(content);
-        excelReader(inFilename, sheetAt, isClassPath, (row, columnMapFirstColumnContent, propertyIndexMapColumnIndex) -> {
-            excelReadReturn.setPropertyIndexMapColumnIndex(propertyIndexMapColumnIndex);
-            excelReadReturn.setColumnMapFirstColumnContent(columnMapFirstColumnContent);
+        excelReader(inFilename, sheetAt, isClassPath, (row, colIndexMapContent, contentMapColIndex, proIndexMapColIndex) -> {
+            excelReadReturn.setColIndexMapContent(colIndexMapContent);
+            excelReadReturn.setContentMapColIndex(contentMapColIndex);
+            excelReadReturn.setProIndexMapColIndex(proIndexMapColIndex);
             for (Cell cell : row) {
                 Map<String, Object> rowContent = new LinkedHashMap<>();
-                rowContent.put(columnMapFirstColumnContent.get(cell.getColumnIndex()), getCellContent(cell));
+                rowContent.put(colIndexMapContent.get(cell.getColumnIndex()), getCellContent(cell));
                 content.add(rowContent);
             }
         });
@@ -84,14 +86,14 @@ public class ExcelUtil {
     private static void excelReaderAndWriter(String inFilename, Integer sheetAt, boolean isClassPath, String outFileName, RowAndCellProcess rowAndCellProcess) {
         Objects.requireNonNull(inFilename);
         try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
+            log.info("读取 {} 完成", inFilename);
             read(sheetAt, rowAndCellProcess, wb);
             File file = getOutFileExcelName(outFileName);
             writeToExcel(wb, file);
+            log.info("写出 {} 完成", outFileName);
         } catch (IOException | InvalidFormatException e) {
             throw new RuntimeException(e);
         }
-        log.info("读取 {} 完成", inFilename);
-        log.info("写出 {} 完成", outFileName);
     }
 
 
@@ -105,11 +107,11 @@ public class ExcelUtil {
     private static void excelReader(String inFilename, Integer sheetAt, boolean isClassPath, RowAndCellProcess rowAndCellProcess) {
         Objects.requireNonNull(inFilename);
         try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
+            log.info("读取 {} 完成", inFilename);
             read(sheetAt, rowAndCellProcess, wb);
         } catch (IOException | InvalidFormatException e) {
             throw new RuntimeException(e);
         }
-        log.info("读取 {} 完成", inFilename);
     }
 
 
@@ -118,6 +120,7 @@ public class ExcelUtil {
         Sheet sheet = wb.getSheetAt(sheetAt);
         boolean isFirst = true;
         Map<Integer, String> keyMap = new LinkedHashMap<>();
+        Map<String, Integer> contentMapCol = new LinkedHashMap<>();
         Map<Integer, Integer> proMapColumn = new LinkedHashMap<>();
         for (Row row : sheet) {
             if (isFirst) {
@@ -129,15 +132,20 @@ public class ExcelUtil {
                     String cellContent = cell.getStringCellValue();
                     Integer cellColumnIndex = cell.getColumnIndex();
                     if (StringUtils.isBlank(cellContent)) {
+                        contentMapCol.put("nullKey" + nullKeyNum, cellColumnIndex);
                         keyMap.put(cellColumnIndex, "nullKey" + nullKeyNum++);
                     } else {
+                        if (null != contentMapCol.get(cellContent)) {
+                            throw new ErrorException("首列名作为键值重复 : " + cellContent);
+                        }
+                        contentMapCol.put(cellContent, cellColumnIndex);
                         keyMap.put(cellColumnIndex, cellContent);
                     }
                     proMapColumn.put(propertyIndex++, cellColumnIndex);
                 }
                 continue;
             }
-            rowAndCellProcess.process(row, keyMap, proMapColumn);
+            rowAndCellProcess.process(row, keyMap, contentMapCol, proMapColumn);
         }
     }
 
