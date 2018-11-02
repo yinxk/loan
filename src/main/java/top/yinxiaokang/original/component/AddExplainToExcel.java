@@ -53,7 +53,7 @@ public class AddExplainToExcel {
                             String prefix = "用于调整 %s %s %s";
                             cellValue = String.format(prefix, jkrxmByDkzh.get("dkzh"),
                                     jkrxmByDkzh.get("jkrxm"), cellValue);
-                            sm.setCellValue("");
+                            sm.setCellValue(cellValue);
                             log.info("写入 {} 的值为: {}", dkzh, cellValue);
                         } else {
                             throw new RuntimeException("匹配出错");
@@ -72,7 +72,7 @@ public class AddExplainToExcel {
         File[] files = directory.listFiles();
         assert files != null;
         for (File file : files) {
-            if (file.isFile() && file.getName().contains("-18")) {
+            if (file.isFile() || file.getName().contains("-18")) {
                 addExplainToExcel(file.getPath(), Constants.TAKE_ACCOUNT_FILLED_DATA_PATH + "/" + file.getName());
             }
         }
