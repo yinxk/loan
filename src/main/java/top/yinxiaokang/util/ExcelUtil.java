@@ -143,6 +143,7 @@ public class ExcelUtil {
 
 
     public static String getStringCellContent(Cell cell) {
+        if (cell == null) return "";
         cell.setCellType(CellType.STRING);
         return cell.getStringCellValue();
     }

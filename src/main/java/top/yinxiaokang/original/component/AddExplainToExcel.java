@@ -7,9 +7,7 @@ import top.yinxiaokang.util.Constants;
 import top.yinxiaokang.util.ExcelUtil;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,7 +25,7 @@ public class AddExplainToExcel {
                 return map;
             }
         }
-        return null;
+        return new HashMap();
     }
 
     private void addExplainToExcel(String inFileName, String outFileName) {
@@ -37,9 +35,6 @@ public class AddExplainToExcel {
         Pattern patternNumber = Pattern.compile(regexNumber);
         ExcelUtil.copyExcelAndUpdate(inFileName, 1, false, outFileName,
                 (row, keyMap, proIndexMapColIndex) -> {
-                    System.out.println(row);
-                    System.out.println(keyMap);
-                    System.out.println(proIndexMapColIndex);
                     Matcher matcher = patternNumber.matcher(ExcelUtil.getStringCellContent(row.getCell(proIndexMapColIndex.get(0))));
                     if (matcher.find()) {
                         Matcher matcherDkzh = patternDkzh.matcher(ExcelUtil.getStringCellContent(row.getCell(proIndexMapColIndex.get(1))));
@@ -47,11 +42,13 @@ public class AddExplainToExcel {
                             String dkzh = matcherDkzh.group(1);
                             Map jkrxmByDkzh = getJkrxmByDkzh(dkzh);
                             Cell cell10 = row.getCell(proIndexMapColIndex.get(10));
+                            if (cell10 == null) return;
                             String cellValue = ExcelUtil.getStringCellContent(cell10);
                             String prefix = "用于调整 %s %s %s";
-                            cellValue = String.format(prefix, jkrxmByDkzh.get("dkzh"), jkrxmByDkzh.get("jkrxm"), cellValue);
+                            cellValue = String.format(prefix, jkrxmByDkzh.get("dkzh"),
+                                    jkrxmByDkzh.get("jkrxm"), cellValue);
                             cell10.setCellValue(cellValue);
-                            log.info("写入" + dkzh + "的值为: " + cellValue);
+                            log.info("写入 {} 的值为: {}", dkzh, cellValue);
                         } else {
                             throw new RuntimeException("匹配出错");
                         }
@@ -67,25 +64,25 @@ public class AddExplainToExcel {
             throw new RuntimeException("not directory");
         }
         File[] files = directory.listFiles();
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
+        assert files != null;
+        for (File file : files) {
             if (file.isFile()) {
-                addExplainToExcel(file.getPath(), null);
+                addExplainToExcel(file.getPath(), Constants.TAKE_ACCOUNT_FILLED_DATA_PATH + "/" + file.getName());
             }
         }
     }
 
     private void workFromFile() {
-        addExplainToExcel(Constants.TAKE_ACCOUNT_SHOULD_FILLING_IN_DATA_PATH + "/2018-10-15-业务推算和实际业务-凭证调整数据-加说明.xls", null);
+        String fName = "/2018-10-15-业务推算和实际业务-凭证调整数据-加说明.xls";
+        addExplainToExcel(Constants.TAKE_ACCOUNT_SHOULD_FILLING_IN_DATA_PATH + fName, Constants.TAKE_ACCOUNT_FILLED_DATA_PATH + fName);
     }
 
     public void work() {
-        workFromFile();
+        workFromDirectory();
+        //workFromFile();
     }
 
     public static void main(String[] args) {
-
         new AddExplainToExcel().work();
-
     }
 }
