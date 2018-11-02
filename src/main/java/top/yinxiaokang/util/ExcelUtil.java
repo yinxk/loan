@@ -63,6 +63,6 @@ public class ExcelUtil {
         } catch (InvalidFormatException e) {
             e.printStackTrace();
         }
-        log.info("读取 " + inFilename + "结束!");
+        log.info("更新转换 " + inFilename + "结束!");
     }
 }
