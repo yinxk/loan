@@ -47,6 +47,12 @@ public class ExcelTransform {
     }
 
     private SthousingAccount getAccountByDkzh(String dkzh) {
+        Objects.requireNonNull(dkzh);
+        for (SthousingAccount account : ssDkye) {
+            if (account.getDkzh().equals(dkzh)) {
+                return account;
+            }
+        }
         return null;
     }
 
@@ -96,13 +102,20 @@ public class ExcelTransform {
         List<Map<String, Object>> secondMes = new ArrayList<>();
         Iterator<Map<String, Object>> iterator = list.iterator();
         int secondTag = 0;
+        String regexNumber = "^\\d+$";
+        Pattern patternNumber = Pattern.compile(regexNumber);
         while (iterator.hasNext()) {
             Map<String, Object> next = iterator.next();
-            Object 序号 = next.get("序号");
-            if (序号 instanceof Double) {
+            String xuhao = Optional.ofNullable(next.get("序号")).map(Object::toString).orElse("");
+
+            Matcher matcher = patternNumber.matcher(xuhao);
+            if (matcher.find()) {
                 firstMes.add(next);
                 secondTag = 0;
             }
+            //if (序号 instanceof Double) {
+            //
+            //}
             if (secondTag == 3) {
                 secondMes.add(next);
             }
