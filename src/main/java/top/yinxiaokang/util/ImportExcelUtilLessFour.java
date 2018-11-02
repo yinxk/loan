@@ -41,10 +41,12 @@ public class ImportExcelUtilLessFour {
             sheetAtIndex = Optional.ofNullable(sheetAtIndex).orElse(0);
             Sheet sheetAt = wb.getSheetAt(sheetAtIndex);
             Iterator<Row> rowIterator = sheetAt.rowIterator();
+            boolean isFirst = true;
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
                 Iterator<Cell> cellIterator = row.cellIterator();
-                if (row.getRowNum() == 0) {
+                if (isFirst) {
+                    isFirst = false;
                     int nullKeyNum = 0;
                     while (cellIterator.hasNext()) {
                         Cell cell = cellIterator.next();
@@ -88,4 +90,5 @@ public class ImportExcelUtilLessFour {
         log.info("读取 " + filename + "结束!");
         return list;
     }
+
 }

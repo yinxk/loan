@@ -38,6 +38,16 @@ public class Constants {
     public static String TAKE_ACCOUNT_TRANSFORM = "/转换版";
 
     /**
+     * 路径: /需要填入数据
+     */
+    public static String TAKE_ACCOUNT_SHOULD_FILLING_IN_DATA = "/需要填入数据";
+
+    /**
+     * 路径: /需要填入数据
+     */
+    public static String TAKE_ACCOUNT_FILLED_DATA = "/已填入数据";
+
+    /**
      * 文件扩展名 .xlsx
      */
     public static String XLSX = ".xlsx";
@@ -170,6 +180,16 @@ public class Constants {
      * 修账 转换版路径
      */
     public static String TAKE_ACCOUNT_TRANSFORM_PATH = TAKE_ACCOUNT_PATH + TAKE_ACCOUNT_TRANSFORM;
+
+    /**
+     * 修账 需要填入数据路径
+     */
+    public static String TAKE_ACCOUNT_SHOULD_FILLING_IN_DATA_PATH = TAKE_ACCOUNT_PATH + TAKE_ACCOUNT_SHOULD_FILLING_IN_DATA;
+
+    /**
+     * 修账 已填入数据路径
+     */
+    public static String TAKE_ACCOUNT_FILLED_DATA_PATH = TAKE_ACCOUNT_PATH + TAKE_ACCOUNT_FILLED_DATA;
 
 
     public static void main(String[] args) {

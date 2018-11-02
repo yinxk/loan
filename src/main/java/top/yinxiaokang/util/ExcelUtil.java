@@ -3,19 +3,18 @@ package top.yinxiaokang.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import top.yinxiaokang.original.interfaces.ExcelProcess;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.DateUtil;
+import top.yinxiaokang.original.interfaces.RowAndCellProcess;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URL;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 @SuppressWarnings("Duplicates")
 @Slf4j
@@ -35,6 +34,7 @@ public class ExcelUtil {
         return new File(fileNameTransform);
     }
 
+
     /**
      * 复制excel, 更新其中一些值写出
      *
@@ -43,26 +43,159 @@ public class ExcelUtil {
      * @param isClassPath
      * @param outFileName   输出文件名
      */
-    public static void copyExcelAndUpdate(String inFilename, Integer updateSheetAt, boolean isClassPath, String outFileName, ExcelProcess process) {
-        try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
-            updateSheetAt = Optional.ofNullable(updateSheetAt).orElse(0);
-            Sheet sheetAt = wb.getSheetAt(updateSheetAt);
-            Iterator<Row> rowIterator = sheetAt.rowIterator();
-            while (rowIterator.hasNext()) {
-                Row row = rowIterator.next();
-                process.doUpdate(row);
+    public static void copyExcelAndUpdate(String inFilename, Integer updateSheetAt, boolean isClassPath,
+                                          String outFileName, RowAndCellProcess rowAndCellProcess) {
+        StringBuilder sb = new StringBuilder();
+        if (StringUtils.isBlank(outFileName)) {
+            String[] split = inFilename.split("\\.");
+            for (int i = 0; i < split.length - 1; i++) {
+                sb.append(split[i]);
             }
-
-            if (StringUtils.isBlank(outFileName)) {
-                String[] split = inFilename.split("\\.");
-                outFileName = split[0];
-            }
-            wb.write(new FileOutputStream(outFileName + "复制更新版.xls"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InvalidFormatException e) {
-            e.printStackTrace();
+            sb.append("-更新版");
+            sb.append(".");
+            sb.append(split[split.length - 1]);
+            outFileName = sb.toString();
         }
-        log.info("更新转换 " + inFilename + "结束!");
+        readAndWriteExcel(inFilename, updateSheetAt, isClassPath, outFileName, rowAndCellProcess);
+    }
+
+
+    /**
+     * 读取excel,并且根据原来的excel做写出
+     *
+     * @param inFilename  输入文件名
+     * @param sheetAt     需要读写的sheet序号
+     * @param isClassPath 文件是否在类路径下
+     */
+    private static void readAndWriteExcel(String inFilename, Integer sheetAt, boolean isClassPath, String outFileName, RowAndCellProcess rowAndCellProcess) {
+        Objects.requireNonNull(inFilename);
+        try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
+            read(sheetAt, rowAndCellProcess, wb);
+            File file = getOutFileExcelName(outFileName);
+            writeToExcel(wb, file);
+        } catch (IOException | InvalidFormatException e) {
+            throw new RuntimeException(e);
+        }
+        log.info("读取 {} 完成", inFilename);
+        log.info("写出 {} 完成", outFileName);
+    }
+
+
+    /**
+     * 读取excel
+     *
+     * @param inFilename  输入文件名
+     * @param sheetAt     需要读取的sheet序号
+     * @param isClassPath 文件是否在类路径下
+     */
+    private static void readExcel(String inFilename, Integer sheetAt, boolean isClassPath, RowAndCellProcess rowAndCellProcess) {
+        Objects.requireNonNull(inFilename);
+        try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
+            read(sheetAt, rowAndCellProcess, wb);
+        } catch (IOException | InvalidFormatException e) {
+            throw new RuntimeException(e);
+        }
+        log.info("读取 {} 完成", inFilename);
+    }
+
+
+    private static void read(Integer sheetAt, RowAndCellProcess rowAndCellProcess, Workbook wb) {
+        sheetAt = Optional.ofNullable(sheetAt).orElse(0);
+        Sheet sheet = wb.getSheetAt(sheetAt);
+        boolean isFirst = true;
+        Map<Integer, String> keyMap = new LinkedHashMap<>();
+        for (Row row : sheet) {
+            if (isFirst) {
+                isFirst = false;
+                int nullKeyNum = 0;
+                for (Cell cell : row) {
+                    cell.setCellType(CellType.STRING);
+                    String cellContent = cell.getStringCellValue();
+                    Integer cellColumnIndex = cell.getColumnIndex();
+                    if (StringUtils.isBlank(cellContent)) {
+                        keyMap.put(cellColumnIndex, "nullKey" + nullKeyNum++);
+                    } else {
+                        keyMap.put(cellColumnIndex, cellContent);
+                    }
+                }
+                continue;
+            }
+            for (Cell cell : row) {
+                rowAndCellProcess.process(row, cell, getCellContent(cell), keyMap);
+            }
+        }
+    }
+
+
+    /**
+     * 获取可能的content类型
+     *
+     * @param cell 单元格
+     * @return
+     */
+    private static Object getCellContent(Cell cell) {
+        if (cell == null
+                || (cell.getCellTypeEnum() == CellType.STRING && StringUtils.isBlank(cell
+                .getStringCellValue()))) {
+            return null;
+        }
+        Object object = null;
+
+        switch (cell.getCellTypeEnum()) {
+            case STRING:
+                object = cell.getStringCellValue();
+                break;
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    object = cell.getDateCellValue();
+                } else {
+                    object = cell.getNumericCellValue();
+                }
+                break;
+            case BOOLEAN:
+                object = cell.getBooleanCellValue();
+                break;
+            case FORMULA:
+                try {
+                    if (HSSFDateUtil.isCellDateFormatted(cell)) {
+                        object = cell.getDateCellValue();
+                    } else {
+                        object = cell.getNumericCellValue();
+                    }
+
+                } catch (IllegalStateException e) {
+                    object = cell.getRichStringCellValue();
+                }
+                break;
+            case BLANK:
+                return null;
+        }
+        return object;
+    }
+
+    private static void writeToExcel(Workbook wb, File outFile) throws IOException {
+        try (OutputStream outputStream = new FileOutputStream(outFile)) {
+            wb.write(outputStream);
+        }
+    }
+
+    private static File getOutFileExcelName(String outFileName) {
+        if (StringUtils.isBlank(outFileName)) {
+            throw new RuntimeException("输出文件为空");
+        }
+        File file = new File(outFileName);
+        File parentFile = file.getParentFile();
+        if (!parentFile.exists()) {
+            boolean mkdirs = parentFile.mkdirs();
+            if (!mkdirs) {
+                log.info("创建文件夹失败");
+            }
+        }
+        String[] split = outFileName.split("\\.");
+        String extension = split[split.length - 1];
+        if (!extension.equalsIgnoreCase("xls") && !extension.equalsIgnoreCase("xlsx")) {
+            throw new RuntimeException("只支持xls或xlsx文件类型");
+        }
+        return file;
     }
 }
