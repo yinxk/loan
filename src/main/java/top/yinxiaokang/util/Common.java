@@ -54,6 +54,22 @@ public class Common {
         return isIn;
     }
 
+    public static boolean appendDkzhToSqlCanRead(StringBuilder sb, boolean isFirst, String dkzh) {
+        if (isFirst) {
+            sb.append("'");
+            sb.append(dkzh);
+            sb.append("'");
+            isFirst = false;
+            return isFirst;
+        }
+        sb.append(",\n");
+        sb.append("'");
+        sb.append(dkzh);
+        sb.append("'");
+        return isFirst;
+    }
+
+
 
     public static List<InitInformation> listBaseAccountInformation() {
         List<Map<String, Object>> readList = ImportExcelUtilLessFour.read(Constants.BASE_ACCOUNT_INFORMATION, 0, false, false);

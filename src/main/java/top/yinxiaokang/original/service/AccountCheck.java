@@ -49,9 +49,20 @@ public class AccountCheck {
         cLoanHousingPersonInformationBasicDao = new CLoanHousingPersonInformationBasicDao(connection);
     }
 
-    public List<SomedayInformation> listSomedayInformation(Integer kkdayEnd, Date nextkkrqEnd, String initDkzhsStr) {
+    public List<SthousingAccount> listSthousingAccountByDkzhs(String dkzhs) {
+        List<SthousingAccount> sthousingAccounts = new ArrayList<>();
         try {
-            return sthousingAccountDao.listSomedayInformation(kkdayEnd, nextkkrqEnd, initDkzhsStr);
+            sthousingAccounts = sthousingAccountDao.listAccountByDkzhs(dkzhs);
+        } catch (IllegalAccessException | SQLException | InstantiationException e) {
+            e.printStackTrace();
+        }
+        return sthousingAccounts;
+    }
+
+    public List<SomedayInformation> listSomedayInformation(Integer kkdayEnd, Date nextkkrqEnd, String initDkzhsStr) {
+        List<SomedayInformation> somedayInformations = new ArrayList<>();
+        try {
+            somedayInformations = sthousingAccountDao.listSomedayInformation(kkdayEnd, nextkkrqEnd, initDkzhsStr);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (SQLException e) {
@@ -59,7 +70,7 @@ public class AccountCheck {
         } catch (InstantiationException e) {
             e.printStackTrace();
         }
-        return null;
+        return somedayInformations;
     }
 
     /**

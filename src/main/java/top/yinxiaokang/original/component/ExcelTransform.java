@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import top.yinxiaokang.original.entity.SthousingAccount;
-import top.yinxiaokang.original.service.AccountCheck;
 import top.yinxiaokang.others.ErrorException;
 import top.yinxiaokang.util.Common;
 import top.yinxiaokang.util.Constants;
@@ -25,25 +24,30 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 public class ExcelTransform {
-    private static AccountCheck accountCheck = new AccountCheck();
 
     private static String pathStr = Constants.TAKE_ACCOUNT_PATH;
 
     private static String fileStr = "/2018-10-18-业务推算和实际业务-凭证调整数据-加说明";
 
+    private List<SthousingAccount> ssDkye;
+
     Collection<Map> importExcel;
 
     public ExcelTransform() {
         importExcel = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
+        Collection<Map> maps = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION_SSDKYE);
+        List<SthousingAccount> ssDkye = new ArrayList<>();
+        for (Map map : maps) {
+            SthousingAccount account = new SthousingAccount();
+            account.setDkzh(map.get("dkzh").toString());
+            account.setDkye(new BigDecimal(map.get("dkye").toString()));
+            ssDkye.add(account);
+        }
+        this.ssDkye = ssDkye;
     }
 
     private SthousingAccount getAccountByDkzh(String dkzh) {
-        SthousingAccount sthousingAccount = accountCheck.getSthousingAccount(dkzh);
-        if (sthousingAccount == null) {
-            throw new ErrorException("没有查询到该贷款账号: " + dkzh);
-        }
-        log.info("正在查询贷款账号 : " + dkzh);
-        return sthousingAccount;
+        return null;
     }
 
     public void workFormDiretory() {

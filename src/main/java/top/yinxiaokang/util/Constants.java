@@ -85,6 +85,10 @@ public class Constants {
      * 基础账号信息文件路径
      */
     public static String BASE_ACCOUNT_INFORMATION = BASE_PATH + "/1427问题账号20181009-账号信息" + XLSX;
+    /**
+     * 基础账号和实时贷款余额文件路径
+     */
+    public static String BASE_ACCOUNT_INFORMATION_SSDKYE = BASE_PATH + "/1427问题账号20181009-实时贷款余额" + XLSX;
 
     /**
      * 每日账号  路径
