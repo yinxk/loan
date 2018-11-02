@@ -2,10 +2,8 @@ package top.yinxiaokang.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.usermodel.DateUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,46 +30,6 @@ public class ImportExcelUtilLessFour {
         return file;
     }
 
-    private static Object getCellContent(Cell cell) {
-        if (cell == null
-                || (cell.getCellTypeEnum() == CellType.STRING && StringUtils.isBlank(cell
-                .getStringCellValue()))) {
-            return null;
-        }
-        Object object = null;
-
-        switch (cell.getCellTypeEnum()) {
-            case STRING:
-                object = cell.getStringCellValue();
-                break;
-            case NUMERIC:
-                if (DateUtil.isCellDateFormatted(cell)) {
-                    object = cell.getDateCellValue();
-                } else {
-                    object = cell.getNumericCellValue();
-                }
-                break;
-            case BOOLEAN:
-                object = cell.getBooleanCellValue();
-                break;
-            case FORMULA:
-                try {
-                    if (HSSFDateUtil.isCellDateFormatted(cell)) {
-                        object = cell.getDateCellValue();
-                    } else {
-                        object = cell.getNumericCellValue();
-                    }
-
-                } catch (IllegalStateException e) {
-                    object = cell.getRichStringCellValue();
-                }
-                break;
-            case BLANK:
-                return null;
-        }
-        return object;
-    }
-
     public static List<Map<String, Object>> read(String filename, Integer sheetAtIndex, boolean isClassPath) {
         return read(filename, sheetAtIndex, isClassPath, false);
     }
@@ -90,6 +48,7 @@ public class ImportExcelUtilLessFour {
                     int nullKeyNum = 0;
                     while (cellIterator.hasNext()) {
                         Cell cell = cellIterator.next();
+                        cell.setCellType(CellType.STRING);
                         String cellContent = cell.getStringCellValue();
                         Integer cellColumnIndex = cell.getColumnIndex();
                         if (StringUtils.isBlank(cellContent)) {
@@ -103,9 +62,10 @@ public class ImportExcelUtilLessFour {
                     boolean isAllCellNull = true;
                     while (cellIterator.hasNext()) {
                         Cell cell = cellIterator.next();
+                        cell.setCellType(CellType.STRING);
                         Integer cellColumnIndex = cell.getColumnIndex();
-                        Object cellContent = getCellContent(cell);
-                        if (cellContent != null) isAllCellNull = false;
+                        String cellContent = cell.getStringCellValue();
+                        if (StringUtils.isNotBlank(cellContent)) isAllCellNull = false;
                         rowMap.put(keyMap.get(cellColumnIndex), cellContent);
                     }
                     if (isFilterAllNullRow) {
