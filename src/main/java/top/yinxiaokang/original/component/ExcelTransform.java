@@ -31,6 +31,15 @@ public class ExcelTransform {
 
     Collection<Map> importExcel;
 
+
+    public static void main(String[] args) {
+        ExcelTransform excelTransform = new ExcelTransform();
+        excelTransform.workFormDiretory();
+        //excelTransform.workFormFile();
+
+    }
+
+
     public ExcelTransform() {
         importExcel = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
         Collection<Map> maps = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION_SSDKYE);
@@ -60,8 +69,7 @@ public class ExcelTransform {
             throw new RuntimeException("not directory");
         }
         File[] files = diretory.listFiles();
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
+        for (File file : files) {
             if (file.isFile()) {
                 doTransform(file.getPath(), file.getName());
             }
@@ -74,13 +82,6 @@ public class ExcelTransform {
         log.info("分类转换excel运行结束!");
     }
 
-    public static void main(String[] args) {
-        ExcelTransform excelTransform = new ExcelTransform();
-
-        excelTransform.workFormDiretory();
-        //excelTransform.workFormFile();
-
-    }
 
     private Map getMapFromImportExcelByDkzh(String dkzh) {
         Objects.requireNonNull(dkzh);
@@ -93,8 +94,7 @@ public class ExcelTransform {
         return new HashMap();
     }
 
-
-    private void doTransform(String pathFileName, String fileName) {
+    public List<Map<String, CellStyleAndContent>> listExcelAccounts(String pathFileName){
         List<Map<String, CellStyleAndContent>> list = ExcelUtil.readExcelCellStyleAndContent(pathFileName, 1, false, false);
         List<Map<String, CellStyleAndContent>> firstMes = new ArrayList<>();
         List<Map<String, CellStyleAndContent>> secondMes = new ArrayList<>();
@@ -166,7 +166,7 @@ public class ExcelTransform {
                 String csyqbj = mapFromImportExcelByDkzh.get("csyqbj").toString();
                 next.put("csyqbj", new CellStyleAndContent(csyqbj,null));
 
-                log.info("匹配得到的贷款账号: {} , 匹配得到的初始余额: {} \n ", groupDkzh, groupCsye);
+                log.info("匹配得到的贷款账号: {} , 匹配得到的初始余额: {}  ", groupDkzh, groupCsye);
                 next.put("dkzh", new CellStyleAndContent(groupDkzh,null));
                 next.put("csye", new CellStyleAndContent(groupCsye,null));
                 next.put("xzdkye", new CellStyleAndContent(new BigDecimal(groupCsye).subtract(new BigDecimal(next.get("本金合计").getContent().toString())),null));
@@ -175,10 +175,13 @@ public class ExcelTransform {
                 throw new RuntimeException("存在没有匹配");
             }
         }
+        return firstMes;
+    }
 
 
+    private void doTransform(String pathFileName, String fileName) {
+        List<Map<String, CellStyleAndContent>> list = listExcelAccounts(pathFileName);
         Map<String, String> keyMap = new LinkedHashMap<>();
-
         keyMap.put("序号", "xh");
         keyMap.put("dkzh", "dkzh");
         keyMap.put("csye", "csye");
@@ -197,13 +200,10 @@ public class ExcelTransform {
         keyMap.put("tzhye", "tzhye");// 凭证中的 修正后余额(一截内容,不能精确匹配到数字余额)
         //keyMap.put("tscontent", "tscontent");// 推算凭证的内容
 
-
         String[] split = fileName.split("\\.");
-
-
         Workbook wb = new HSSFWorkbook();
         try (FileOutputStream fileOutputStream = new FileOutputStream(new File(Constants.TAKE_ACCOUNT_TRANSFORM_PATH + "/" + split[0] + "-转换版" + Constants.XLS))) {
-            filterType(firstMes, keyMap, wb);
+            filterType(list, keyMap, wb);
             wb.write(fileOutputStream);
         } catch (IOException e) {
             e.printStackTrace();

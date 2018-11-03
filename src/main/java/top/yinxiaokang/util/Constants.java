@@ -8,14 +8,14 @@ import java.time.format.DateTimeFormatter;
 /**
  * 常量类
  */
-@SuppressWarnings("SpellCheckingInspection")
+@SuppressWarnings({"SpellCheckingInspection", "WeakerAccess", "unused"})
 @Slf4j
 public class Constants {
 
     /**
      * 路径: C:/修账相关数据
      */
-    public static String BASE_PATH = "C:/修账相关数据";
+    public static String BASE_PATH = "D:/修账相关数据";
 
     /**
      * 路径: /每日业务分析
@@ -46,6 +46,10 @@ public class Constants {
      * 路径: /需要填入数据
      */
     public static String TAKE_ACCOUNT_FILLED_DATA = "/已填入数据";
+    /**
+     * 路径: /已经处理过的贷款账号
+     */
+    public static String TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA = "/已经处理过的贷款账号";
 
     /**
      * 文件扩展名 .xlsx
@@ -190,6 +194,10 @@ public class Constants {
      * 修账 已填入数据路径
      */
     public static String TAKE_ACCOUNT_FILLED_DATA_PATH = TAKE_ACCOUNT_PATH + TAKE_ACCOUNT_FILLED_DATA;
+    /**
+     * 修账 已经处理过的贷款账号
+     */
+    public static String TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA_PATH = TAKE_ACCOUNT_PATH + TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA + "/已处理贷款账号" + XLS;
 
 
     public static void main(String[] args) {
