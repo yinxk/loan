@@ -79,9 +79,9 @@ public class Common {
     }
 
     public static List<InitInformation> listBaseAccountInformationByExcelUtil() {
-        //Collection<Map> maps = xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
-        //return Common.importExcelToInitInformationList(maps);
-        return listBaseAccountInformation();
+        Collection<Map> maps = xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
+        return Common.importExcelToInitInformationList(maps);
+//        return listBaseAccountInformation();
     }
 
     /**
