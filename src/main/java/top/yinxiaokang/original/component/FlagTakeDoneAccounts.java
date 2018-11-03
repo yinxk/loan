@@ -3,11 +3,14 @@ package top.yinxiaokang.original.component;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
 import top.yinxiaokang.original.dto.ExcelReadReturn;
 import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.util.Constants;
 import top.yinxiaokang.util.ExcelUtil;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +48,24 @@ public class FlagTakeDoneAccounts {
         return null;
     }
 
+    public static void main(String[] args) {
+        new FlagTakeDoneAccounts().workFromDirectory();
+    }
+
+    private void workFromDirectory() {
+        File directory = new File(Constants.TAKE_ACCOUNT_PATH);
+        if (!directory.isDirectory()) {
+            throw new RuntimeException("not directory");
+        }
+        File[] files = directory.listFiles();
+        assert files != null;
+        for (File file : files) {
+            if (file.isFile()) {
+                flagSkyBlueToDoneAccount(file.getPath(), Constants.TAKE_ACCOUNT_TAKED_FLAG_SKY_BLUE_ACCOUNTS_DATA_PATH + "/" + file.getName());
+            }
+        }
+    }
+
     private void flagSkyBlueToDoneAccount(String inFileName, String outFileName) {
         String regexNumber = "^\\d+$";
         String regexDkzh = "账号：([\\s\\S]*)\n初始贷款余额";
@@ -61,8 +82,14 @@ public class FlagTakeDoneAccounts {
                             String dkzh = matcherDkzh.group(1);
                             if (StringUtils.isBlank(dkzh)) return;
                             SthousingAccount sthousingAccount = searchAccount(dkzh);
+                            log.debug("匹配的贷款账号: {}, 已处理的贷款账号: {}", dkzh, sthousingAccount == null ? "" : sthousingAccount.getDkzh());
                             if (sthousingAccount == null) return;
-
+                            CellStyle cellStyle = wb.createCellStyle();
+                            // 根据前面得出的标记颜色, 天蓝色 sky_blue = 40
+                            cellStyle.setFillForegroundColor((short) 40);
+                            cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                            hh.setCellStyle(cellStyle);
+                            log.info("标记了贷款账号为: {} 的单元格", dkzh);
                         } else {
                             throw new RuntimeException("匹配出错");
                         }

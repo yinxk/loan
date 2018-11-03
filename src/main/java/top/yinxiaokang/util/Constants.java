@@ -50,6 +50,10 @@ public class Constants {
      * 路径: /已经处理过的贷款账号
      */
     public static String TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA = "/已经处理过的贷款账号";
+    /**
+     * 路径: /标记天蓝色
+     */
+    public static String TAKE_ACCOUNT_TAKED_FLAG_SKY_BLUE_ACCOUNTS_DATA = "/标记天蓝色";
 
     /**
      * 文件扩展名 .xlsx
@@ -198,6 +202,11 @@ public class Constants {
      * 修账 已经处理过的贷款账号
      */
     public static String TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA_PATH = TAKE_ACCOUNT_PATH + TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA + "/已处理贷款账号" + XLS;
+
+    /**
+     * 修账 标记天蓝色路径
+     */
+    public static String TAKE_ACCOUNT_TAKED_FLAG_SKY_BLUE_ACCOUNTS_DATA_PATH = TAKE_ACCOUNT_PATH + TAKE_ACCOUNT_TAKED_FLAG_SKY_BLUE_ACCOUNTS_DATA;
 
 
     public static void main(String[] args) {
