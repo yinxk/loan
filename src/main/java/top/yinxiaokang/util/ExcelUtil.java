@@ -59,34 +59,34 @@ public class ExcelUtil {
         excelReaderAndWriter(inFilename, updateSheetAt, isClassPath, outFileName, rowAndCellProcess);
     }
 
-    public static ExcelReadReturn readExcel(String inFilename, Integer sheetAt, boolean isClassPath) {
+    public static ExcelReadReturn readExcel(String inFilename, Integer sheetAt, Boolean isClassPath,Boolean isFilterAllNullRow) {
         ExcelReadReturn excelReadReturn = new ExcelReadReturn();
         List<Map<String, Object>> content = new ArrayList<>();
         excelReadReturn.setContent(content);
-        readExcel(inFilename, sheetAt, isClassPath, (row, colIndexMapContent, contentMapColIndex, proIndexMapColIndex) -> {
+        readExcel(inFilename, sheetAt, isClassPath, isFilterAllNullRow,(row, colIndexMapContent, contentMapColIndex, proIndexMapColIndex) -> {
             excelReadReturn.setColIndexMapContent(colIndexMapContent);
             excelReadReturn.setContentMapColIndex(contentMapColIndex);
             excelReadReturn.setProIndexMapColIndex(proIndexMapColIndex);
+            Map<String, Object> rowContent = new LinkedHashMap<>();
             for (Cell cell : row) {
-                Map<String, Object> rowContent = new LinkedHashMap<>();
                 rowContent.put(colIndexMapContent.get(cell.getColumnIndex()), getCellContent(cell));
-                content.add(rowContent);
             }
+            content.add(rowContent);
         });
         return excelReadReturn;
     }
 
-    public static List<Map<String, CellStyleAndContent>> readExcelCellStyleAndContent(String inFilename, Integer sheetAt, boolean isClassPath) {
+    public static List<Map<String, CellStyleAndContent>> readExcelCellStyleAndContent(String inFilename, Integer sheetAt, Boolean isClassPath,Boolean isFilterAllNullRow) {
         List<Map<String, CellStyleAndContent>> result = new ArrayList<>();
-        readExcel(inFilename, sheetAt, isClassPath, (row, colIndexMapContent, contentMapColIndex, proIndexMapColIndex) -> {
+        readExcel(inFilename, sheetAt, isClassPath,isFilterAllNullRow, (row, colIndexMapContent, contentMapColIndex, proIndexMapColIndex) -> {
+            Map<String, CellStyleAndContent> rowContent = new LinkedHashMap<>();
             for (Cell cell : row) {
                 CellStyleAndContent cellStyleAndContent = new CellStyleAndContent();
-                Map<String, CellStyleAndContent> rowContent = new LinkedHashMap<>();
                 rowContent.put(colIndexMapContent.get(cell.getColumnIndex()), cellStyleAndContent);
                 cellStyleAndContent.setContent(getCellContent(cell));
                 cellStyleAndContent.setCellStyle(cell.getCellStyle());
-                result.add(rowContent);
             }
+            result.add(rowContent);
         });
         return result;
     }
@@ -103,7 +103,7 @@ public class ExcelUtil {
         Objects.requireNonNull(inFilename);
         try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
             log.info("读取 {} 完成", inFilename);
-            read(sheetAt, rowAndCellProcess, wb);
+            read(sheetAt, rowAndCellProcess, wb,false);
             File file = getOutFileExcelName(outFileName);
             writeToExcel(wb, file);
             log.info("写出 {} 完成", outFileName);
@@ -120,24 +120,28 @@ public class ExcelUtil {
      * @param sheetAt     需要读取的sheet序号
      * @param isClassPath 文件是否在类路径下
      */
-    private static void readExcel(String inFilename, Integer sheetAt, boolean isClassPath, RowAndCellProcess rowAndCellProcess) {
+    private static void readExcel(String inFilename, Integer sheetAt, Boolean isClassPath,Boolean isFilterAllNullRow, RowAndCellProcess rowAndCellProcess) {
         Objects.requireNonNull(inFilename);
+        if (sheetAt == null) sheetAt = 0;
+        if (isClassPath == null) isClassPath = false;
         try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
             log.info("读取 {} 完成", inFilename);
-            read(sheetAt, rowAndCellProcess, wb);
+            read(sheetAt, rowAndCellProcess, wb,isFilterAllNullRow);
         } catch (IOException | InvalidFormatException e) {
             throw new RuntimeException(e);
         }
     }
 
 
-    private static void read(Integer sheetAt, RowAndCellProcess rowAndCellProcess, Workbook wb) {
+    private static void read(Integer sheetAt, RowAndCellProcess rowAndCellProcess, Workbook wb,Boolean isFilterAllNullRow) {
         sheetAt = Optional.ofNullable(sheetAt).orElse(0);
         Sheet sheet = wb.getSheetAt(sheetAt);
         boolean isFirst = true;
+        if (isFilterAllNullRow == null) isFilterAllNullRow = true;
         Map<Integer, String> keyMap = new LinkedHashMap<>();
         Map<String, Integer> contentMapCol = new LinkedHashMap<>();
         Map<Integer, Integer> proMapColumn = new LinkedHashMap<>();
+        boolean isAllNull = true;
         for (Row row : sheet) {
             if (isFirst) {
                 isFirst = false;
@@ -160,6 +164,14 @@ public class ExcelUtil {
                     proMapColumn.put(propertyIndex++, cellColumnIndex);
                 }
                 continue;
+            }
+            if (isFilterAllNullRow) {
+                for (Cell cell : row) {
+                    if (getCellContent(cell) != null) {
+                        isAllNull = false;
+                    }
+                }
+                if (isAllNull) continue;
             }
             rowAndCellProcess.process(row, keyMap, contentMapCol, proMapColumn);
         }
