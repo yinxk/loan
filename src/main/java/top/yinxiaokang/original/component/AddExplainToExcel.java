@@ -54,7 +54,7 @@ public class AddExplainToExcel {
                             cellValue = String.format(prefix, jkrxmByDkzh.get("dkzh"),
                                     jkrxmByDkzh.get("jkrxm"), cellValue);
                             sm.setCellValue(cellValue);
-                            log.info("写入 {} 的值为: {}", dkzh, cellValue);
+                            log.debug("写入 {} 的说明 : {}", dkzh, cellValue);
                         } else {
                             throw new RuntimeException("匹配出错");
                         }

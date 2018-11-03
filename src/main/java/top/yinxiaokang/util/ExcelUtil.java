@@ -76,10 +76,15 @@ public class ExcelUtil {
      * @param isClassPath 文件是否在类路径下
      */
     private static void excelReaderAndWriter(String inFilename, Integer sheetAt, boolean isClassPath, String outFileName, BaseRowReader baseRowReader) throws IOException {
-        Workbook workbook = read(inFilename, isClassPath);
-        loadFirstRow(sheetAt, baseRowReader, workbook, false);
-        File file = getOutFileExcelName(outFileName);
-        writeToExcel(workbook, file);
+        read(inFilename, isClassPath, (workbook, row, keyMap, keyMapReverse) -> {
+            loadFirstRow(sheetAt, baseRowReader, workbook, false);
+            File file = getOutFileExcelName(outFileName);
+            try {
+                writeToExcel(workbook, file);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
 
@@ -197,8 +202,9 @@ public class ExcelUtil {
      * @param isClassPath 文件是否在类路径下
      */
     public static void readExcel(String inFilename, Integer sheetAt, Boolean isClassPath, Boolean isFilterAllNullRow, BaseRowReader baseRowReader) {
-        Workbook workbook = read(inFilename, isClassPath);
-        loadFirstRow(sheetAt, baseRowReader, workbook, isFilterAllNullRow);
+        read(inFilename, isClassPath, (workbook, row, keyMap, keyMapReverse) -> {
+            loadFirstRow(sheetAt, baseRowReader, workbook, isFilterAllNullRow);
+        });
     }
 
     private static void loadFirstRow(Integer sheetAt, BaseRowReader baseRowReader, Workbook wb, Boolean isFilterAllNullRow) {
@@ -242,12 +248,12 @@ public class ExcelUtil {
         }
     }
 
-    private static Workbook read(String inFilename, Boolean isClassPath) {
+    private static void read(String inFilename, Boolean isClassPath, BaseRowReader baseRowReader) {
         Objects.requireNonNull(inFilename);
         if (isClassPath == null) isClassPath = false;
         try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
             log.info("读取 {} 完成", inFilename);
-            return wb;
+            baseRowReader.process(wb, null, null, null);
         } catch (IOException | InvalidFormatException e) {
             throw new RuntimeException(e);
         }
