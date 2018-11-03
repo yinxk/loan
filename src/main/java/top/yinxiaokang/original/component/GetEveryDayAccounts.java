@@ -35,17 +35,7 @@ public class GetEveryDayAccounts {
         List<InitInformation> initInformations = Common.listBaseAccountInformationByExcelUtil();
         boolean isFirst = true;
         for (InitInformation initInformation : initInformations) {
-            if (isFirst) {
-                sb.append("'");
-                sb.append(initInformation.getDkzh());
-                sb.append("'");
-                isFirst = false;
-                continue;
-            }
-            sb.append(",");
-            sb.append("'");
-            sb.append(initInformation.getDkzh());
-            sb.append("'");
+            isFirst = Common.appendDkzhToSqlCanRead(sb, isFirst, initInformation.getDkzh(), false);
         }
         baseAccountDkzhs = sb.toString();
     }
@@ -132,17 +122,7 @@ public class GetEveryDayAccounts {
         StringBuilder sb = new StringBuilder();
         boolean isFirst = true;
         for (SomedayInformation information : list) {
-            if (isFirst) {
-                sb.append("'");
-                sb.append(information.getDkzh());
-                sb.append("'");
-                isFirst = false;
-                continue;
-            }
-            sb.append(",\n");
-            sb.append("'");
-            sb.append(information.getDkzh());
-            sb.append("'");
+            isFirst = Common.appendDkzhToSqlCanRead(sb, isFirst, information.getDkzh(), false);
         }
         byte[] bytes = sb.toString().getBytes();
 

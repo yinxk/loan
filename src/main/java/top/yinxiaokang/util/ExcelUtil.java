@@ -7,6 +7,7 @@ import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.DateUtil;
+import top.yinxiaokang.original.dto.CellStyleAndContent;
 import top.yinxiaokang.original.dto.ExcelReadReturn;
 import top.yinxiaokang.original.interfaces.RowAndCellProcess;
 import top.yinxiaokang.others.ErrorException;
@@ -39,7 +40,7 @@ public class ExcelUtil {
      *
      * @param inFilename    输入文件名
      * @param updateSheetAt 需要更新的sheet序号
-     * @param isClassPath
+     * @param isClassPath   文件是否在类路径下
      * @param outFileName   输出文件名
      */
     public static void copyExcelAndUpdate(String inFilename, Integer updateSheetAt, boolean isClassPath,
@@ -62,7 +63,7 @@ public class ExcelUtil {
         ExcelReadReturn excelReadReturn = new ExcelReadReturn();
         List<Map<String, Object>> content = new ArrayList<>();
         excelReadReturn.setContent(content);
-        excelReader(inFilename, sheetAt, isClassPath, (row, colIndexMapContent, contentMapColIndex, proIndexMapColIndex) -> {
+        readExcel(inFilename, sheetAt, isClassPath, (row, colIndexMapContent, contentMapColIndex, proIndexMapColIndex) -> {
             excelReadReturn.setColIndexMapContent(colIndexMapContent);
             excelReadReturn.setContentMapColIndex(contentMapColIndex);
             excelReadReturn.setProIndexMapColIndex(proIndexMapColIndex);
@@ -73,6 +74,21 @@ public class ExcelUtil {
             }
         });
         return excelReadReturn;
+    }
+
+    public static List<Map<String, CellStyleAndContent>> readExcelCellStyleAndContent(String inFilename, Integer sheetAt, boolean isClassPath) {
+        List<Map<String, CellStyleAndContent>> result = new ArrayList<>();
+        readExcel(inFilename, sheetAt, isClassPath, (row, colIndexMapContent, contentMapColIndex, proIndexMapColIndex) -> {
+            for (Cell cell : row) {
+                CellStyleAndContent cellStyleAndContent = new CellStyleAndContent();
+                Map<String, CellStyleAndContent> rowContent = new LinkedHashMap<>();
+                rowContent.put(colIndexMapContent.get(cell.getColumnIndex()), cellStyleAndContent);
+                cellStyleAndContent.setContent(getCellContent(cell));
+                cellStyleAndContent.setCellStyle(cell.getCellStyle());
+                result.add(rowContent);
+            }
+        });
+        return result;
     }
 
 
@@ -104,7 +120,7 @@ public class ExcelUtil {
      * @param sheetAt     需要读取的sheet序号
      * @param isClassPath 文件是否在类路径下
      */
-    private static void excelReader(String inFilename, Integer sheetAt, boolean isClassPath, RowAndCellProcess rowAndCellProcess) {
+    private static void readExcel(String inFilename, Integer sheetAt, boolean isClassPath, RowAndCellProcess rowAndCellProcess) {
         Objects.requireNonNull(inFilename);
         try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
             log.info("读取 {} 完成", inFilename);

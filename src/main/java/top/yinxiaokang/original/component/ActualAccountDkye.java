@@ -30,7 +30,7 @@ public class ActualAccountDkye {
         StringBuilder sb = new StringBuilder();
         boolean isFirst = true;
         for (InitInformation information : initInformations) {
-            isFirst = Common.appendDkzhToSqlCanRead(sb, isFirst, information.getDkzh());
+            isFirst = Common.appendDkzhToSqlCanRead(sb, isFirst, information.getDkzh(),false);
         }
         return sb.toString();
     }

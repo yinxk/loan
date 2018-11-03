@@ -47,14 +47,14 @@ public class Common {
         boolean isIn = false;
         while (iterator.hasNext()) {
             Map next = iterator.next();
-            if (dkzh.equals(((String) next.get("dkzh")))) {
+            if (dkzh.equals(next.get("dkzh"))) {
                 isIn = true;
             }
         }
         return isIn;
     }
 
-    public static boolean appendDkzhToSqlCanRead(StringBuilder sb, boolean isFirst, String dkzh) {
+    public static boolean appendDkzhToSqlCanRead(StringBuilder sb, boolean isFirst, String dkzh,boolean isAppendEnter) {
         if (isFirst) {
             sb.append("'");
             sb.append(dkzh);
@@ -62,7 +62,9 @@ public class Common {
             isFirst = false;
             return isFirst;
         }
-        sb.append(",\n");
+        if (isAppendEnter) {
+            sb.append(",\n");
+        }
         sb.append("'");
         sb.append(dkzh);
         sb.append("'");
