@@ -122,7 +122,7 @@ public class GetEveryDayAccounts {
         StringBuilder sb = new StringBuilder();
         boolean isFirst = true;
         for (SomedayInformation information : list) {
-            isFirst = Common.appendDkzhToSqlCanRead(sb, isFirst, information.getDkzh(), false);
+            isFirst = Common.appendDkzhToSqlCanRead(sb, isFirst, information.getDkzh(), true);
         }
         byte[] bytes = sb.toString().getBytes();
 
