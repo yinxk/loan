@@ -5,7 +5,7 @@ import org.apache.poi.ss.usermodel.Row;
 import java.util.Map;
 
 @FunctionalInterface
-public interface RowReader {
+public interface BaseRowReader {
     void process(Row row, Map<Integer, String> colIndexMapContent,
                  Map<String, Integer> contentMapColIndex, Map<Integer, Integer> proIndexMapColIndex);
 }

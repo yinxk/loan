@@ -14,7 +14,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import top.yinxiaokang.original.dto.CellStyleAndContent;
 import top.yinxiaokang.original.dto.ExcelReadReturn;
 import top.yinxiaokang.original.interfaces.BaseExcelWriter;
-import top.yinxiaokang.original.interfaces.RowReader;
+import top.yinxiaokang.original.interfaces.BaseRowReader;
 import top.yinxiaokang.original.interfaces.TitleCreatedExcelWriter;
 import top.yinxiaokang.others.ErrorException;
 
@@ -50,7 +50,7 @@ public class ExcelUtil {
      * @param outFileName   输出文件名
      */
     public static void copyExcelAndUpdate(String inFilename, Integer updateSheetAt, boolean isClassPath,
-                                          String outFileName, RowReader rowReader) {
+                                          String outFileName, BaseRowReader baseRowReader) {
         StringBuilder sb = new StringBuilder();
         if (StringUtils.isBlank(outFileName)) {
             String[] split = inFilename.split("\\.");
@@ -62,7 +62,7 @@ public class ExcelUtil {
             sb.append(split[split.length - 1]);
             outFileName = sb.toString();
         }
-        excelReaderAndWriter(inFilename, updateSheetAt, isClassPath, outFileName, rowReader);
+        excelReaderAndWriter(inFilename, updateSheetAt, isClassPath, outFileName, baseRowReader);
     }
 
     public static ExcelReadReturn readExcel(String inFilename, Integer sheetAt, Boolean isClassPath, Boolean isFilterAllNullRow) {
@@ -105,11 +105,11 @@ public class ExcelUtil {
      * @param sheetAt     需要读写的sheet序号
      * @param isClassPath 文件是否在类路径下
      */
-    private static void excelReaderAndWriter(String inFilename, Integer sheetAt, boolean isClassPath, String outFileName, RowReader rowReader) {
+    private static void excelReaderAndWriter(String inFilename, Integer sheetAt, boolean isClassPath, String outFileName, BaseRowReader baseRowReader) {
         Objects.requireNonNull(inFilename);
         try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
             log.info("读取 {} 完成", inFilename);
-            read(sheetAt, rowReader, wb, false);
+            read(sheetAt, baseRowReader, wb, false);
             File file = getOutFileExcelName(outFileName);
             writeToExcel(wb, file);
             log.info("写出 {} 完成", outFileName);
@@ -194,20 +194,20 @@ public class ExcelUtil {
      * @param sheetAt     需要读取的sheet序号
      * @param isClassPath 文件是否在类路径下
      */
-    private static void readExcel(String inFilename, Integer sheetAt, Boolean isClassPath, Boolean isFilterAllNullRow, RowReader rowReader) {
+    private static void readExcel(String inFilename, Integer sheetAt, Boolean isClassPath, Boolean isFilterAllNullRow, BaseRowReader baseRowReader) {
         Objects.requireNonNull(inFilename);
         if (sheetAt == null) sheetAt = 0;
         if (isClassPath == null) isClassPath = false;
         try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
             log.info("读取 {} 完成", inFilename);
-            read(sheetAt, rowReader, wb, isFilterAllNullRow);
+            read(sheetAt, baseRowReader, wb, isFilterAllNullRow);
         } catch (IOException | InvalidFormatException e) {
             throw new RuntimeException(e);
         }
     }
 
 
-    private static void read(Integer sheetAt, RowReader rowReader, Workbook wb, Boolean isFilterAllNullRow) {
+    private static void read(Integer sheetAt, BaseRowReader baseRowReader, Workbook wb, Boolean isFilterAllNullRow) {
         sheetAt = Optional.ofNullable(sheetAt).orElse(0);
         Sheet sheet = wb.getSheetAt(sheetAt);
         boolean isFirst = true;
@@ -247,7 +247,7 @@ public class ExcelUtil {
                 }
                 if (isAllNull) continue;
             }
-            rowReader.process(row, keyMap, contentMapCol, proMapColumn);
+            baseRowReader.process(row, keyMap, contentMapCol, proMapColumn);
         }
     }
 
