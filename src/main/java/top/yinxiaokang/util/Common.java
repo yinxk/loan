@@ -54,7 +54,7 @@ public class Common {
         return isIn;
     }
 
-    public static boolean appendDkzhToSqlCanRead(StringBuilder sb, boolean isFirst, String dkzh,boolean isAppendEnter) {
+    public static boolean appendDkzhToSqlCanRead(StringBuilder sb, boolean isFirst, String dkzh, boolean isAppendEnter) {
         if (isFirst) {
             sb.append("'");
             sb.append(dkzh);
@@ -73,15 +73,15 @@ public class Common {
     }
 
 
-
     public static List<InitInformation> listBaseAccountInformation() {
-        List<Map<String, Object>> readList = ImportExcelUtilLessFour.read(Constants.BASE_ACCOUNT_INFORMATION, 0, false, false);
+        List<Map<String, Object>> readList = top.yinxiaokang.util.ExcelUtil.readExcel(Constants.BASE_ACCOUNT_INFORMATION, 0, false, false).getContent();
         return Common.importExcelToInitInformationList(readList);
     }
 
     public static List<InitInformation> listBaseAccountInformationByExcelUtil() {
-        Collection<Map> maps = xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
-        return Common.importExcelToInitInformationList(maps);
+        //Collection<Map> maps = xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
+        //return Common.importExcelToInitInformationList(maps);
+        return listBaseAccountInformation();
     }
 
     /**
