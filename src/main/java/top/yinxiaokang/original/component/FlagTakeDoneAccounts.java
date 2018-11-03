@@ -51,7 +51,7 @@ public class FlagTakeDoneAccounts {
         Pattern patternDkzh = Pattern.compile(regexDkzh);
         Pattern patternNumber = Pattern.compile(regexNumber);
         ExcelUtil.copyExcelAndUpdate(inFileName, 1, false, outFileName,
-                (row, keyMap, contentMapColIndex, proIndexMapColIndex) -> {
+                (wb, row, keyMap, contentMapColIndex) -> {
                     Matcher matcher = patternNumber.matcher(ExcelUtil.getStringCellContent(row.getCell(contentMapColIndex.get("序号"))));
                     if (matcher.find()) {
                         Cell hh = row.getCell(contentMapColIndex.get("行号"));
@@ -61,7 +61,7 @@ public class FlagTakeDoneAccounts {
                             String dkzh = matcherDkzh.group(1);
                             if (StringUtils.isBlank(dkzh)) return;
                             SthousingAccount sthousingAccount = searchAccount(dkzh);
-                            if (sthousingAccount== null) return;
+                            if (sthousingAccount == null) return;
 
                         } else {
                             throw new RuntimeException("匹配出错");

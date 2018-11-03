@@ -69,13 +69,12 @@ public class ExcelUtil {
         ExcelReadReturn excelReadReturn = new ExcelReadReturn();
         List<Map<String, Object>> content = new ArrayList<>();
         excelReadReturn.setContent(content);
-        readExcel(inFilename, sheetAt, isClassPath, isFilterAllNullRow, (row, colIndexMapContent, contentMapColIndex, proIndexMapColIndex) -> {
-            excelReadReturn.setColIndexMapContent(colIndexMapContent);
-            excelReadReturn.setContentMapColIndex(contentMapColIndex);
-            excelReadReturn.setProIndexMapColIndex(proIndexMapColIndex);
+        readExcel(inFilename, sheetAt, isClassPath, isFilterAllNullRow, (wb, row, keyMap, keyMapReverse) -> {
+            excelReadReturn.setColIndexMapContent(keyMap);
+            excelReadReturn.setContentMapColIndex(keyMapReverse);
             Map<String, Object> rowContent = new LinkedHashMap<>();
             for (Cell cell : row) {
-                rowContent.put(colIndexMapContent.get(cell.getColumnIndex()), getCellContent(cell));
+                rowContent.put(keyMap.get(cell.getColumnIndex()), getCellContent(cell));
             }
             content.add(rowContent);
         });
@@ -84,11 +83,11 @@ public class ExcelUtil {
 
     public static List<Map<String, CellStyleAndContent>> readExcelCellStyleAndContent(String inFilename, Integer sheetAt, Boolean isClassPath, Boolean isFilterAllNullRow) {
         List<Map<String, CellStyleAndContent>> result = new ArrayList<>();
-        readExcel(inFilename, sheetAt, isClassPath, isFilterAllNullRow, (row, colIndexMapContent, contentMapColIndex, proIndexMapColIndex) -> {
+        readExcel(inFilename, sheetAt, isClassPath, isFilterAllNullRow, (wb, row, keyMap, keyMapReverse) -> {
             Map<String, CellStyleAndContent> rowContent = new LinkedHashMap<>();
             for (Cell cell : row) {
                 CellStyleAndContent cellStyleAndContent = new CellStyleAndContent();
-                rowContent.put(colIndexMapContent.get(cell.getColumnIndex()), cellStyleAndContent);
+                rowContent.put(keyMap.get(cell.getColumnIndex()), cellStyleAndContent);
                 cellStyleAndContent.setContent(getCellContent(cell));
                 cellStyleAndContent.setCellStyle(cell.getCellStyle());
             }
@@ -119,7 +118,7 @@ public class ExcelUtil {
     }
 
     public static <T> void writeToExcelByAll(String outFileName, String sheetName, Map<String, String> keyMap,
-                                                   List<Map<String, T>> contents) {
+                                             List<Map<String, T>> contents) {
         try {
             writeToExcelAllThrows(outFileName, sheetName, keyMap, contents);
         } catch (IOException e) {
@@ -128,7 +127,7 @@ public class ExcelUtil {
     }
 
     public static <T> void writeToExcelAllThrows(String outFileName, String sheetName, Map<String, String> keyMap,
-                                                   List<Map<String, T>> contents) throws IOException {
+                                                 List<Map<String, T>> contents) throws IOException {
         writeToExcelByCreatedTitle(outFileName, sheetName, keyMap, contents, (sheet, keyMap1, contents1) -> {
             int i = 1;
             Row row;
@@ -247,7 +246,7 @@ public class ExcelUtil {
                 }
                 if (isAllNull) continue;
             }
-            baseRowReader.process(row, keyMap, contentMapCol, proMapColumn);
+            baseRowReader.process(wb, row, keyMap, contentMapCol);
         }
     }
 

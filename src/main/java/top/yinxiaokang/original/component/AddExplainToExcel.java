@@ -39,7 +39,7 @@ public class AddExplainToExcel {
         Pattern patternDkzh = Pattern.compile(regexDkzh);
         Pattern patternNumber = Pattern.compile(regexNumber);
         ExcelUtil.copyExcelAndUpdate(inFileName, 1, false, outFileName,
-                (row, keyMap, contentMapColIndex, proIndexMapColIndex) -> {
+                (wb, row, keyMap, contentMapColIndex) -> {
                     Matcher matcher = patternNumber.matcher(ExcelUtil.getStringCellContent(row.getCell(contentMapColIndex.get("序号"))));
                     if (matcher.find()) {
                         Matcher matcherDkzh = patternDkzh.matcher(ExcelUtil.getStringCellContent(row.getCell(contentMapColIndex.get("行号"))));
