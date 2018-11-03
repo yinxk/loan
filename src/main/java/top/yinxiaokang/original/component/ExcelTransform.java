@@ -94,13 +94,13 @@ public class ExcelTransform {
         return new HashMap();
     }
 
-    public List<Map<String, CellStyleAndContent>> listExcelAccounts(String pathFileName){
+    public List<Map<String, CellStyleAndContent>> listExcelAccounts(String pathFileName) {
         List<Map<String, CellStyleAndContent>> list = ExcelUtil.readExcelCellStyleAndContent(pathFileName, 1, false, false);
         List<Map<String, CellStyleAndContent>> firstMes = new ArrayList<>();
         List<Map<String, CellStyleAndContent>> secondMes = new ArrayList<>();
         Iterator<Map<String, CellStyleAndContent>> iterator = list.iterator();
         int secondTag = Integer.MIN_VALUE;
-        String regexNumber = "^\\d+\\.\\d+$";
+        String regexNumber = "^\\d+\\.?\\d?$";
         Pattern patternNumber = Pattern.compile(regexNumber);
         while (iterator.hasNext()) {
             Map<String, CellStyleAndContent> next = iterator.next();
@@ -137,7 +137,7 @@ public class ExcelTransform {
         while (firstMsgIte.hasNext()) {
             Map<String, CellStyleAndContent> next = firstMsgIte.next();
             Map<String, CellStyleAndContent> secondNext = secondMsgIte.next();
-            String 行号 =  next.get("行号").getContent().toString();
+            String 行号 = next.get("行号").getContent().toString();
             String nullKey0 = Optional.ofNullable(secondNext.get("财务推算")).map(CellStyleAndContent::getContent).map(Object::toString).orElse("");
             Matcher matcherDkzh = patternDkzh.matcher(行号);
             Matcher matcherCsye = patternCsye.matcher(行号);
@@ -155,7 +155,7 @@ public class ExcelTransform {
                     continue;
                 }
                 next.put("tscontent", secondNext.get("财务推算"));
-                next.put("tzhye", new CellStyleAndContent(groupTzhye,null));
+                next.put("tzhye", new CellStyleAndContent(groupTzhye, null));
 
                 Map mapFromImportExcelByDkzh = getMapFromImportExcelByDkzh(groupDkzh);
                 String csye = mapFromImportExcelByDkzh.get("csye").toString();
@@ -164,12 +164,12 @@ public class ExcelTransform {
                 }
 
                 String csyqbj = mapFromImportExcelByDkzh.get("csyqbj").toString();
-                next.put("csyqbj", new CellStyleAndContent(csyqbj,null));
+                next.put("csyqbj", new CellStyleAndContent(csyqbj, null));
 
                 log.info("匹配得到的贷款账号: {} , 匹配得到的初始余额: {}  ", groupDkzh, groupCsye);
-                next.put("dkzh", new CellStyleAndContent(groupDkzh,null));
-                next.put("csye", new CellStyleAndContent(groupCsye,null));
-                next.put("xzdkye", new CellStyleAndContent(new BigDecimal(groupCsye).subtract(new BigDecimal(next.get("本金合计").getContent().toString())),null));
+                next.put("dkzh", new CellStyleAndContent(groupDkzh, null));
+                next.put("csye", new CellStyleAndContent(groupCsye, null));
+                next.put("xzdkye", new CellStyleAndContent(new BigDecimal(groupCsye).subtract(new BigDecimal(next.get("本金合计").getContent().toString())), null));
             } else {
                 log.info("存在没有匹配" + ++notMatchNumber);
                 throw new RuntimeException("存在没有匹配");
@@ -201,8 +201,10 @@ public class ExcelTransform {
         //keyMap.put("tscontent", "tscontent");// 推算凭证的内容
 
         String[] split = fileName.split("\\.");
+
         Workbook wb = new HSSFWorkbook();
-        try (FileOutputStream fileOutputStream = new FileOutputStream(new File(Constants.TAKE_ACCOUNT_TRANSFORM_PATH + "/" + split[0] + "-转换版" + Constants.XLS))) {
+        File file = ExcelUtil.getOutFileExcelName(Constants.TAKE_ACCOUNT_TRANSFORM_PATH + "/" + split[0] + "-转换版" + Constants.XLS);
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
             filterType(list, keyMap, wb);
             wb.write(fileOutputStream);
         } catch (IOException e) {
@@ -244,7 +246,7 @@ public class ExcelTransform {
                 }
                 String moreTagStr;
                 // 多扣类型 未结清的
-                if (ssdkye.compareTo(BigDecimal.ZERO) > 0){
+                if (ssdkye.compareTo(BigDecimal.ZERO) > 0) {
                     // 多扣 未结清 负正负
                     if (发生额差额合计.compareTo(BigDecimal.ZERO) < 0 &&
                             本金差额合计.compareTo(BigDecimal.ZERO) > 0 &&
@@ -269,7 +271,7 @@ public class ExcelTransform {
                     typeMap.get(ExcelFilterType.MANY_OUTSTANDING_FFF_FFZ_FFL).add(contentMap);
                     moreTagStr = ExcelFilterType.MANY_OUTSTANDING_FFF_FFZ_FFL.getTypeMessage();
                 }
-                log.info("多扣类型分类信息: {}, {}, {},  ====> {} \n", 发生额差额合计, 本金差额合计, 利息差额合计, moreTagStr);
+                log.info("多扣类型分类信息: {}, {}, {},  ====> {} ", 发生额差额合计, 本金差额合计, 利息差额合计, moreTagStr);
             }
             // 少扣
             else if (备注.contains("少扣")) {
@@ -340,7 +342,7 @@ public class ExcelTransform {
                     sheet.autoSizeColumn(j);
                     CellStyle cellStyle1 = Optional.ofNullable(contentMap.get(key.getKey())).map(CellStyleAndContent::getCellStyle).orElse(null);
                     Cell cell = row.createCell(j++);
-                    if ((key.getKey().equals("dkzh") || key.getKey().equals("行号")|| key.getKey().equals("说明") ) && cellStyle1 != null ) {
+                    if ((key.getKey().equals("dkzh") || key.getKey().equals("行号") || key.getKey().equals("说明")) && cellStyle1 != null) {
                         CellStyle style = wb.createCellStyle();
                         style.setFillForegroundColor(cellStyle1.getFillForegroundColor());
                         style.setFillPattern(FillPatternType.SOLID_FOREGROUND);

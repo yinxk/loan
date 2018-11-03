@@ -362,7 +362,7 @@ public class ExcelUtil {
         return wb;
     }
 
-    private static File getOutFileExcelName(String outFileName) {
+    public static File getOutFileExcelName(String outFileName) {
         if (StringUtils.isBlank(outFileName)) {
             throw new RuntimeException("输出文件为空");
         }
