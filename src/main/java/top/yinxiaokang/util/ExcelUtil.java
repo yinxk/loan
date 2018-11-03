@@ -194,6 +194,18 @@ public class ExcelUtil {
         return excelReadReturn;
     }
 
+    public static List<Map<String, String>> readStringExcel(String inFilename, Integer sheetAt, Boolean isClassPath, Boolean isFilterAllNullRow) {
+        List<Map<String, String>> content = new ArrayList<>();
+        readExcel(inFilename, sheetAt, isClassPath, isFilterAllNullRow, (wb, row, keyMap, keyMapReverse) -> {
+            Map<String, String> rowContent = new LinkedHashMap<>();
+            for (Cell cell : row) {
+                rowContent.put(keyMap.get(cell.getColumnIndex()), getStringCellContent(cell));
+            }
+            content.add(rowContent);
+        });
+        return content;
+    }
+
     /**
      * 读取excel
      *

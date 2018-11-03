@@ -74,7 +74,7 @@ public class Common {
 
 
     public static List<InitInformation> listBaseAccountInformation() {
-        List<Map<String, Object>> readList = top.yinxiaokang.util.ExcelUtil.readExcel(Constants.BASE_ACCOUNT_INFORMATION, 0, false, false).getContent();
+        List<Map<String, String>> readList = top.yinxiaokang.util.ExcelUtil.readStringExcel(Constants.BASE_ACCOUNT_INFORMATION, 0, false, false);
         return Common.importExcelToInitInformationList(readList);
     }
 
@@ -105,7 +105,7 @@ public class Common {
      * @param readList
      * @return
      */
-    public static List<InitInformation> importExcelToInitInformationList(List<Map<String, Object>> readList) {
+    public static List<InitInformation> importExcelToInitInformationList(List<Map<String, String>> readList) {
         ArrayList<InitInformation> initHasOverdueList = new ArrayList<>();
         int i = 0;
         for (Map m : readList) {
