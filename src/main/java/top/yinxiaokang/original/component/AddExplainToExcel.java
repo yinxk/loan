@@ -8,10 +8,7 @@ import top.yinxiaokang.util.Constants;
 import top.yinxiaokang.util.ExcelUtil;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,15 +31,17 @@ public class AddExplainToExcel {
     }
 
     private void addExplainToExcel(String inFileName, String outFileName) {
-        String regexNumber = "^\\d+$";
+        String regexNumber = "^\\d+\\.?\\d?$";
         String regexDkzh = "账号：([\\s\\S]*)\n初始贷款余额";
         Pattern patternDkzh = Pattern.compile(regexDkzh);
         Pattern patternNumber = Pattern.compile(regexNumber);
         ExcelUtil.copyExcelAndUpdate(inFileName, 1, false, outFileName,
                 (wb, row, keyMap, contentMapColIndex) -> {
-                    Matcher matcher = patternNumber.matcher(ExcelUtil.getStringCellContent(row.getCell(contentMapColIndex.get("序号"))));
+                    String xh = Optional.ofNullable(ExcelUtil.getCellContent(row.getCell(contentMapColIndex.get("序号")))).map(Object::toString).orElse("");
+                    Matcher matcher = patternNumber.matcher(xh);
                     if (matcher.find()) {
-                        Matcher matcherDkzh = patternDkzh.matcher(ExcelUtil.getStringCellContent(row.getCell(contentMapColIndex.get("行号"))));
+                        String hh = Optional.ofNullable(ExcelUtil.getCellContent(row.getCell(contentMapColIndex.get("行号")))).map(Object::toString).orElse("");
+                        Matcher matcherDkzh = patternDkzh.matcher(hh);
                         if (matcherDkzh.find()) {
                             String dkzh = matcherDkzh.group(1);
                             if (StringUtils.isBlank(dkzh)) return;

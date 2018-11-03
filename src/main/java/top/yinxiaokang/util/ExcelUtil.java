@@ -260,6 +260,12 @@ public class ExcelUtil {
     }
 
 
+    /**
+     * 将单元格类型设置为String类型,并获取值(会破坏原来的属性)
+     *
+     * @param cell
+     * @return
+     */
     public static String getStringCellContent(Cell cell) {
         if (cell == null) return "";
         cell.setCellType(CellType.STRING);
