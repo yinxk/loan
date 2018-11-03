@@ -22,7 +22,7 @@ import java.io.*;
 import java.net.URL;
 import java.util.*;
 
-@SuppressWarnings({"Duplicates", "WeakerAccess"})
+@SuppressWarnings({"Duplicates", "WeakerAccess", "SpellCheckingInspection"})
 @Slf4j
 public class ExcelUtil {
 
@@ -57,45 +57,16 @@ public class ExcelUtil {
             for (int i = 0; i < split.length - 1; i++) {
                 sb.append(split[i]);
             }
-            sb.append("-更新版");
-            sb.append(".");
+            sb.append("-更新版.");
             sb.append(split[split.length - 1]);
             outFileName = sb.toString();
         }
-        excelReaderAndWriter(inFilename, updateSheetAt, isClassPath, outFileName, baseRowReader);
+        try {
+            excelReaderAndWriter(inFilename, updateSheetAt, isClassPath, outFileName, baseRowReader);
+        } catch (IOException e) {
+            log.info("写出文件失败: ", e);
+        }
     }
-
-    public static ExcelReadReturn readExcel(String inFilename, Integer sheetAt, Boolean isClassPath, Boolean isFilterAllNullRow) {
-        ExcelReadReturn excelReadReturn = new ExcelReadReturn();
-        List<Map<String, Object>> content = new ArrayList<>();
-        excelReadReturn.setContent(content);
-        readExcel(inFilename, sheetAt, isClassPath, isFilterAllNullRow, (wb, row, keyMap, keyMapReverse) -> {
-            excelReadReturn.setColIndexMapContent(keyMap);
-            excelReadReturn.setContentMapColIndex(keyMapReverse);
-            Map<String, Object> rowContent = new LinkedHashMap<>();
-            for (Cell cell : row) {
-                rowContent.put(keyMap.get(cell.getColumnIndex()), getCellContent(cell));
-            }
-            content.add(rowContent);
-        });
-        return excelReadReturn;
-    }
-
-    public static List<Map<String, CellStyleAndContent>> readExcelCellStyleAndContent(String inFilename, Integer sheetAt, Boolean isClassPath, Boolean isFilterAllNullRow) {
-        List<Map<String, CellStyleAndContent>> result = new ArrayList<>();
-        readExcel(inFilename, sheetAt, isClassPath, isFilterAllNullRow, (wb, row, keyMap, keyMapReverse) -> {
-            Map<String, CellStyleAndContent> rowContent = new LinkedHashMap<>();
-            for (Cell cell : row) {
-                CellStyleAndContent cellStyleAndContent = new CellStyleAndContent();
-                rowContent.put(keyMap.get(cell.getColumnIndex()), cellStyleAndContent);
-                cellStyleAndContent.setContent(getCellContent(cell));
-                cellStyleAndContent.setCellStyle(cell.getCellStyle());
-            }
-            result.add(rowContent);
-        });
-        return result;
-    }
-
 
     /**
      * 读取excel,并且根据原来的excel做写出
@@ -104,18 +75,13 @@ public class ExcelUtil {
      * @param sheetAt     需要读写的sheet序号
      * @param isClassPath 文件是否在类路径下
      */
-    private static void excelReaderAndWriter(String inFilename, Integer sheetAt, boolean isClassPath, String outFileName, BaseRowReader baseRowReader) {
-        Objects.requireNonNull(inFilename);
-        try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
-            log.info("读取 {} 完成", inFilename);
-            read(sheetAt, baseRowReader, wb, false);
-            File file = getOutFileExcelName(outFileName);
-            writeToExcel(wb, file);
-            log.info("写出 {} 完成", outFileName);
-        } catch (IOException | InvalidFormatException e) {
-            throw new RuntimeException(e);
-        }
+    private static void excelReaderAndWriter(String inFilename, Integer sheetAt, boolean isClassPath, String outFileName, BaseRowReader baseRowReader) throws IOException {
+        Workbook workbook = read(inFilename, isClassPath);
+        loadFirstRow(sheetAt, baseRowReader, workbook, false);
+        File file = getOutFileExcelName(outFileName);
+        writeToExcel(workbook, file);
     }
+
 
     public static <T> void writeToExcelByAll(String outFileName, String sheetName, Map<String, String> keyMap,
                                              List<Map<String, T>> contents) {
@@ -182,9 +148,46 @@ public class ExcelUtil {
         Workbook wb = createWorkBookByExtension(outFileName);
         baseExcelWriter.process(wb, keyMap, contents);
         writeToExcel(wb, outFile);
-        log.info("写出 {} 完成", outFileName);
     }
 
+    private static void writeToExcel(Workbook wb, File outFile) throws IOException {
+        try (OutputStream outputStream = new FileOutputStream(outFile)) {
+            wb.write(outputStream);
+            log.info("写出 {} 完成", outFile.getPath());
+        }
+    }
+
+
+    public static List<Map<String, CellStyleAndContent>> readExcelCellStyleAndContent(String inFilename, Integer sheetAt, Boolean isClassPath, Boolean isFilterAllNullRow) {
+        List<Map<String, CellStyleAndContent>> result = new ArrayList<>();
+        readExcel(inFilename, sheetAt, isClassPath, isFilterAllNullRow, (wb, row, keyMap, keyMapReverse) -> {
+            Map<String, CellStyleAndContent> rowContent = new LinkedHashMap<>();
+            for (Cell cell : row) {
+                CellStyleAndContent cellStyleAndContent = new CellStyleAndContent();
+                rowContent.put(keyMap.get(cell.getColumnIndex()), cellStyleAndContent);
+                cellStyleAndContent.setContent(getCellContent(cell));
+                cellStyleAndContent.setCellStyle(cell.getCellStyle());
+            }
+            result.add(rowContent);
+        });
+        return result;
+    }
+
+    public static ExcelReadReturn readExcel(String inFilename, Integer sheetAt, Boolean isClassPath, Boolean isFilterAllNullRow) {
+        ExcelReadReturn excelReadReturn = new ExcelReadReturn();
+        List<Map<String, Object>> content = new ArrayList<>();
+        excelReadReturn.setContent(content);
+        readExcel(inFilename, sheetAt, isClassPath, isFilterAllNullRow, (wb, row, keyMap, keyMapReverse) -> {
+            excelReadReturn.setColIndexMapContent(keyMap);
+            excelReadReturn.setContentMapColIndex(keyMapReverse);
+            Map<String, Object> rowContent = new LinkedHashMap<>();
+            for (Cell cell : row) {
+                rowContent.put(keyMap.get(cell.getColumnIndex()), getCellContent(cell));
+            }
+            content.add(rowContent);
+        });
+        return excelReadReturn;
+    }
 
     /**
      * 读取excel
@@ -193,32 +196,22 @@ public class ExcelUtil {
      * @param sheetAt     需要读取的sheet序号
      * @param isClassPath 文件是否在类路径下
      */
-    private static void readExcel(String inFilename, Integer sheetAt, Boolean isClassPath, Boolean isFilterAllNullRow, BaseRowReader baseRowReader) {
-        Objects.requireNonNull(inFilename);
-        if (sheetAt == null) sheetAt = 0;
-        if (isClassPath == null) isClassPath = false;
-        try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
-            log.info("读取 {} 完成", inFilename);
-            read(sheetAt, baseRowReader, wb, isFilterAllNullRow);
-        } catch (IOException | InvalidFormatException e) {
-            throw new RuntimeException(e);
-        }
+    public static void readExcel(String inFilename, Integer sheetAt, Boolean isClassPath, Boolean isFilterAllNullRow, BaseRowReader baseRowReader) {
+        Workbook workbook = read(inFilename, isClassPath);
+        loadFirstRow(sheetAt, baseRowReader, workbook, isFilterAllNullRow);
     }
 
-
-    private static void read(Integer sheetAt, BaseRowReader baseRowReader, Workbook wb, Boolean isFilterAllNullRow) {
+    private static void loadFirstRow(Integer sheetAt, BaseRowReader baseRowReader, Workbook wb, Boolean isFilterAllNullRow) {
         sheetAt = Optional.ofNullable(sheetAt).orElse(0);
         Sheet sheet = wb.getSheetAt(sheetAt);
         boolean isFirst = true;
         if (isFilterAllNullRow == null) isFilterAllNullRow = true;
         Map<Integer, String> keyMap = new LinkedHashMap<>();
         Map<String, Integer> contentMapCol = new LinkedHashMap<>();
-        Map<Integer, Integer> proMapColumn = new LinkedHashMap<>();
         boolean isAllNull = true;
         for (Row row : sheet) {
             if (isFirst) {
                 isFirst = false;
-                int propertyIndex = 0;
                 int nullKeyNum = 0;
                 for (Cell cell : row) {
                     cell.setCellType(CellType.STRING);
@@ -234,7 +227,6 @@ public class ExcelUtil {
                         contentMapCol.put(cellContent, cellColumnIndex);
                         keyMap.put(cellColumnIndex, cellContent);
                     }
-                    proMapColumn.put(propertyIndex++, cellColumnIndex);
                 }
                 continue;
             }
@@ -247,6 +239,17 @@ public class ExcelUtil {
                 if (isAllNull) continue;
             }
             baseRowReader.process(wb, row, keyMap, contentMapCol);
+        }
+    }
+
+    private static Workbook read(String inFilename, Boolean isClassPath) {
+        Objects.requireNonNull(inFilename);
+        if (isClassPath == null) isClassPath = false;
+        try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
+            log.info("读取 {} 完成", inFilename);
+            return wb;
+        } catch (IOException | InvalidFormatException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -340,19 +343,15 @@ public class ExcelUtil {
         return object;
     }
 
-    private static void writeToExcel(Workbook wb, File outFile) throws IOException {
-        try (OutputStream outputStream = new FileOutputStream(outFile)) {
-            wb.write(outputStream);
-        }
-    }
-
     private static Workbook createWorkBookByExtension(String outFileName) {
         Workbook wb;
         String extension = outFileName.substring(outFileName.lastIndexOf("."));
         if (".xls".equalsIgnoreCase(extension)) {
             wb = new HSSFWorkbook();
+            log.info("新创建了 xls 文件类型对象: {}", wb);
         } else {
             wb = new XSSFWorkbook();
+            log.info("新创建了 xlsx 文件类型对象: {}", wb);
         }
         return wb;
     }
@@ -368,6 +367,7 @@ public class ExcelUtil {
             if (!mkdirs) {
                 log.info("创建文件夹失败");
             }
+            log.info("路径不存在  已创建路径 : {}", parentFile.getPath());
         }
         String extension = outFileName.substring(outFileName.lastIndexOf("."));
         if (!extension.equalsIgnoreCase(".xls") && !extension.equalsIgnoreCase(".xlsx")) {
