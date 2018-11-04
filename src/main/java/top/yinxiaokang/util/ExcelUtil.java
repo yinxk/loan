@@ -9,6 +9,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import top.yinxiaokang.original.dto.CellStyleAndContent;
@@ -383,7 +384,8 @@ public class ExcelUtil {
         if (StringUtils.isBlank(outFileName)) {
             throw new RuntimeException("输出文件为空");
         }
-        File file = new File(outFileName);
+        String safeSheetName = WorkbookUtil.createSafeSheetName(outFileName);
+        File file = new File(safeSheetName);
         File parentFile = file.getParentFile();
         if (parentFile != null && !parentFile.exists()) {
             boolean mkdirs = parentFile.mkdirs();
@@ -392,7 +394,7 @@ public class ExcelUtil {
             }
             log.info("路径不存在  已创建路径 : {}", parentFile.getPath());
         }
-        String extension = outFileName.substring(outFileName.lastIndexOf("."));
+        String extension = safeSheetName.substring(safeSheetName.lastIndexOf("."));
         if (!extension.equalsIgnoreCase(".xls") && !extension.equalsIgnoreCase(".xlsx")) {
             throw new RuntimeException("只支持xls或xlsx文件类型");
         }
