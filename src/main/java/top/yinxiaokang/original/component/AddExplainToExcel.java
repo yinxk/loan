@@ -2,7 +2,7 @@ package top.yinxiaokang.original.component;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.*;
 import top.yinxiaokang.util.Common;
 import top.yinxiaokang.util.Constants;
 import top.yinxiaokang.util.ExcelUtil;
@@ -48,11 +48,21 @@ public class AddExplainToExcel {
                             Map jkrxmByDkzh = getJkrxmByDkzh(dkzh);
                             Cell sm = row.getCell(contentMapColIndex.get("说明"));
                             if (sm == null) return;
+                            CellStyle cellStyle = wb.createCellStyle();
+                            Font font = wb.createFont();
+                            cellStyle.cloneStyleFrom(sm.getCellStyle());
+                            cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
+                            cellStyle.setAlignment(HorizontalAlignment.LEFT);
+                            cellStyle.setWrapText(true);
+                            cellStyle.setFont(font);
+                            font.setFontName("宋体");
+                            font.setFontHeightInPoints((short)11);
                             String cellValue = ExcelUtil.getStringCellContent(sm);
                             String prefix = "用于调整 %s %s %s";
                             cellValue = String.format(prefix, jkrxmByDkzh.get("dkzh"),
                                     jkrxmByDkzh.get("jkrxm"), cellValue);
                             sm.setCellValue(cellValue);
+                            sm.setCellStyle(cellStyle);
                             log.debug("写入 {} 的说明 : {}", dkzh, cellValue);
                         } else {
                             throw new RuntimeException("匹配出错");
