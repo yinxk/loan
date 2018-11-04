@@ -160,6 +160,7 @@ public class ExcelUtil {
             wb.write(outputStream);
             log.info("写出 {} 完成", outFile.getPath());
         }
+        wb.close();
     }
 
 
@@ -194,11 +195,12 @@ public class ExcelUtil {
         return excelReadReturn;
     }
 
-    public static List<Map<String, String>> readStringExcel(String inFilename, Integer sheetAt, Boolean isClassPath, Boolean isFilterAllNullRow) {
+    public static List<Map<String, String>> readStringExcel(String inFilename, Integer sheetAt, boolean isClassPath, boolean isFilterAllNullRow) {
         List<Map<String, String>> content = new ArrayList<>();
         readExcel(inFilename, sheetAt, isClassPath, isFilterAllNullRow, (wb, row, keyMap, keyMapReverse) -> {
             Map<String, String> rowContent = new LinkedHashMap<>();
             for (Cell cell : row) {
+                cell.setCellType(CellType.STRING);
                 rowContent.put(keyMap.get(cell.getColumnIndex()), getStringCellContent(cell));
             }
             content.add(rowContent);
@@ -263,9 +265,11 @@ public class ExcelUtil {
     private static void read(String inFilename, Boolean isClassPath, BaseRowReader baseRowReader) {
         Objects.requireNonNull(inFilename);
         if (isClassPath == null) isClassPath = false;
-        try (Workbook wb = WorkbookFactory.create(isClassPath ? init(inFilename) : new File(inFilename))) {
-            log.info("读取 {} 完成", inFilename);
-            baseRowReader.process(wb, null, null, null);
+        try (InputStream inputStream = new FileInputStream(isClassPath ? init(inFilename) : new File(inFilename))) {
+            try (Workbook wb = WorkbookFactory.create(inputStream)) {
+                log.info("读取 {} 完成", inFilename);
+                baseRowReader.process(wb, null, null, null);
+            }
         } catch (IOException | InvalidFormatException e) {
             throw new RuntimeException(e);
         }

@@ -20,7 +20,7 @@ public class BaseDao {
     /**
      * 数据库连接
      */
-    protected Connection conn = null;
+    protected Connection conn;
 
     public BaseDao(Connection conn) {
         this.conn = conn;

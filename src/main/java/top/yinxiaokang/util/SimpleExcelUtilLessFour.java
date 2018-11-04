@@ -64,10 +64,18 @@ public class SimpleExcelUtilLessFour {
         return read(filename, sheetAtIndex, isClassPath, false);
     }
 
-    public static List<Map<String, Object>> read(String filename, Integer sheetAtIndex, boolean isClassPath, boolean isFilterAllNullRow) {
+    public static List<Map<String, Object>> read(String fileName, Integer sheetAtIndex, boolean isClassPath, boolean isFilterAllNullRow) {
+        try (InputStream inputStream = new FileInputStream(isClassPath ? init(fileName) : new File(fileName))) {
+            return read(inputStream, sheetAtIndex, isFilterAllNullRow);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static List<Map<String, Object>> read(InputStream inputStream, Integer sheetAtIndex, boolean isFilterAllNullRow) {
         List<Map<String, Object>> list = new ArrayList<>();
         Map<Integer, String> keyMap = new LinkedHashMap<>();
-        try (Workbook wb = WorkbookFactory.create(isClassPath ? init(filename) : new File(filename))) {
+        try (Workbook wb = WorkbookFactory.create(inputStream)) {
             sheetAtIndex = Optional.ofNullable(sheetAtIndex).orElse(0);
             Sheet sheetAt = wb.getSheetAt(sheetAtIndex);
             Iterator<Row> rowIterator = sheetAt.rowIterator();
@@ -117,7 +125,7 @@ public class SimpleExcelUtilLessFour {
         } catch (InvalidFormatException e) {
             e.printStackTrace();
         }
-        log.info("读取 {} 完成", filename);
+        log.info("读取 {} 完成", inputStream);
         return list;
     }
 
