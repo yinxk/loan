@@ -2,12 +2,11 @@ package top.yinxiaokang.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URL;
 import java.util.*;
 
@@ -16,18 +15,49 @@ import java.util.*;
  * @date 2018/10/29 21:00
  */
 @Slf4j
-public class ImportExcelUtilLessFour {
+public class SimpleExcelUtilLessFour {
     private static File init(String fileName) {
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
         URL resource = classLoader.getResource(fileName);
         String fileNa = null;
         try {
+            assert resource != null;
             fileNa = java.net.URLDecoder.decode(resource.getPath(), "utf-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        File file = new File(fileNa);
-        return file;
+        assert fileNa != null;
+        return new File(fileNa);
+    }
+
+    public static void writeToExcel(String fileName, Map<String, String> keyMap, List<Map<String, Object>> contents) {
+        Workbook wb = new HSSFWorkbook();
+        try (OutputStream outputStream = new FileOutputStream(fileName)) {
+            Sheet sheet = wb.createSheet();
+            Row title = sheet.createRow(0);
+            int k = 0;
+            for (Map.Entry<String, String> titleEntry : keyMap.entrySet()) {
+                Cell cell = title.createCell(k++);
+                cell.setCellValue(titleEntry.getValue());
+            }
+            int i = 1;
+            for (Map<String, Object> content : contents) {
+                int j = 0;
+                Row row = sheet.createRow(i++);
+                for (Map.Entry<String, String> keyEntry : keyMap.entrySet()) {
+                    Cell cell = row.createCell(j++);
+                    if (content.containsKey(keyEntry.getKey())) {
+                        sheet.autoSizeColumn(j - 1);
+                        cell.setCellType(CellType.STRING);
+                        cell.setCellValue(content.get(keyEntry.getKey()).toString());
+                    }
+                }
+            }
+            wb.write(outputStream);
+            log.info("写出 {} 完成", fileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static List<Map<String, Object>> read(String filename, Integer sheetAtIndex, boolean isClassPath) {
@@ -87,7 +117,7 @@ public class ImportExcelUtilLessFour {
         } catch (InvalidFormatException e) {
             e.printStackTrace();
         }
-        log.info("读取 " + filename + "结束!");
+        log.info("读取 {} 完成", filename);
         return list;
     }
 

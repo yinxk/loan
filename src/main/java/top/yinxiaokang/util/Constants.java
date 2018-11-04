@@ -15,7 +15,7 @@ public class Constants {
     /**
      * 路径: C:/修账相关数据
      */
-    public static String BASE_PATH = "C:/修账相关数据";
+    public static String BASE_PATH = "D:/修账相关数据";
 
     /**
      * 路径: /每日业务分析

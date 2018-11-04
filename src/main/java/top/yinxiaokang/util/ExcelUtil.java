@@ -63,7 +63,7 @@ public class ExcelUtil {
         }
         try {
             excelReaderAndWriter(inFilename, updateSheetAt, isClassPath, outFileName, baseRowReader);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.info("写出文件失败: ", e);
         }
     }
@@ -75,7 +75,7 @@ public class ExcelUtil {
      * @param sheetAt     需要读写的sheet序号
      * @param isClassPath 文件是否在类路径下
      */
-    private static void excelReaderAndWriter(String inFilename, Integer sheetAt, boolean isClassPath, String outFileName, BaseRowReader baseRowReader) throws IOException {
+    private static void excelReaderAndWriter(String inFilename, Integer sheetAt, boolean isClassPath, String outFileName, BaseRowReader baseRowReader) {
         read(inFilename, isClassPath, (workbook, row, keyMap, keyMapReverse) -> {
             loadFirstRow(sheetAt, baseRowReader, workbook, false);
             File file = getOutFileExcelName(outFileName);
@@ -101,16 +101,14 @@ public class ExcelUtil {
                                                  List<Map<String, T>> contents) throws IOException {
         writeToExcelByCreatedTitle(outFileName, sheetName, keyMap, contents, (sheet, keyMap1, contents1) -> {
             int i = 1;
-            Row row;
-            Cell cell;
-            for (Map<String, T> objectMap : contents1) {
-                row = sheet.createRow(i++);
+            for (Map<String, T> content : contents1) {
+                Row row = sheet.createRow(i++);
                 int j = 0;
                 for (Map.Entry<String, String> key : keyMap1.entrySet()) {
-                    if (objectMap.containsKey(key.getKey())) {
-                        sheet.autoSizeColumn(j);
-                        cell = row.createCell(j++);
-                        Object value = objectMap.get(key.getKey());
+                    Cell cell = row.createCell(j++);
+                    if (content.containsKey(key.getKey())) {
+                        sheet.autoSizeColumn(j - 1);
+                        Object value = content.get(key.getKey());
                         setCellValue(cell, value);
                     }
                 }
@@ -131,6 +129,7 @@ public class ExcelUtil {
             int k = 0;
             for (Map.Entry<String, String> title : keyMap1.entrySet()) {
                 Cell cell = row.createCell(k++);
+                cell.setCellType(CellType.STRING);
                 cell.setCellValue(title.getValue());
             }
             titleCreatedExcelWriter.process(sheet, keyMap1, contents1);

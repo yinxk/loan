@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import top.yinxiaokang.util.Constants;
-import top.yinxiaokang.util.ImportExcelUtilLessFour;
+import top.yinxiaokang.util.SimpleExcelUtilLessFour;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,7 +23,7 @@ public class FlagRedRecode {
     }
 
     public List<String> listFlagRedDkzh(String fileName) {
-        List<Map<String, Object>> list = ImportExcelUtilLessFour.read(fileName, 0, false);
+        List<Map<String, Object>> list = SimpleExcelUtilLessFour.read(fileName, 0, false);
         Iterator<Map<String, Object>> iterator = list.iterator();
         List<String> dkzhs = new ArrayList<>();
         while (iterator.hasNext()) {
@@ -35,7 +35,7 @@ public class FlagRedRecode {
     }
 
     public List<Map<String, Object>> listOneDayData(String fileName) {
-        return ImportExcelUtilLessFour.read(fileName, 0, false);
+        return SimpleExcelUtilLessFour.read(fileName, 0, false);
     }
 
     public Set getKeyMap(List<Map<String, Object>> list) {
