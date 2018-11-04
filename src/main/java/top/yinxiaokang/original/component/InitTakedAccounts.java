@@ -22,11 +22,14 @@ public class InitTakedAccounts {
     private static String pathStr = Constants.TAKE_ACCOUNT_PATH;
 
 
-    public void work() {
-        initTakeDoneAccounts();
+    public void init() {
+        initTakeDoneAccounts(true);
+    }
+    public void onlyListMessage() {
+        initTakeDoneAccounts(false);
     }
 
-    public void initTakeDoneAccounts() {
+    public void initTakeDoneAccounts(boolean isWrite) {
         File diretory = new File(pathStr);
         if (!diretory.isDirectory()) {
             throw new RuntimeException("not directory");
@@ -60,7 +63,7 @@ public class InitTakedAccounts {
             CellStyleAndContent style = contentMap.get("行号");
             String dkzh = content.getContent().toString();
             short color = style.getCellStyle().getFillForegroundColor();
-            log.info("贷款账号: {}  颜色是: {}  对应颜色名: {}  文件: {} ", dkzh, color, IndexedColors.fromInt(color).name(), dkzhsKey.get(dkzh));
+            log.debug("贷款账号: {}  颜色是: {}  对应颜色名: {}  文件: {} ", dkzh, color, IndexedColors.fromInt(color).name(), dkzhsKey.get(dkzh));
             Integer integer = colorMap.get((int) color);
             integer = integer == null ? 1 : integer + 1;
             colorMap.put((int) color, integer);
@@ -83,10 +86,13 @@ public class InitTakedAccounts {
         keyMap.put("isFlag", "是否已标记");
         keyMap.put("time", "时间");
         keyMap.put("zhMapFile", "账号对应文件");
-        ExcelUtil.writeToExcelByAll(Constants.TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA_PATH, null, keyMap, doneAccounts);
+        if (isWrite) {
+            ExcelUtil.writeToExcelByAll(Constants.TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA_PATH, null, keyMap, doneAccounts);
+        }
     }
 
-    //public static void main(String[] args) {
-    //    new InitTakedAccounts().work();
-    //}
+    public static void main(String[] args) {
+        new InitTakedAccounts().onlyListMessage();
+        //new InitTakedAccounts().init();
+    }
 }

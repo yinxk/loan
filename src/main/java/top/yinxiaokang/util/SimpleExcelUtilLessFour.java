@@ -65,11 +65,13 @@ public class SimpleExcelUtilLessFour {
     }
 
     public static List<Map<String, Object>> read(String fileName, Integer sheetAtIndex, boolean isClassPath, boolean isFilterAllNullRow) {
+        List<Map<String, Object>> read ;
         try (InputStream inputStream = new FileInputStream(isClassPath ? init(fileName) : new File(fileName))) {
-            return read(inputStream, sheetAtIndex, isFilterAllNullRow);
+            read = read(inputStream, sheetAtIndex, isFilterAllNullRow);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return read;
     }
 
     private static List<Map<String, Object>> read(InputStream inputStream, Integer sheetAtIndex, boolean isFilterAllNullRow) {

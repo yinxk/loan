@@ -9,14 +9,14 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import top.yinxiaokang.original.dto.CellStyleAndContent;
 import top.yinxiaokang.original.dto.ExcelReadReturn;
+import top.yinxiaokang.original.interfaces.BaseExcelReader;
 import top.yinxiaokang.original.interfaces.BaseExcelWriter;
-import top.yinxiaokang.original.interfaces.BaseRowReader;
 import top.yinxiaokang.original.interfaces.TitleCreatedExcelWriter;
+import top.yinxiaokang.original.interfaces.TitleLoadedRowReader;
 import top.yinxiaokang.others.ErrorException;
 
 import java.io.*;
@@ -51,21 +51,14 @@ public class ExcelUtil {
      * @param outFileName   输出文件名
      */
     public static void copyExcelAndUpdate(String inFilename, Integer updateSheetAt, boolean isClassPath,
-                                          String outFileName, BaseRowReader baseRowReader) {
-        StringBuilder sb = new StringBuilder();
+                                          String outFileName, TitleLoadedRowReader titleLoadedRowReader) {
         if (StringUtils.isBlank(outFileName)) {
-            String[] split = inFilename.split("\\.");
-            for (int i = 0; i < split.length - 1; i++) {
-                sb.append(split[i]);
-            }
-            sb.append("-更新版.");
-            sb.append(split[split.length - 1]);
-            outFileName = sb.toString();
+            outFileName = inFilename;
         }
         try {
-            excelReaderAndWriter(inFilename, updateSheetAt, isClassPath, outFileName, baseRowReader);
+            excelReaderAndWriter(inFilename, updateSheetAt, isClassPath, outFileName, titleLoadedRowReader);
         } catch (Exception e) {
-            log.info("写出文件失败: ", e);
+            log.info("写出文件失败: {}", e);
         }
     }
 
@@ -76,9 +69,9 @@ public class ExcelUtil {
      * @param sheetAt     需要读写的sheet序号
      * @param isClassPath 文件是否在类路径下
      */
-    private static void excelReaderAndWriter(String inFilename, Integer sheetAt, boolean isClassPath, String outFileName, BaseRowReader baseRowReader) {
-        read(inFilename, isClassPath, (workbook, row, keyMap, keyMapReverse) -> {
-            loadFirstRow(sheetAt, baseRowReader, workbook, false);
+    private static void excelReaderAndWriter(String inFilename, Integer sheetAt, boolean isClassPath, String outFileName, TitleLoadedRowReader titleLoadedRowReader) {
+        read(inFilename, isClassPath, (workbook) -> {
+            loadFirstRow(sheetAt, titleLoadedRowReader, workbook, false);
             File file = getOutFileExcelName(outFileName);
             try {
                 writeToExcel(workbook, file);
@@ -215,13 +208,13 @@ public class ExcelUtil {
      * @param sheetAt     需要读取的sheet序号
      * @param isClassPath 文件是否在类路径下
      */
-    public static void readExcel(String inFilename, Integer sheetAt, Boolean isClassPath, Boolean isFilterAllNullRow, BaseRowReader baseRowReader) {
-        read(inFilename, isClassPath, (workbook, row, keyMap, keyMapReverse) -> {
-            loadFirstRow(sheetAt, baseRowReader, workbook, isFilterAllNullRow);
+    public static void readExcel(String inFilename, Integer sheetAt, Boolean isClassPath, Boolean isFilterAllNullRow, TitleLoadedRowReader titleLoadedRowReader) {
+        read(inFilename, isClassPath, (workbook) -> {
+            loadFirstRow(sheetAt, titleLoadedRowReader, workbook, isFilterAllNullRow);
         });
     }
 
-    private static void loadFirstRow(Integer sheetAt, BaseRowReader baseRowReader, Workbook wb, Boolean isFilterAllNullRow) {
+    private static void loadFirstRow(Integer sheetAt, TitleLoadedRowReader titleLoadedRowReader, Workbook wb, Boolean isFilterAllNullRow) {
         sheetAt = Optional.ofNullable(sheetAt).orElse(0);
         Sheet sheet = wb.getSheetAt(sheetAt);
         boolean isFirst = true;
@@ -258,17 +251,17 @@ public class ExcelUtil {
                 }
                 if (isAllNull) continue;
             }
-            baseRowReader.process(wb, row, keyMap, contentMapCol);
+            titleLoadedRowReader.process(wb, row, keyMap, contentMapCol);
         }
     }
 
-    private static void read(String inFilename, Boolean isClassPath, BaseRowReader baseRowReader) {
+    private static void read(String inFilename, Boolean isClassPath, BaseExcelReader baseExcelReader) {
         Objects.requireNonNull(inFilename);
         if (isClassPath == null) isClassPath = false;
         try (InputStream inputStream = new FileInputStream(isClassPath ? init(inFilename) : new File(inFilename))) {
             try (Workbook wb = WorkbookFactory.create(inputStream)) {
                 log.info("读取 {} 完成", inFilename);
-                baseRowReader.process(wb, null, null, null);
+                baseExcelReader.process(wb);
             }
         } catch (IOException | InvalidFormatException e) {
             throw new RuntimeException(e);
@@ -388,8 +381,7 @@ public class ExcelUtil {
         if (StringUtils.isBlank(outFileName)) {
             throw new RuntimeException("输出文件为空");
         }
-        String safeSheetName = WorkbookUtil.createSafeSheetName(outFileName);
-        File file = new File(safeSheetName);
+        File file = new File(outFileName);
         File parentFile = file.getParentFile();
         if (parentFile != null && !parentFile.exists()) {
             boolean mkdirs = parentFile.mkdirs();
@@ -398,7 +390,7 @@ public class ExcelUtil {
             }
             log.info("路径不存在  已创建路径 : {}", parentFile.getPath());
         }
-        String extension = safeSheetName.substring(safeSheetName.lastIndexOf("."));
+        String extension = outFileName.substring(outFileName.lastIndexOf("."));
         if (!extension.equalsIgnoreCase(".xls") && !extension.equalsIgnoreCase(".xlsx")) {
             throw new RuntimeException("只支持xls或xlsx文件类型");
         }

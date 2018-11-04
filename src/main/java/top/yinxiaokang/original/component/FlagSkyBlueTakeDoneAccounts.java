@@ -56,7 +56,8 @@ public class FlagSkyBlueTakeDoneAccounts {
         assert files != null;
         for (File file : files) {
             if (file.isFile() || file.getName().contains("-20-")) {
-                flagSkyBlueToDoneAccount(file.getPath(), Constants.TAKE_ACCOUNT_TAKED_FLAG_SKY_BLUE_ACCOUNTS_DATA_PATH + "/" + file.getName(), file.getName());
+                //flagSkyBlueToDoneAccount(file.getPath(), Constants.TAKE_ACCOUNT_TAKED_FLAG_SKY_BLUE_ACCOUNTS_DATA_PATH + "/" + file.getName(), file.getName());
+                flagSkyBlueToDoneAccount(file.getPath(), null, file.getName());
             }
         }
         log.error("该次总共标记账号数量是: {} ", theFlagAccounts.size());

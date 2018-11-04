@@ -166,7 +166,7 @@ public class ExcelTransform {
                 String csyqbj = mapFromImportExcelByDkzh.get("csyqbj").toString();
                 next.put("csyqbj", new CellStyleAndContent(csyqbj, null));
 
-                log.info("匹配得到的贷款账号: {} , 匹配得到的初始余额: {}  ", groupDkzh, groupCsye);
+                log.debug("匹配得到的贷款账号: {} , 匹配得到的初始余额: {}  ", groupDkzh, groupCsye);
                 next.put("dkzh", new CellStyleAndContent(groupDkzh, null));
                 next.put("csye", new CellStyleAndContent(groupCsye, null));
                 next.put("xzdkye", new CellStyleAndContent(new BigDecimal(groupCsye).subtract(new BigDecimal(next.get("本金合计").getContent().toString())), null));

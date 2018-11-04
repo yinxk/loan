@@ -6,6 +6,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import java.util.Map;
 
 @FunctionalInterface
-public interface BaseRowReader {
+public interface TitleLoadedRowReader {
     void process(Workbook workbook, Row row, Map<Integer, String> keyMap, Map<String, Integer> keyMapReverse);
 }
