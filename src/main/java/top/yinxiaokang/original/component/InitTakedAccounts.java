@@ -86,7 +86,7 @@ public class InitTakedAccounts {
         ExcelUtil.writeToExcelByAll(Constants.TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA_PATH, null, keyMap, doneAccounts);
     }
 
-    public static void main(String[] args) {
-        new InitTakedAccounts().work();
-    }
+    //public static void main(String[] args) {
+    //    new InitTakedAccounts().work();
+    //}
 }
