@@ -65,9 +65,10 @@ public class SimpleExcelUtilLessFour {
     }
 
     public static List<Map<String, Object>> read(String fileName, Integer sheetAtIndex, boolean isClassPath, boolean isFilterAllNullRow) {
-        List<Map<String, Object>> read ;
+        List<Map<String, Object>> read;
         try (InputStream inputStream = new FileInputStream(isClassPath ? init(fileName) : new File(fileName))) {
             read = read(inputStream, sheetAtIndex, isFilterAllNullRow);
+            log.info("读取 {} 完成", fileName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -127,7 +128,6 @@ public class SimpleExcelUtilLessFour {
         } catch (InvalidFormatException e) {
             e.printStackTrace();
         }
-        log.info("读取 {} 完成", inputStream);
         return list;
     }
 
