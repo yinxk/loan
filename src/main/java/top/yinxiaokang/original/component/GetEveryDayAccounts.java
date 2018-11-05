@@ -4,6 +4,7 @@ package top.yinxiaokang.original.component;
 import com.sargeraswang.util.ExcelUtil.ExcelUtil;
 import lombok.extern.slf4j.Slf4j;
 import top.yinxiaokang.original.entity.SomedayInformation;
+import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.service.AccountCheck;
 import top.yinxiaokang.util.BeanOrMapUtil;
@@ -22,13 +23,14 @@ import java.util.*;
 @SuppressWarnings({"SpellCheckingInspection", "unused"})
 public class GetEveryDayAccounts {
 
-    AccountCheck accountCheck = new AccountCheck();
+    private AccountCheck accountCheck = new AccountCheck();
 
     private String baseAccountDkzhs;
+    private List<SthousingAccount> doneAccounts;
 
-    List<SomedayInformation> lastMonth;
-    List<SomedayInformation> yesterday;
-    List<SomedayInformation> today;
+    private List<SomedayInformation> lastMonth;
+    private List<SomedayInformation> yesterday;
+    private List<SomedayInformation> today;
 
     public GetEveryDayAccounts() {
         StringBuilder sb = new StringBuilder(600);
@@ -38,7 +40,25 @@ public class GetEveryDayAccounts {
             isFirst = Common.appendDkzhToSqlCanRead(sb, isFirst, initInformation.getDkzh(), false);
         }
         baseAccountDkzhs = sb.toString();
+        doneAccounts = new ArrayList<>();
+        List<Map<String, String>> maps = top.yinxiaokang.util.ExcelUtil.readStringExcel(Constants.TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA_PATH, 0, false, false);
+        for (Map<String, String> map : maps) {
+            SthousingAccount account = new SthousingAccount();
+            account.setDkzh(map.get("贷款账号"));
+            doneAccounts.add(account);
+        }
+        log.info("获取到的已处理的贷款账号数据 : {}", doneAccounts.size());
     }
+
+    private SthousingAccount getDoneAccount(String dkzh) {
+        for (SthousingAccount doneAccount : doneAccounts) {
+            if (dkzh.equals(doneAccount.getDkzh())) {
+                return doneAccount;
+            }
+        }
+        return null;
+    }
+
 
     private void listSomedayInformationToday() {
         LocalDate localDate = LocalDate.now();
@@ -51,6 +71,24 @@ public class GetEveryDayAccounts {
         localDate = localDate.plusDays(-1);
         if (yesterday != null) return;
         yesterday = accountCheck.listSomedayInformation(localDate.getDayOfMonth(), DateUtil.localDate2Date(localDate), baseAccountDkzhs);
+    }
+
+    private void fileterSomedayInformationList() {
+        filterDoneAccounts(lastMonth, "lastMonth");
+        filterDoneAccounts(yesterday, "yesterday");
+        filterDoneAccounts(today, "today");
+    }
+
+    private void filterDoneAccounts(List<SomedayInformation> somedayInformations,String msgType) {
+        Iterator<SomedayInformation> iterator = somedayInformations.iterator();
+        while (iterator.hasNext()) {
+            SomedayInformation next = iterator.next();
+            SthousingAccount doneAccount = getDoneAccount(next.getDkzh());
+            if (doneAccount != null) {
+                iterator.remove();
+                log.info("移除 {} 匹配到的已处理贷款账号: {} ", msgType, doneAccount.getDkzh());
+            }
+        }
     }
 
     private void listSomedayInformationLastMonth() {
@@ -80,6 +118,7 @@ public class GetEveryDayAccounts {
         listSomedayInformationLastMonth();
         listSomedayInformationYesterday();
         listSomedayInformationToday();
+        fileterSomedayInformationList();
     }
 
 
@@ -236,8 +275,8 @@ public class GetEveryDayAccounts {
 
 
     public static void main(String[] args) {
-        //GetEveryDayAccounts getEveryDayAccounts = new GetEveryDayAccounts();
-        //getEveryDayAccounts.work();
+        GetEveryDayAccounts getEveryDayAccounts = new GetEveryDayAccounts();
+        getEveryDayAccounts.work();
         log.info("test");
     }
 

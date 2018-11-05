@@ -120,7 +120,7 @@ public class Common {
         initHasOverdue.setCsye(new BigDecimal((String) m.get("csye")));
         initHasOverdue.setCsyqbj(new BigDecimal((String) m.get("csyqbj")));
         initHasOverdueList.add(initHasOverdue);
-        log.debug("转换excel导入的map为 初始信息对象  " + ++i + " === " + initHasOverdue);
+        //log.debug("转换excel导入的map为 初始信息对象  " + ++i + " === " + initHasOverdue);
         return i;
     }
 

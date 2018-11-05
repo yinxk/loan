@@ -3,6 +3,7 @@ package top.yinxiaokang.original.component;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import top.yinxiaokang.util.Common;
 import top.yinxiaokang.util.Constants;
 import top.yinxiaokang.util.ExcelUtil;
@@ -30,6 +31,7 @@ public class AddExplainToExcel {
         return new HashMap();
     }
 
+
     private void addExplainToExcel(String inFileName, String outFileName) {
         String regexNumber = "^\\d+\\.?\\d?$";
         String regexDkzh = "账号：([\\s\\S]*)\n初始贷款余额";
@@ -48,8 +50,14 @@ public class AddExplainToExcel {
                         if (sm == null) {
                             sm = row.createCell(contentMapColIndex.get("说明"));
                         }
+                        CellStyle cellStyle = wb.createCellStyle();
+                        Font font = wb.createFont();
                         sm.setCellType(CellType.STRING);
-                        sm.setCellValue("这一行不要和下面一行合并");
+                        theCellStyle(cellStyle, font);
+                        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+                        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                        sm.setCellValue("Do not merge to the next row");
+                        sm.setCellStyle(cellStyle);
                     }
 
                     if (matcher.find()) {
@@ -66,12 +74,12 @@ public class AddExplainToExcel {
                             CellStyle cellStyle = wb.createCellStyle();
                             Font font = wb.createFont();
                             cellStyle.cloneStyleFrom(sm.getCellStyle());
-                            cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
-                            cellStyle.setAlignment(HorizontalAlignment.LEFT);
-                            cellStyle.setWrapText(true);
-                            cellStyle.setFont(font);
-                            font.setFontName("宋体");
-                            font.setFontHeightInPoints((short)11);
+
+                            Sheet sheet = row.getSheet();
+                            sheet.addMergedRegion(new CellRangeAddress(row.getRowNum(), row.getRowNum() + 16, sm.getColumnIndex(), sm.getColumnIndex()));
+                            sheet.setColumnWidth(sm.getColumnIndex(), 10000);
+                            theCellStyle(cellStyle, font);
+
                             String cellValue = ExcelUtil.getStringCellContent(sm);
                             String prefix = "用于调整 %s %s %s";
                             cellValue = String.format(prefix, jkrxmByDkzh.get("dkzh"),
@@ -79,6 +87,7 @@ public class AddExplainToExcel {
                             sm.setCellValue(cellValue);
                             sm.setCellStyle(cellStyle);
                             log.debug("写入 {} 的说明 : {}", dkzh, cellValue);
+
                         } else {
                             log.error("未匹配到贷款账号");
                         }
@@ -87,6 +96,59 @@ public class AddExplainToExcel {
 
                 });
     }
+
+    private void theCellStyle(CellStyle cellStyle, Font font) {
+        cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
+        cellStyle.setAlignment(HorizontalAlignment.LEFT);
+        cellStyle.setWrapText(true);
+
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        cellStyle.setLeftBorderColor(IndexedColors.BLACK.getIndex());
+
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        cellStyle.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+
+        cellStyle.setBorderRight(BorderStyle.THIN);
+        cellStyle.setRightBorderColor(IndexedColors.BLACK.getIndex());
+
+        cellStyle.setBorderTop(BorderStyle.THIN);
+        cellStyle.setTopBorderColor(IndexedColors.BLACK.getIndex());
+
+
+        cellStyle.setFont(font);
+        font.setFontName("宋体");
+        font.setFontHeightInPoints((short) 11);
+    }
+
+    private void addRightBorder(String inFileName) {
+        String regexNumber = "^\\d+\\.?\\d?$";
+        String regexDkzh = "账号：([\\s\\S]*)\n初始贷款余额";
+        Pattern patternDkzh = Pattern.compile(regexDkzh);
+        Pattern patternNumber = Pattern.compile(regexNumber);
+        log.info("设置合并单元格右边边框 : {}", inFileName);
+        ExcelUtil.copyExcelAndUpdate(inFileName, 1, false, null,
+                (wb, row, keyMap, contentMapColIndex) -> {
+                    String xh = Optional.ofNullable(ExcelUtil.getCellContent(row.getCell(contentMapColIndex.get("序号")))).map(Object::toString).orElse("");
+                    Matcher matcher = patternNumber.matcher(xh);
+                    if (matcher.find()) {
+                        String hh = Optional.ofNullable(ExcelUtil.getCellContent(row.getCell(contentMapColIndex.get("行号")))).map(Object::toString).orElse("");
+                        Matcher matcherDkzh = patternDkzh.matcher(hh);
+                        if (matcherDkzh.find()) {
+                            String dkzh = matcherDkzh.group(1);
+                            if (StringUtils.isBlank(dkzh)) return;
+                            Cell sm = row.getCell(contentMapColIndex.get("说明"));
+                            if (sm == null) return;
+                            CellStyle cellStyle = sm.getCellStyle();
+                            cellStyle.setBorderRight(BorderStyle.THIN);
+                            cellStyle.setRightBorderColor(IndexedColors.BLACK.getIndex());
+                        } else {
+                            log.error("未匹配到贷款账号");
+                        }
+
+                    }
+                });
+    }
+
 
     private void workFromDirectory() {
         File directory = new File(Constants.TAKE_ACCOUNT_SHOULD_FILLING_IN_DATA_PATH);
@@ -98,6 +160,7 @@ public class AddExplainToExcel {
         for (File file : files) {
             if (file.isFile() || file.getName().contains("-18")) {
                 addExplainToExcel(file.getPath(), Constants.TAKE_ACCOUNT_FILLED_DATA_PATH + "/" + file.getName());
+                //addRightBorder(Constants.TAKE_ACCOUNT_FILLED_DATA_PATH + "/" + file.getName());
             }
         }
     }
