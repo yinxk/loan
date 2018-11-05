@@ -119,6 +119,7 @@ public class ExcelUtil {
             } else {
                 sheet = workbook.createSheet(sheetName);
             }
+            sheet.createFreezePane( 0, 1, 0, 1 );
             Row row = sheet.createRow(0);
             int k = 0;
             for (Map.Entry<String, String> title : keyMap1.entrySet()) {

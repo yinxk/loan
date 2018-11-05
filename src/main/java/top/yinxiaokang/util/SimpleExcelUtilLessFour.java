@@ -35,6 +35,7 @@ public class SimpleExcelUtilLessFour {
         try (OutputStream outputStream = new FileOutputStream(fileName)) {
             Sheet sheet = wb.createSheet();
             Row title = sheet.createRow(0);
+            sheet.createFreezePane(0, 1, 0, 1);
             int k = 0;
             for (Map.Entry<String, String> titleEntry : keyMap.entrySet()) {
                 Cell cell = title.createCell(k++);

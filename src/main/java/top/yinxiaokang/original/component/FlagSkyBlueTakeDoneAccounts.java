@@ -112,7 +112,7 @@ public class FlagSkyBlueTakeDoneAccounts {
                             cellStyle.setFillBackgroundColor(IndexedColors.SKY_BLUE.getIndex());
                             cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
                             hhCell.setCellStyle(cellStyle);
-                            doneAccount.put("颜色值", 40 + "");
+                            doneAccount.put("颜色值", IndexedColors.SKY_BLUE.name() + "");
                             doneAccount.put("Excel对应颜色", IndexedColors.SKY_BLUE.name());
                             doneAccount.put("时间", dateTimeFormatter.format(LocalDateTime.now()));
                             doneAccount.put("是否已标记", "是");
