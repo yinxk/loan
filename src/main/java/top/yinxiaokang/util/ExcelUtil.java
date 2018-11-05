@@ -119,7 +119,7 @@ public class ExcelUtil {
             } else {
                 sheet = workbook.createSheet(sheetName);
             }
-            sheet.createFreezePane( 0, 1, 0, 1 );
+            sheet.createFreezePane(0, 1, 0, 1);
             Row row = sheet.createRow(0);
             int k = 0;
             for (Map.Entry<String, String> title : keyMap1.entrySet()) {
@@ -252,6 +252,7 @@ public class ExcelUtil {
                 }
                 if (isAllNull) continue;
             }
+            sheet.createFreezePane(0, 1, 0, 1);
             titleLoadedRowReader.process(wb, row, keyMap, contentMapCol);
         }
     }

@@ -128,24 +128,14 @@ public class AddExplainToExcel {
         log.info("设置合并单元格右边边框 : {}", inFileName);
         ExcelUtil.copyExcelAndUpdate(inFileName, 1, false, null,
                 (wb, row, keyMap, contentMapColIndex) -> {
-                    String xh = Optional.ofNullable(ExcelUtil.getCellContent(row.getCell(contentMapColIndex.get("序号")))).map(Object::toString).orElse("");
-                    Matcher matcher = patternNumber.matcher(xh);
-                    if (matcher.find()) {
-                        String hh = Optional.ofNullable(ExcelUtil.getCellContent(row.getCell(contentMapColIndex.get("行号")))).map(Object::toString).orElse("");
-                        Matcher matcherDkzh = patternDkzh.matcher(hh);
-                        if (matcherDkzh.find()) {
-                            String dkzh = matcherDkzh.group(1);
-                            if (StringUtils.isBlank(dkzh)) return;
-                            Cell sm = row.getCell(contentMapColIndex.get("说明"));
-                            if (sm == null) return;
-                            CellStyle cellStyle = sm.getCellStyle();
-                            cellStyle.setBorderRight(BorderStyle.THIN);
-                            cellStyle.setRightBorderColor(IndexedColors.BLACK.getIndex());
-                        } else {
-                            log.error("未匹配到贷款账号");
-                        }
-
-                    }
+                    Cell sm = row.getCell(contentMapColIndex.get("说明"));
+                    if (sm == null) sm = row.createCell(contentMapColIndex.get("说明"));
+                    CellStyle cellStyle = sm.getCellStyle();
+                    CellStyle cellStyle1 = wb.createCellStyle();
+                    cellStyle1.cloneStyleFrom(cellStyle);
+                    cellStyle1.setBorderRight(BorderStyle.THIN);
+                    cellStyle1.setRightBorderColor(IndexedColors.BLACK.getIndex());
+                    sm.setCellStyle(cellStyle1);
                 });
     }
 
@@ -160,7 +150,7 @@ public class AddExplainToExcel {
         for (File file : files) {
             if (file.isFile() || file.getName().contains("-18")) {
                 addExplainToExcel(file.getPath(), Constants.TAKE_ACCOUNT_FILLED_DATA_PATH + "/" + file.getName());
-                //addRightBorder(Constants.TAKE_ACCOUNT_FILLED_DATA_PATH + "/" + file.getName());
+                addRightBorder(Constants.TAKE_ACCOUNT_FILLED_DATA_PATH + "/" + file.getName());
             }
         }
     }
