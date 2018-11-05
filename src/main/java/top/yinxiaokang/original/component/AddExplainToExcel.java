@@ -33,12 +33,25 @@ public class AddExplainToExcel {
     private void addExplainToExcel(String inFileName, String outFileName) {
         String regexNumber = "^\\d+\\.?\\d?$";
         String regexDkzh = "账号：([\\s\\S]*)\n初始贷款余额";
+        String regexXuHao = "序号";
         Pattern patternDkzh = Pattern.compile(regexDkzh);
         Pattern patternNumber = Pattern.compile(regexNumber);
+        Pattern patternXuhao = Pattern.compile(regexXuHao);
         ExcelUtil.copyExcelAndUpdate(inFileName, 1, false, outFileName,
                 (wb, row, keyMap, contentMapColIndex) -> {
                     String xh = Optional.ofNullable(ExcelUtil.getCellContent(row.getCell(contentMapColIndex.get("序号")))).map(Object::toString).orElse("");
                     Matcher matcher = patternNumber.matcher(xh);
+                    Matcher matcherXuHao = patternXuhao.matcher(xh);
+
+                    if (matcherXuHao.find()) {
+                        Cell sm = row.getCell(contentMapColIndex.get("说明"));
+                        if (sm == null) {
+                            sm = row.createCell(contentMapColIndex.get("说明"));
+                        }
+                        sm.setCellType(CellType.STRING);
+                        sm.setCellValue("这一行不要和下面一行合并");
+                    }
+
                     if (matcher.find()) {
                         String hh = Optional.ofNullable(ExcelUtil.getCellContent(row.getCell(contentMapColIndex.get("行号")))).map(Object::toString).orElse("");
                         Matcher matcherDkzh = patternDkzh.matcher(hh);
@@ -47,7 +60,9 @@ public class AddExplainToExcel {
                             if (StringUtils.isBlank(dkzh)) return;
                             Map jkrxmByDkzh = getJkrxmByDkzh(dkzh);
                             Cell sm = row.getCell(contentMapColIndex.get("说明"));
-                            if (sm == null) return;
+                            if (sm == null) {
+                                sm = row.createCell(contentMapColIndex.get("说明"));
+                            }
                             CellStyle cellStyle = wb.createCellStyle();
                             Font font = wb.createFont();
                             cellStyle.cloneStyleFrom(sm.getCellStyle());
@@ -65,7 +80,7 @@ public class AddExplainToExcel {
                             sm.setCellStyle(cellStyle);
                             log.debug("写入 {} 的说明 : {}", dkzh, cellValue);
                         } else {
-                            throw new RuntimeException("匹配出错");
+                            log.error("未匹配到贷款账号");
                         }
 
                     }
