@@ -56,7 +56,7 @@ public class AccountCheckMain {
         new GetEveryDayAccounts().work();
 
         log.info("今日扣款数据已生成");
-        int sleepMillis = 4000;
+        int sleepMillis = 10000;
         int sleepMin = sleepMillis / 1000;
         log.error("休息" + sleepMin + "秒");
 
