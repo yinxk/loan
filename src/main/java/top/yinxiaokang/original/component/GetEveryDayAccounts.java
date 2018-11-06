@@ -3,6 +3,7 @@ package top.yinxiaokang.original.component;
 
 import lombok.extern.slf4j.Slf4j;
 import top.yinxiaokang.original.entity.SomedayInformation;
+import top.yinxiaokang.original.entity.StOverdue;
 import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.service.AccountCheck;
@@ -16,7 +17,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 @Slf4j
-@SuppressWarnings({"SpellCheckingInspection", "unused"})
+@SuppressWarnings({"SpellCheckingInspection", "unused", "unchecked"})
 public class GetEveryDayAccounts {
 
     private AccountCheck accountCheck = new AccountCheck();
@@ -46,6 +47,7 @@ public class GetEveryDayAccounts {
             doneAccounts.add(account);
         }
         log.info("获取到的已处理的贷款账号数据 : {}", doneAccounts.size());
+        listPrepare();
     }
 
     private SthousingAccount getDoneAccount(String dkzh) {
@@ -78,12 +80,12 @@ public class GetEveryDayAccounts {
     }
 
     private void listSomedayInformationOverdueAccounts() {
-        List<String> stOverdues = accountCheck.listOverdueDkzhsInTheDkzhsStr(baseAccountDkzhs);
+        List<StOverdue> stOverdues = accountCheck.listOverdueDkzhsInTheDkzhsStr(baseAccountDkzhs);
         String overdueDkzhsStr;
         StringBuilder sb = new StringBuilder();
         boolean isFirst = true;
-        for (String overdueDkzh : stOverdues) {
-            isFirst = Common.appendDkzhToSqlCanRead(sb, isFirst, overdueDkzh, false);
+        for (StOverdue overdueDkzh : stOverdues) {
+            isFirst = Common.appendDkzhToSqlCanRead(sb, isFirst, overdueDkzh.getDkzh(), false);
         }
         overdueDkzhsStr = sb.toString();
         overdues = accountCheck.listSomedayInformationByOverdueDkzh(overdueDkzhsStr);
@@ -118,7 +120,6 @@ public class GetEveryDayAccounts {
     }
 
     private Map<String, SomedayInformation> distinctTodaySomdayInformationList() {
-        listPrepare();
         Map<String, SomedayInformation> map = new HashMap<>();
 
         for (SomedayInformation information : today) {
@@ -134,7 +135,6 @@ public class GetEveryDayAccounts {
     }
 
     private Map<String, SomedayInformation> distinctYesterdaySomdayInformationList() {
-        listPrepare();
         Map<String, SomedayInformation> map = new HashMap<>();
         for (SomedayInformation information : yesterday) {
             map.put(information.getDkzh(), information);
@@ -183,6 +183,83 @@ public class GetEveryDayAccounts {
 
     }
 
+    private void toLogTodayAllMessage() {
+        log.info("生成今日查询出来各种列表的总数量信息");
+        String sb = "已经处理的贷款账号数量: " +
+                doneAccounts.size() +
+                "\n" +
+                "上月需要扣款贷款账号数量: " +
+                lastMonth.size() +
+                "\n" +
+                "昨天需要扣款贷款账号数量: " +
+                yesterday.size() +
+                "\n" +
+                "今天需要扣款贷款账号数量: " +
+                today.size() +
+                "\n" +
+                "问题账号中还存在逾期未入账的贷款账号数量: " +
+                overdues.size() +
+                "\n";
+
+        Set<String> over = new HashSet<>();
+        for (SomedayInformation doneAccount : overdues) {
+            over.add(doneAccount.getDkzh());
+        }
+
+        Set<String> done = new HashSet<>();
+        for (SthousingAccount doneAccount : doneAccounts) {
+            done.add(doneAccount.getDkzh());
+        }
+
+        Set<String> disLastMonthToOver = distinctToOneList(over, lastMonth);
+        Set<String> disYesterdayToOver = distinctToOneList(over, yesterday);
+        Set<String> disTodayToOver = distinctToOneList(over, today);
+        Set<String> disDoneAccountsToOver = distinctToOneList(over, doneAccounts);
+
+        Set<String> disLastMonthToDone = distinctToOneList(done, lastMonth);
+        Set<String> disYesterdayToDone = distinctToOneList(done, yesterday);
+        Set<String> disTodayToDone = distinctToOneList(done, today);
+
+        sb += "上月和逾期重复贷款账号数量: " + disLastMonthToOver.size() + "   账号: " + Arrays.toString(disLastMonthToOver.toArray()) + "\n";
+        sb += "昨天和逾期重复贷款账号数量: " + disYesterdayToOver.size() + "   账号: " + Arrays.toString(disYesterdayToOver.toArray()) + "\n";
+        sb += "今天和逾期重复贷款账号数量: " + disTodayToOver.size() + "   账号: " + Arrays.toString(disTodayToOver.toArray()) + "\n";
+        sb += "已处理和逾期重复贷款账号数量: " + disDoneAccountsToOver.size() + "   账号: " + Arrays.toString(disDoneAccountsToOver.toArray()) + "\n";
+
+        sb += "上月和已处理重复贷款账号数量: " + disLastMonthToDone.size() + "   账号: " + Arrays.toString(disLastMonthToDone.toArray()) + "\n";
+        sb += "昨天和已处理重复贷款账号数量: " + disYesterdayToDone.size() + "   账号: " + Arrays.toString(disYesterdayToDone.toArray()) + "\n";
+        sb += "今天和已处理重复贷款账号数量: " + disTodayToDone.size() + "   账号: " + Arrays.toString(disTodayToDone.toArray()) + "\n";
+
+
+        byte[] bytes = sb.getBytes();
+
+        try (OutputStream outputStream = new FileOutputStream(Constants.TODAY_SHOULD_PAYMENT_ACCOUNT_MESSAGES_LOG)) {
+            outputStream.write(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private Set<String> distinctToOneList(Set<String> base, List<?> list) {
+        Set<String> newSet = new HashSet<>();
+        Set<String> disSet = new HashSet<>();
+        boolean b = newSet.addAll(base);
+        if (b) {
+            for (Object o : list) {
+                String dkzh = "";
+                if (o instanceof SomedayInformation) {
+                    dkzh = ((SomedayInformation) o).getDkzh();
+                } else if (o instanceof SthousingAccount) {
+                    dkzh = ((SthousingAccount) o).getDkzh();
+                }
+                if (base.contains(dkzh)) {
+                    disSet.add(dkzh);
+                }
+            }
+        }
+        return disSet;
+    }
+
     private void toExcelTodayDkzh(List<SomedayInformation> list) {
         log.info("生成今日仅贷款账号的文件");
 
@@ -202,15 +279,48 @@ public class GetEveryDayAccounts {
         List<Map<String, Object>> transform = new ArrayList<>();
         for (SomedayInformation information : list) {
             Map<String, Object> stringObjectMap = BeanOrMapUtil.transBean2Map(information);
+            stringObjectMap.put(stringObjectMap.get("dkzh").toString(), stringObjectMap.get("dkzh"));
             transform.add(stringObjectMap);
         }
+        // 加入 逾期的贷款账号
+        for (SomedayInformation overdue : overdues) {
+            Map<String, Object> over = new HashMap<>();
+            over.put("dkzh", overdue.getDkzh());
+            over.put(overdue.getDkzh(), overdue.getDkzh());
+            transform.add(over);
+        }
+        Map<String, Object> distinctMap = new HashMap<>();
+        for (Map<String, Object> stringObjectMap : transform) {
+            distinctMap.put(stringObjectMap.get("dkzh").toString(), stringObjectMap);
+        }
+        List<Map<String, Object>> toExcel = new ArrayList<>();
+        for (Map.Entry<String, Object> entry : distinctMap.entrySet()) {
+            toExcel.add((Map<String, Object>) entry.getValue());
+        }
+
         Map<String, String> keyMap = new LinkedHashMap<>();
         keyMap.put("dkzh", "dkzh");
-        top.yinxiaokang.util.ExcelUtil.writeToExcelByAll(Constants.YESTERDAY_SHOULD_PAYMENT_ACCOUNT_FAIL, null, keyMap, transform);
+        top.yinxiaokang.util.ExcelUtil.writeToExcelByAll(Constants.YESTERDAY_SHOULD_PAYMENT_ACCOUNT_FAIL, null, keyMap, toExcel);
     }
 
     private void toExcelTodayShouldPaymentAccounts(List<SomedayInformation> list) {
         list = new ArrayList<>(list);
+
+        // 该文件只是用来观看  可以添加逾期应该扣款的贷款账号
+        list.addAll(overdues);
+
+        Map<String, SomedayInformation> appendOverdue = new HashMap<>();
+        for (SomedayInformation somedayInformation : list) {
+            String dkzh = somedayInformation.getDkzh();
+            if (appendOverdue.containsKey(dkzh)) {
+                log.error("逾期账号 {} 今日需要正常扣款, 会直接转逾期", dkzh);
+            } else {
+                appendOverdue.put(dkzh, somedayInformation);
+            }
+        }
+
+        list = sortByNextKkrq(appendOverdue);
+
         log.info("生成今日应该扣款账号相关信息文件");
         Map<String, String> keyMap = new LinkedHashMap<>();
         keyMap.put("dkzh", "贷款账号");
@@ -268,6 +378,7 @@ public class GetEveryDayAccounts {
         toExcelTodayShouldPaymentAccounts(todayAllAccounts);
         List<SomedayInformation> yesterdayAllAccounts = listYesterdayAllAccounts();
         toExceYesterdayDkzh(yesterdayAllAccounts);
+        toLogTodayAllMessage();
         log.info("结束运行");
     }
 

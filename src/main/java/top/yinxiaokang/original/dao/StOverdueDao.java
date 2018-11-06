@@ -25,7 +25,7 @@ public class StOverdueDao extends BaseDao {
         return list;
     }
 
-    public List<String> listOverdueDkzhsInTheDkzhsStr(String dkzhsStr) throws IllegalAccessException, SQLException, InstantiationException {
+    public List<StOverdue> listOverdueDkzhsInTheDkzhsStr(String dkzhsStr) throws IllegalAccessException, SQLException, InstantiationException {
         String sql = "SELECT\n" +
                 "\tover.DKZH\n" +
                 "FROM\n" +
@@ -38,7 +38,7 @@ public class StOverdueDao extends BaseDao {
                 "\tAND over.DKZH IN ( " + dkzhsStr + " ) \n" +
                 "GROUP BY\n" +
                 "\tover.DKZH";
-        List<String> list = list(String.class, sql);
+        List<StOverdue> list = list(StOverdue.class, sql);
         return list;
     }
 }

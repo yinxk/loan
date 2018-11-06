@@ -20,7 +20,7 @@ public class SomedayInformation {
     private String dkffrq;
 
     @ExcelCell(index = 3)
-    private BigDecimal qc;
+    private String qc;
 
     private Date dkxffrq;
 

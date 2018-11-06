@@ -152,7 +152,11 @@ public class Constants {
      * 今日 应该扣款账号文件路径
      */
     public static String TODAY_SHOULD_PAYMENT_ACCOUNT_LOG =
-            TODAY_ACCOUNT_PATH + "/" + TODAY_STR + "-应该正常扣款账号-oneday" + LOG;
+            TODAY_ACCOUNT_PATH + "/" + TODAY_STR + "-应该正常扣款账号-oneday" + LOG; /**
+     * 今日 应该扣款账号文件路径
+     */
+    public static String TODAY_SHOULD_PAYMENT_ACCOUNT_MESSAGES_LOG =
+            TODAY_ACCOUNT_PATH + "/" + TODAY_STR + "-内部查询出来的各种信息数量" + LOG;
 
 
     /**

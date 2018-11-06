@@ -50,7 +50,7 @@ public class SthousingAccountDao extends BaseDao {
                 "\tSELECT\n" +
                 "\t\tacc.DKZH,\n" +
                 "\t\tDATE_FORMAT(acc.DKFFRQ,'%Y-%m-%d') AS dkffrq,\n" +
-                "\t\tacc.dkqs - accex.DKGBJHQS + accex.DQQC AS qc,\n" +
+                "\t\tconcat( acc.dkqs - accex.DKGBJHQS + accex.DQQC,'') AS qc,\n" +
                 "\t\taccex.DKXFFRQ,\n" +
                 "\t\taccex.DQQC,\n" +
                 "\t\tDATE_FORMAT( DATE_ADD( accex.DKXFFRQ, INTERVAL accex.DQQC MONTH ), '%Y-%m-%d' ) AS nextkkrq,\n" +

@@ -123,8 +123,8 @@ public class AccountCheck {
         return stOverdues;
     }
 
-    public List<String> listOverdueDkzhsInTheDkzhsStr(String dkzhsStr) {
-        List<String> stOverdues = null;
+    public List<StOverdue> listOverdueDkzhsInTheDkzhsStr(String dkzhsStr) {
+        List<StOverdue> stOverdues = null;
         try {
             stOverdues = stOverdueDao.listOverdueDkzhsInTheDkzhsStr(dkzhsStr);
         } catch (IllegalAccessException | SQLException | InstantiationException e) {
