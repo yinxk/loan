@@ -222,7 +222,7 @@ public class GetEveryDayAccounts {
         keyMap.put("dkzhzt", "账户状态");
         keyMap.put("ffdaysfxd", "发放日和扣款日是否相等");
         LocalDate toDay = LocalDate.now();
-        LocalDate threeDayAgo = toDay.minusDays(3);
+        LocalDate threeDayAgo = toDay.minusDays(4);
         LocalDate tomorrow = toDay.plusDays(1);
         for (int i = 0; i < list.size(); i++) {
             SomedayInformation information = list.get(i);
