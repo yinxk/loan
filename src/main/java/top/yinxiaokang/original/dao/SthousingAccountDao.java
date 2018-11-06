@@ -87,4 +87,68 @@ public class SthousingAccountDao extends BaseDao {
 
         return list(SomedayInformation.class, sql, kkdayEnd, Utils.SDF_YEAR_MONTH_DAY.format(nextkkrqEnd));
     }
+
+    public List<SomedayInformation> listSomedayInformationByOverdueDkzh(String dkzhsStr) throws IllegalAccessException, SQLException, InstantiationException {
+        String sql = "SELECT\n" +
+                "\ta.*,\n" +
+                "IF\n" +
+                "\t( ( a.ffday = a.xffday ) = 1, '是', '否' ) AS ffdaysfxd \n" +
+                "FROM\n" +
+                "\t(\n" +
+                "\tSELECT\n" +
+                "\t\tacc.DKZH,\n" +
+                "\t\tDATE_FORMAT( acc.DKFFRQ, '%Y-%m-%d' ) AS dkffrq,\n" +
+                "\t\t(\n" +
+                "\t\tSELECT\n" +
+                "\t\t\tGROUP_CONCAT( over.YQQC ) \n" +
+                "\t\tFROM\n" +
+                "\t\t\tst_housing_overdue_registration over\n" +
+                "\t\t\tINNER JOIN c_housing_overdue_registration_extension overex ON over.extenstion = overex.id \n" +
+                "\t\tWHERE\n" +
+                "\t\t\tover.DKZH = acc.DKZH \n" +
+                "\t\t\tAND overex.YWZT <> '已入账' \n" +
+                "\t\t) AS qc,\n" +
+                "\t\taccex.DKXFFRQ,\n" +
+                "\t\taccex.DQQC,\n" +
+                "\t\tDATE_FORMAT( now( ), '%Y-%m-%d' ) AS nextkkrq,\n" +
+                "\t\tDATE_FORMAT( acc.DKFFRQ, '%d' ) ffday,\n" +
+                "\tCASE\n" +
+                "\t\t\tbasic.DKZHZT \n" +
+                "\t\t\tWHEN 0 THEN\n" +
+                "\t\t\t'待签合同' \n" +
+                "\t\t\tWHEN 1 THEN\n" +
+                "\t\t\t'待放款' \n" +
+                "\t\t\tWHEN 2 THEN\n" +
+                "\t\t\t'正常' \n" +
+                "\t\t\tWHEN 3 THEN\n" +
+                "\t\t\t'已结清' \n" +
+                "\t\t\tWHEN 4 THEN\n" +
+                "\t\t\t'呆账' \n" +
+                "\t\t\tWHEN 5 THEN\n" +
+                "\t\t\t'逾期' \n" +
+                "\t\t\tWHEN 6 THEN\n" +
+                "\t\t\t'待确认' \n" +
+                "\t\t\tWHEN 7 THEN\n" +
+                "\t\t\t'所有' \n" +
+                "\t\t\tWHEN 8 THEN\n" +
+                "\t\t\t'已作废' \n" +
+                "\t\t\tWHEN 9 THEN\n" +
+                "\t\t\t'暂停计息' \n" +
+                "\t\tEND AS DKZHZT,\n" +
+                "\t\tbasic.JKRXM,\n" +
+                "\tIF\n" +
+                "\t\t( fbasic.WTKHYJCE = 1, '是', '否' ) AS sfwtkr,\n" +
+                "\t\tDATE_FORMAT( accex.DKXFFRQ, '%d' ) xffday \n" +
+                "\tFROM\n" +
+                "\t\tst_housing_personal_account acc\n" +
+                "\t\tINNER JOIN c_loan_housing_personal_account_extension accex ON acc.extenstion = accex.id\n" +
+                "\t\tINNER JOIN c_loan_housing_person_information_basic basic ON basic.personalAccount = acc.id\n" +
+                "\t\tLEFT JOIN c_loan_funds_information_basic fbasic ON fbasic.id = basic.fundsBasic \n" +
+                "\tWHERE\n" +
+                "\t\tbasic.DKZHZT <> 3 \n" +
+                "\tAND acc.DKZH IN ( " + dkzhsStr + ") \n" +
+                "\t) a";
+
+        return list(SomedayInformation.class, sql);
+    }
 }

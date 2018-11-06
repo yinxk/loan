@@ -10,6 +10,7 @@ import java.util.List;
  * @author yinxk
  * @date 2018/8/27 13:30
  */
+@SuppressWarnings("UnnecessaryLocalVariable")
 public class StOverdueDao extends BaseDao {
     public StOverdueDao(Connection conn) {
         super(conn);
@@ -21,6 +22,23 @@ public class StOverdueDao extends BaseDao {
                 "INNER JOIN c_housing_overdue_registration_extension overex ON over.extenstion=overex.id " +
                 "WHERE over.DKZH=? AND over.deleted = 0 AND overex.deleted = 0";
         List<StOverdue> list = list(StOverdue.class, sql, dkzh);
+        return list;
+    }
+
+    public List<String> listOverdueDkzhsInTheDkzhsStr(String dkzhsStr) throws IllegalAccessException, SQLException, InstantiationException {
+        String sql = "SELECT\n" +
+                "\tover.DKZH\n" +
+                "FROM\n" +
+                "\tst_housing_overdue_registration over\n" +
+                "\tINNER JOIN c_housing_overdue_registration_extension overex ON over.extenstion = overex.id \n" +
+                "WHERE\n" +
+                "\toverex.YWZT <> '已入账' \n" +
+                "\tAND over.deleted = 0 \n" +
+                "\tAND overex.deleted = 0 \n" +
+                "\tAND over.DKZH IN ( " + dkzhsStr + " ) \n" +
+                "GROUP BY\n" +
+                "\tover.DKZH";
+        List<String> list = list(String.class, sql);
         return list;
     }
 }

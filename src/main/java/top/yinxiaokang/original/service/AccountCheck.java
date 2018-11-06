@@ -29,15 +29,16 @@ import java.util.*;
  * @author yinxk
  * @date 2018/8/6 10:57
  */
+@SuppressWarnings("UnnecessaryLocalVariable")
 @Slf4j
 public class AccountCheck {
 
 
     private Connection connection;
 
-    private SthousingAccountDao sthousingAccountDao = null;
-    private SthousingDetailDao sthousingDetailDao = null;
-    private StOverdueDao stOverdueDao = null;
+    private SthousingAccountDao sthousingAccountDao;
+    private SthousingDetailDao sthousingDetailDao;
+    private StOverdueDao stOverdueDao;
     private CLoanHousingPersonInformationBasicDao cLoanHousingPersonInformationBasicDao;
 
     public AccountCheck() {
@@ -63,11 +64,17 @@ public class AccountCheck {
         List<SomedayInformation> somedayInformations = new ArrayList<>();
         try {
             somedayInformations = sthousingAccountDao.listSomedayInformation(kkdayEnd, nextkkrqEnd, initDkzhsStr);
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException | SQLException | InstantiationException e) {
             e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
+        }
+        return somedayInformations;
+    }
+
+    public List<SomedayInformation> listSomedayInformationByOverdueDkzh(String dkzhsStr) {
+        List<SomedayInformation> somedayInformations = new ArrayList<>();
+        try {
+            somedayInformations = sthousingAccountDao.listSomedayInformationByOverdueDkzh(dkzhsStr);
+        } catch (IllegalAccessException | SQLException | InstantiationException e) {
             e.printStackTrace();
         }
         return somedayInformations;
@@ -83,11 +90,17 @@ public class AccountCheck {
         try {
             CLoanHousingPersonInformationBasic basicByDkzh = cLoanHousingPersonInformationBasicDao.getBasicByDkzh(dkzh);
             return basicByDkzh;
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException | SQLException | InstantiationException e) {
             e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
+        }
+        return null;
+    }
+
+    public List<CLoanHousingPersonInformationBasic> listBasicByDkzh(String dkzhsStr) {
+        try {
+            List<CLoanHousingPersonInformationBasic> cLoanHousingPersonInformationBasics = cLoanHousingPersonInformationBasicDao.listBasicByDkzhs(dkzhsStr);
+            return cLoanHousingPersonInformationBasics;
+        } catch (IllegalAccessException | SQLException | InstantiationException e) {
             e.printStackTrace();
         }
         return null;
@@ -104,11 +117,17 @@ public class AccountCheck {
         try {
             stOverdues = stOverdueDao.listByDkzh(dkzh);
             Collections.sort(stOverdues, Comparator.comparing(StOverdue::getYqqc));
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException | SQLException | InstantiationException e) {
             e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
+        }
+        return stOverdues;
+    }
+
+    public List<String> listOverdueDkzhsInTheDkzhsStr(String dkzhsStr) {
+        List<String> stOverdues = null;
+        try {
+            stOverdues = stOverdueDao.listOverdueDkzhsInTheDkzhsStr(dkzhsStr);
+        } catch (IllegalAccessException | SQLException | InstantiationException e) {
             e.printStackTrace();
         }
         return stOverdues;

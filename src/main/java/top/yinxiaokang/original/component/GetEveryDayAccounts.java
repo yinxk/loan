@@ -1,16 +1,12 @@
 package top.yinxiaokang.original.component;
 
 
-import com.sargeraswang.util.ExcelUtil.ExcelUtil;
 import lombok.extern.slf4j.Slf4j;
 import top.yinxiaokang.original.entity.SomedayInformation;
 import top.yinxiaokang.original.entity.SthousingAccount;
 import top.yinxiaokang.original.entity.excel.InitInformation;
 import top.yinxiaokang.original.service.AccountCheck;
-import top.yinxiaokang.util.BeanOrMapUtil;
-import top.yinxiaokang.util.Common;
-import top.yinxiaokang.util.Constants;
-import top.yinxiaokang.util.DateUtil;
+import top.yinxiaokang.util.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -31,6 +27,8 @@ public class GetEveryDayAccounts {
     private List<SomedayInformation> lastMonth;
     private List<SomedayInformation> yesterday;
     private List<SomedayInformation> today;
+    // 查询逾期的没有扣到当月应该扣款的期次的账号, 这些账号不能写入-oneday文件, 应该写入昨日扣款未入账和今日扣款应该扣账号
+    private List<SomedayInformation> overdues;
 
     public GetEveryDayAccounts() {
         StringBuilder sb = new StringBuilder(600);
@@ -59,7 +57,6 @@ public class GetEveryDayAccounts {
         return null;
     }
 
-
     private void listSomedayInformationToday() {
         LocalDate localDate = LocalDate.now();
         if (today != null) return;
@@ -73,13 +70,33 @@ public class GetEveryDayAccounts {
         yesterday = accountCheck.listSomedayInformation(localDate.getDayOfMonth(), DateUtil.localDate2Date(localDate), baseAccountDkzhs);
     }
 
+    private void listSomedayInformationLastMonth() {
+        LocalDate localDate = LocalDate.now();
+        localDate = localDate.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
+        if (lastMonth != null) return;
+        lastMonth = accountCheck.listSomedayInformation(localDate.getDayOfMonth(), DateUtil.localDate2Date(localDate), baseAccountDkzhs);
+    }
+
+    private void listSomedayInformationOverdueAccounts() {
+        List<String> stOverdues = accountCheck.listOverdueDkzhsInTheDkzhsStr(baseAccountDkzhs);
+        String overdueDkzhsStr;
+        StringBuilder sb = new StringBuilder();
+        boolean isFirst = true;
+        for (String overdueDkzh : stOverdues) {
+            isFirst = Common.appendDkzhToSqlCanRead(sb, isFirst, overdueDkzh, false);
+        }
+        overdueDkzhsStr = sb.toString();
+        overdues = accountCheck.listSomedayInformationByOverdueDkzh(overdueDkzhsStr);
+    }
+
     private void fileterSomedayInformationList() {
         filterDoneAccounts(lastMonth, "lastMonth");
         filterDoneAccounts(yesterday, "yesterday");
         filterDoneAccounts(today, "today");
+        filterDoneAccounts(overdues, "overdues");
     }
 
-    private void filterDoneAccounts(List<SomedayInformation> somedayInformations,String msgType) {
+    private void filterDoneAccounts(List<SomedayInformation> somedayInformations, String msgType) {
         Iterator<SomedayInformation> iterator = somedayInformations.iterator();
         while (iterator.hasNext()) {
             SomedayInformation next = iterator.next();
@@ -91,11 +108,13 @@ public class GetEveryDayAccounts {
         }
     }
 
-    private void listSomedayInformationLastMonth() {
-        LocalDate localDate = LocalDate.now();
-        localDate = localDate.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth());
-        if (lastMonth != null) return;
-        lastMonth = accountCheck.listSomedayInformation(localDate.getDayOfMonth(), DateUtil.localDate2Date(localDate), baseAccountDkzhs);
+
+    private void listPrepare() {
+        listSomedayInformationLastMonth();
+        listSomedayInformationYesterday();
+        listSomedayInformationToday();
+        listSomedayInformationOverdueAccounts();
+        fileterSomedayInformationList();
     }
 
     private Map<String, SomedayInformation> distinctTodaySomdayInformationList() {
@@ -114,14 +133,6 @@ public class GetEveryDayAccounts {
         return map;
     }
 
-    private void listPrepare() {
-        listSomedayInformationLastMonth();
-        listSomedayInformationYesterday();
-        listSomedayInformationToday();
-        fileterSomedayInformationList();
-    }
-
-
     private Map<String, SomedayInformation> distinctYesterdaySomdayInformationList() {
         listPrepare();
         Map<String, SomedayInformation> map = new HashMap<>();
@@ -134,27 +145,26 @@ public class GetEveryDayAccounts {
         return map;
     }
 
-    public List<SomedayInformation> listTodayAllAccounts() {
+    private List<SomedayInformation> listTodayAllAccounts() {
         Map<String, SomedayInformation> stringSomedayInformationMap = distinctTodaySomdayInformationList();
         return sortByNextKkrq(stringSomedayInformationMap);
     }
+
+    private List<SomedayInformation> listYesterdayAllAccounts() {
+        Map<String, SomedayInformation> stringSomedayInformationMap = distinctYesterdaySomdayInformationList();
+        return sortByNextKkrq(stringSomedayInformationMap);
+    }
+
 
     private List<SomedayInformation> sortByNextKkrq(Map<String, SomedayInformation> stringSomedayInformationMap) {
         List<SomedayInformation> list = new ArrayList<>();
         for (Map.Entry<String, SomedayInformation> stringSomedayInformationEntry : stringSomedayInformationMap.entrySet()) {
             list.add(stringSomedayInformationEntry.getValue());
         }
-        Collections.sort(list, (obj1, obj2) ->
-                obj2.getNextkkrq().compareTo(obj1.getNextkkrq())
-        );
+        list.sort((obj1, obj2) ->
+                obj2.getNextkkrq().compareTo(obj1.getNextkkrq()));
         return list;
     }
-
-    public List<SomedayInformation> listYesterdayAllAccounts() {
-        Map<String, SomedayInformation> stringSomedayInformationMap = distinctYesterdaySomdayInformationList();
-        return sortByNextKkrq(stringSomedayInformationMap);
-    }
-
 
     private void toLogTodayDkzh(List<SomedayInformation> list) {
         log.info("生成今日贷款账号拼接成的执行SQL需要的字符串");
@@ -173,10 +183,10 @@ public class GetEveryDayAccounts {
 
     }
 
-    public void toExcelTodayDkzh(List<SomedayInformation> list) {
+    private void toExcelTodayDkzh(List<SomedayInformation> list) {
         log.info("生成今日仅贷款账号的文件");
 
-        List<Map> transform = new ArrayList<>();
+        List<Map<String, Object>> transform = new ArrayList<>();
         for (SomedayInformation information : list) {
             Map<String, Object> stringObjectMap = BeanOrMapUtil.transBean2Map(information);
             transform.add(stringObjectMap);
@@ -184,34 +194,22 @@ public class GetEveryDayAccounts {
 
         Map<String, String> keyMap = new LinkedHashMap<>();
         keyMap.put("dkzh", "dkzh");
-        try (OutputStream outputStream = new FileOutputStream(Constants.TODAY_SHOULD_PAYMENT_ACCOUNT_XLS)) {
-            ExcelUtil.exportExcel(keyMap, transform, outputStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
+        ExcelUtil.writeToExcelByAll(Constants.TODAY_SHOULD_PAYMENT_ACCOUNT_XLS, null, keyMap, transform);
     }
 
-    public void toExceYesterdayDkzh(List<SomedayInformation> list) {
+    private void toExceYesterdayDkzh(List<SomedayInformation> list) {
         log.info("生成昨日扣款未入账的贷款账号文件");
-        List<Map> transform = new ArrayList<>();
+        List<Map<String, Object>> transform = new ArrayList<>();
         for (SomedayInformation information : list) {
             Map<String, Object> stringObjectMap = BeanOrMapUtil.transBean2Map(information);
             transform.add(stringObjectMap);
         }
         Map<String, String> keyMap = new LinkedHashMap<>();
         keyMap.put("dkzh", "dkzh");
-        try (OutputStream outputStream = new FileOutputStream(Constants.YESTERDAY_SHOULD_PAYMENT_ACCOUNT_FAIL)) {
-            ExcelUtil.exportExcel(keyMap, transform, outputStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
+        top.yinxiaokang.util.ExcelUtil.writeToExcelByAll(Constants.YESTERDAY_SHOULD_PAYMENT_ACCOUNT_FAIL, null, keyMap, transform);
     }
 
-    public void toExcelTodayShouldPaymentAccounts(List<SomedayInformation> list) {
+    private void toExcelTodayShouldPaymentAccounts(List<SomedayInformation> list) {
         list = new ArrayList<>(list);
         log.info("生成今日应该扣款账号相关信息文件");
         Map<String, String> keyMap = new LinkedHashMap<>();
@@ -256,7 +254,7 @@ public class GetEveryDayAccounts {
             }
         }
         try (OutputStream outputStream = new FileOutputStream(Constants.TODAY_SHOULD_PAYMENT_ACCOUNT_VIEW_XLS)) {
-            ExcelUtil.exportExcel(keyMap, list, outputStream);
+            com.sargeraswang.util.ExcelUtil.ExcelUtil.exportExcel(keyMap, list, outputStream);
         } catch (IOException e) {
             e.printStackTrace();
         }
