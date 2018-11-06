@@ -22,7 +22,7 @@ public class FlagRedRecode {
         new FlagRedRecode().work();
     }
 
-    public List<String> listFlagRedDkzh(String fileName) {
+    private List<String> listFlagRedDkzh(String fileName) {
         List<Map<String, Object>> list = SimpleExcelUtilLessFour.read(fileName, 0, false);
         Iterator<Map<String, Object>> iterator = list.iterator();
         List<String> dkzhs = new ArrayList<>();
@@ -34,24 +34,22 @@ public class FlagRedRecode {
         return dkzhs;
     }
 
-    public List<Map<String, Object>> listOneDayData(String fileName) {
+    private List<Map<String, Object>> listOneDayData(String fileName) {
         return SimpleExcelUtilLessFour.read(fileName, 0, false);
     }
 
-    public Set getKeyMap(List<Map<String, Object>> list) {
+    private Set getKeyMap(List<Map<String, Object>> list) {
         Iterator<Map<String, Object>> iterator = list.iterator();
         if (iterator.hasNext()) {
             Map next = iterator.next();
             return next.keySet();
         }
-        return null;
+        throw new RuntimeException("找不到keyMap");
     }
 
-    public List<List<Integer>> flagRedTags(List<Map<String, Object>> oneDayDataList, List<String> dkzhs) {
+    private List<List<Integer>> flagRedTags(List<Map<String, Object>> oneDayDataList, List<String> dkzhs) {
         List<List<Integer>> result = new ArrayList<>();
-        Iterator<String> iterator = dkzhs.iterator();
-        while (iterator.hasNext()) {
-            String dkzh = iterator.next();
+        for (String dkzh : dkzhs) {
             List<Integer> integers = flagReadTagByOne(oneDayDataList, dkzh);
             if (integers.size() > 0)
                 result.add(integers);
@@ -86,7 +84,7 @@ public class FlagRedRecode {
         Font font = wb.createFont();
         font.setColor(IndexedColors.RED.getIndex());
         cellStyle.setFont(font);
-        try (OutputStream fileOut = new FileOutputStream(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS+ "-标记版" + Constants.XLS)) {
+        try (OutputStream fileOut = new FileOutputStream(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS + "-标记版" + Constants.XLS)) {
             Sheet sheet = wb.createSheet();
             Row row0 = sheet.createRow(0);
             Iterator iterator = keyMap.iterator();
