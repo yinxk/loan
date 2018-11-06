@@ -121,10 +121,6 @@ public class AddExplainToExcel {
     }
 
     private void addRightBorder(String inFileName) {
-        String regexNumber = "^\\d+\\.?\\d?$";
-        String regexDkzh = "账号：([\\s\\S]*)\n初始贷款余额";
-        Pattern patternDkzh = Pattern.compile(regexDkzh);
-        Pattern patternNumber = Pattern.compile(regexNumber);
         log.info("设置合并单元格右边边框 : {}", inFileName);
         ExcelUtil.copyExcelAndUpdate(inFileName, 1, false, null,
                 (wb, row, keyMap, contentMapColIndex) -> {
@@ -135,6 +131,8 @@ public class AddExplainToExcel {
                     cellStyle1.cloneStyleFrom(cellStyle);
                     cellStyle1.setBorderRight(BorderStyle.THIN);
                     cellStyle1.setRightBorderColor(IndexedColors.BLACK.getIndex());
+                    cellStyle1.setBorderBottom(BorderStyle.THIN);
+                    cellStyle1.setBottomBorderColor(IndexedColors.BLACK.getIndex());
                     sm.setCellStyle(cellStyle1);
                 });
     }
