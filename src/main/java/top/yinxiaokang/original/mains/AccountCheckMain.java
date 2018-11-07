@@ -36,6 +36,7 @@ import static top.yinxiaokang.util.FileCommon.*;
  * @author yinxk
  * @date 2018/8/6 11:45
  */
+@SuppressWarnings("Duplicates")
 @Slf4j
 public class AccountCheckMain {
     private static AccountCheck accountCheck = new AccountCheck();
@@ -50,8 +51,7 @@ public class AccountCheckMain {
     }
 
 
-    public static void main(String[] args) {
-
+    public static void everyDay(){
         // 今天扣款数据
         new GetEveryDayAccounts().work();
 
@@ -147,6 +147,76 @@ public class AccountCheckMain {
         log.info("**************************************************************************结束运行!*************************************************************************");
         log.info("********************************************************************" + DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "********************************************************************");
         log.info("************************************************************************************************************************************************************");
+    }
+
+    public static void byDkzh() {
+
+
+        AccountCheckMain checkMain = new AccountCheckMain();
+
+        Collection<Map> importExcel = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
+        Collection<Map> oneDayMap = new ArrayList<>();
+        Map<String, Object> dkzh = new HashMap<>();
+        dkzh.put("dkzh", "52001069603600000000318581");
+        oneDayMap.add(dkzh);
+
+        File logFile = new File(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_BY_DKZH_LOG);
+        if (logFile.isFile() && logFile.exists()) {
+            log.info("文件存在, 删除文件!");
+            logFile.delete();
+        }
+
+        int size = importExcel.size();
+        logs.append("=============================================写入时间: " + DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "=============================================\n");
+        logs.append("读取总条数: " + size + "\n");
+
+        List<InitInformation> initInformationList = Common.importExcelToInitInformationList(importExcel);
+        // 置空, 让虚拟机GC的时候清理掉
+        importExcel = null;
+        List<InitInformation> errorList = new ArrayList<>();
+        List<AccountInformations> accountInformationsList = new ArrayList<>();
+        for (InitInformation initInformation : initInformationList) {
+            AccountInformations accountInformations = accountCheck.toAccountInformations(initInformation);
+            if (accountInformations == null) {
+                errorList.add(initInformation);
+                continue;
+            }
+            accountInformationsList.add(accountInformations);
+        }
+
+        // region 过滤账号
+        Iterator<AccountInformations> iterator = accountInformationsList.iterator();
+        while (iterator.hasNext()) {
+            AccountInformations next = iterator.next();
+            boolean dkzhInOneDayMap = Common.isDkzhInOneDayMap(next.getSthousingAccount().getDkzh(), oneDayMap);
+            if (!dkzhInOneDayMap) {
+                iterator.remove();
+            }
+        }
+        //endregion
+
+        //doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
+        doAnalyze(accountInformationsList, checkMain);
+        logs.append("读取总条数: " + size + "\n");
+        if (errorList.size() > 0) {
+            logs.append("错误信息 :");
+            for (InitInformation initInformation : errorList) {
+                logs.append(initInformation);
+            }
+            logs.append("\n");
+        }
+        logs.append("=============================================写入完成时间: " + DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "=============================================\n");
+        logsToFileByDkzh();
+        listToXlsxByDkzh();
+        log.info("************************************************************************************************************************************************************");
+        log.info("**************************************************************************结束运行!*************************************************************************");
+        log.info("********************************************************************" + DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "********************************************************************");
+        log.info("************************************************************************************************************************************************************");
+    }
+
+    public static void main(String[] args) {
+
+        byDkzh();
     }
 
     /**

@@ -172,7 +172,10 @@ public class Constants {
     /**
      * 昨日业务文件名及路径, 不包含扩展名
      */
-    public static String YESTERDAY_SHOULD_PAYMENT_BUSINESS = YESTERDAY_BUSINESS_PATH + "/" + YESTERDAY_STR + "-业务推算和实际业务";
+    public static String YESTERDAY_SHOULD_PAYMENT_BUSINESS = YESTERDAY_BUSINESS_PATH + "/" + YESTERDAY_STR + "-业务推算和实际业务";/**
+     * 昨日业务文件名及路径, 不包含扩展名
+     */
+    public static String YESTERDAY_SHOULD_PAYMENT_BY_DKZH_BUSINESS = YESTERDAY_BUSINESS_PATH +"/单独账号"+ "/" + YESTERDAY_STR + "-业务推算和实际业务";
     /**
      * 昨日业务文件名及路径, 含特定扩展名
      */
@@ -180,7 +183,14 @@ public class Constants {
     /**
      * 昨日业务文件名及路径, 含特定扩展名
      */
-    public static String YESTERDAY_SHOULD_PAYMENT_BUSINESS_XLS = YESTERDAY_SHOULD_PAYMENT_BUSINESS + XLS;
+    public static String YESTERDAY_SHOULD_PAYMENT_BUSINESS_XLS = YESTERDAY_SHOULD_PAYMENT_BUSINESS + XLS; /**
+     * 昨日业务文件名及路径, 含特定扩展名 _ 特殊情况
+     */
+    public static String YESTERDAY_SHOULD_PAYMENT_BUSINESS_BY_DKZH_LOG = YESTERDAY_SHOULD_PAYMENT_BY_DKZH_BUSINESS + LOG;
+    /**
+     * 昨日业务文件名及路径, 含特定扩展名 _ 特殊情况
+     */
+    public static String YESTERDAY_SHOULD_PAYMENT_BUSINESS_BY_DKZH_XLS = YESTERDAY_SHOULD_PAYMENT_BY_DKZH_BUSINESS + XLS;
 
 
     /**

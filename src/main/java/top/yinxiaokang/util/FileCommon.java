@@ -24,6 +24,7 @@ public class FileCommon {
 
     // region excel
     public static OutputStream outXLSXStream = null;
+    public static OutputStream outXLSXStreamByDkzh = null;
     public static List<OneThousand> datasetOneThousand = new ArrayList<>();
     public static List<AllAccountDkye> datasetAllAccountDkye = new ArrayList<>();
     public static List<OneThousand> dataset = datasetOneThousand;
@@ -33,6 +34,7 @@ public class FileCommon {
     static {
         try {
             outXLSXStream = new FileOutputStream(new File(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_XLS));
+            outXLSXStreamByDkzh = new FileOutputStream(new File(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_BY_DKZH_XLS));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -105,6 +107,19 @@ public class FileCommon {
             e.printStackTrace();
         }
     }
+    /**
+     * 输出到excel
+     */
+    public static void listToXlsxByDkzh() {
+        log.info("开始=====>" + Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_BY_DKZH_XLS);
+        ExcelUtil.exportExcel(KEY_MAP, dataset, outXLSXStreamByDkzh);
+        log.info("结束=====>" + Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_BY_DKZH_XLS);
+        try {
+            outXLSXStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * 写入一部分日志到文件
@@ -112,6 +127,21 @@ public class FileCommon {
     public static void logsToFile() {
 
         try (FileWriter writer = new FileWriter(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_LOG, true)) {
+            System.out.print(logs.toString());
+            writer.write(logs.toString());
+            logs = new StringBuffer();
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.info("创建失败!");
+        }
+    }
+
+    /**
+     * 写入一部分日志到文件
+     */
+    public static void logsToFileByDkzh() {
+
+        try (FileWriter writer = new FileWriter(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_BY_DKZH_LOG, true)) {
             System.out.print(logs.toString());
             writer.write(logs.toString());
             logs = new StringBuffer();

@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -154,6 +155,17 @@ public class AccountCheck {
         log.info("处理  " + initInformation);
         AccountInformations accountInformations = new AccountInformations();
         SthousingAccount account = getSthousingAccount(initInformation.getDkzh());
+        Date dkffrq = account.getDkffrq();
+        Date dkxffrq = account.getDkxffrq();
+        SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("yyyy-MM-");
+        SimpleDateFormat simpleDateFormat2 = new SimpleDateFormat("dd");
+        String s = simpleDateFormat1.format(dkffrq) + simpleDateFormat2.format(dkxffrq);
+        try {
+            Date dkff = new SimpleDateFormat("yyyy-MM-dd").parse(s);
+            account.setDkffrq(dkff);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         // 初始逾期本金大于0 , 则导入系统存在逾期记录
         if (initInformation.getCsyqbj().compareTo(BigDecimal.ZERO) > 0) {
             accountInformations.setInitHasOverdue(true);
