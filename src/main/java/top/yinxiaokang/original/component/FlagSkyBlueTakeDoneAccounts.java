@@ -117,8 +117,11 @@ public class FlagSkyBlueTakeDoneAccounts {
                         }
                         // 过滤已标记的
                         String flag = doneAccount.get("是否已标记").toString();
-                        if ("是".equals(flag)) {
-                            log.debug("贷款账号 {} 已标记  标记记号: {} ", dkzh, flag);
+                        CellStyle hhStyle = row.getCell(contentMapColIndex.get("行号")).getCellStyle();
+                        if ("是".equals(flag) &&
+                                (hhStyle.getFillForegroundColor() == IndexedColors.SKY_BLUE.getIndex() ||
+                                        hhStyle.getFillBackgroundColor() == IndexedColors.SKY_BLUE.getIndex())) {
+                            log.debug("贷款账号 {} 已标记  标记记号: {}  标记颜色: {}  ", dkzh, flag, hhStyle.getFillForegroundColor());
                             return;
                         }
 
