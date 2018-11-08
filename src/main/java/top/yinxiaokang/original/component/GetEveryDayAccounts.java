@@ -282,22 +282,25 @@ public class GetEveryDayAccounts {
     private void toExcelTodayToFlagDkzh(List<SomedayInformation> list) {
         log.info("生成今日准备给明天使用的业务分析贷款账号的文件");
 
+        List<SomedayInformation> transformList = new ArrayList<>();
+        transformList.addAll(list);
+
         // 该文件只是用来分析第二天的业务  可以添加逾期应该扣款的贷款账号
-        list.addAll(overdues);
+        transformList.addAll(overdues);
 
         Map<String, SomedayInformation> appendOverdue = new HashMap<>();
-        for (SomedayInformation somedayInformation : list) {
+        for (SomedayInformation somedayInformation : transformList) {
             String dkzh = somedayInformation.getDkzh();
             if (!appendOverdue.containsKey(dkzh)) {
                 appendOverdue.put(dkzh, somedayInformation);
             }
         }
 
-        list = sortByNextKkrq(appendOverdue);
+        transformList = sortByNextKkrq(appendOverdue);
 
 
         List<Map<String, Object>> transform = new ArrayList<>();
-        for (SomedayInformation information : list) {
+        for (SomedayInformation information : transformList) {
             Map<String, Object> stringObjectMap = BeanOrMapUtil.transBean2Map(information);
             transform.add(stringObjectMap);
         }
@@ -338,6 +341,7 @@ public class GetEveryDayAccounts {
     }
 
     private void toExcelTodayShouldPaymentAccounts(List<SomedayInformation> list) {
+
         list = new ArrayList<>(list);
 
         // 该文件只是用来观看  可以添加逾期应该扣款的贷款账号
