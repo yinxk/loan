@@ -149,7 +149,7 @@ public class ExcelUtil {
         writeToExcel(wb, outFile);
     }
 
-    private static void writeToExcel(Workbook wb, File outFile) throws IOException {
+    public static void writeToExcel(Workbook wb, File outFile) throws IOException {
         try (OutputStream outputStream = new FileOutputStream(outFile)) {
             wb.write(outputStream);
             log.info("写出 {} 完成", outFile.getPath());
@@ -215,7 +215,7 @@ public class ExcelUtil {
         });
     }
 
-    private static void loadFirstRow(Integer sheetAt, TitleLoadedRowReader titleLoadedRowReader, Workbook wb, Boolean isFilterAllNullRow) {
+    public static void loadFirstRow(Integer sheetAt, TitleLoadedRowReader titleLoadedRowReader, Workbook wb, Boolean isFilterAllNullRow) {
         sheetAt = Optional.ofNullable(sheetAt).orElse(0);
         Sheet sheet = wb.getSheetAt(sheetAt);
         boolean isFirst = true;
@@ -257,7 +257,7 @@ public class ExcelUtil {
         }
     }
 
-    private static void read(String inFilename, Boolean isClassPath, BaseExcelReader baseExcelReader) {
+    public static void read(String inFilename, Boolean isClassPath, BaseExcelReader baseExcelReader) {
         Objects.requireNonNull(inFilename);
         if (isClassPath == null) isClassPath = false;
         try (InputStream inputStream = new FileInputStream(isClassPath ? init(inFilename) : new File(inFilename))) {
