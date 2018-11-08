@@ -22,6 +22,8 @@ public class InitTakedAccounts {
     ExcelTransform excelTransform = new ExcelTransform();
     private static String pathStr = Constants.TAKE_ACCOUNT_PATH;
     Map<Integer, Integer> colorMap = new HashMap<>();
+    List<Map<String, Object>> notDoneList = new ArrayList<>();
+    List<Map<String, CellStyleAndContent>> all = new ArrayList<>();
 
     public void init() {
         initTakeDoneAccounts(true);
@@ -32,6 +34,14 @@ public class InitTakedAccounts {
         ExcelReadReturn excelReadReturn = ExcelUtil.readExcel(Constants.TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA_PATH, 0, false, false);
         List<Map<String, Object>> content = excelReadReturn.getContent();
         log.info("已处理贷款账号数量: {}  根据文件匹配到的已处理账号数量: {}", colorMap.get(40), content.size());
+        log.error("还没有处理的账号总数为 : {}", notDoneList.size());
+        String theLog = "dkzh:%-30s  fse:%-10s  bjje:%-10s  lxje:%-10s  bz:%-20s  file:%-20s";
+        for (Map<String, Object> contentMap : notDoneList) {
+            log.error(String.format(theLog, contentMap.get("dkzh"), contentMap.get("fse"), contentMap.get("bjje"),
+                    contentMap.get("lxje"), contentMap.get("bz").toString().trim(), contentMap.get("file")));
+        }
+        log.error("还没有处理的账号总数为 : {}", notDoneList.size());
+        log.error("总共匹配到的账号数量为 : {}", all.size());
     }
 
     public void initTakeDoneAccounts(boolean isWrite) {
@@ -40,7 +50,6 @@ public class InitTakedAccounts {
             throw new RuntimeException("not directory");
         }
         File[] files = diretory.listFiles();
-        List<Map<String, CellStyleAndContent>> all = new ArrayList<>();
         Map<String, String> dkzhsKey = new HashMap<>();
         assert files != null;
         for (File file : files) {
@@ -80,6 +89,15 @@ public class InitTakedAccounts {
                 data.put("isFlag", "是");
                 data.put("zhMapFile", dkzhsKey.get(dkzh));
                 doneAccounts.add(data);
+            } else {
+                Map<String, Object> notDone = new HashMap<>();
+                notDone.put("dkzh", dkzh);
+                notDone.put("fse", contentMap.get("发生额差额合计").getContent());
+                notDone.put("bjje", contentMap.get("本金差额合计").getContent());
+                notDone.put("lxje", contentMap.get("利息差额合计").getContent());
+                notDone.put("bz", contentMap.get("备注").getContent());
+                notDone.put("file", dkzhsKey.get(dkzh));
+                notDoneList.add(notDone);
             }
         }
         log.error("不同颜色对应的记录数量: {}", colorMap);
