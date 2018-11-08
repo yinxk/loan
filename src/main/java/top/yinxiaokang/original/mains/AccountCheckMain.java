@@ -72,7 +72,7 @@ public class AccountCheckMain {
 
         Collection<Map> importExcel = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
 
-        Collection<Map> oneDayMap = Common.xlsToList(Constants.YESTERDAY_SHOULD_PAYMENT__TO_FLAG_ACCOUNT);
+        Collection<Map> oneDayMap = Common.xlsToList(Constants.YESTERDAY_SHOULD_PAYMENT_TO_FLAG_ACCOUNT);
 
 
         File logFile = new File(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_LOG);
