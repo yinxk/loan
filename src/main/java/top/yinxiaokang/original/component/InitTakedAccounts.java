@@ -33,15 +33,14 @@ public class InitTakedAccounts {
         initTakeDoneAccounts(false);
         ExcelReadReturn excelReadReturn = ExcelUtil.readExcel(Constants.TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA_PATH, 0, false, false);
         List<Map<String, Object>> content = excelReadReturn.getContent();
-        log.info("已处理贷款账号数量: {}  根据文件匹配到的已处理账号数量: {}", colorMap.get(40), content.size());
-        log.error("还没有处理的账号总数为 : {}", notDoneList.size());
         String theLog = "dkzh:%-30s  fse:%-10s  bjje:%-10s  lxje:%-10s  bz:%-20s  file:%-20s";
         for (Map<String, Object> contentMap : notDoneList) {
             log.error(String.format(theLog, contentMap.get("dkzh"), contentMap.get("fse"), contentMap.get("bjje"),
                     contentMap.get("lxje"), contentMap.get("bz").toString().trim(), contentMap.get("file")));
         }
-        log.error("还没有处理的账号总数为 : {}", notDoneList.size());
         log.error("总共匹配到的账号数量为 : {}", all.size());
+        log.error("还没有处理的账号总数为 : {}", notDoneList.size());
+        log.info("已处理贷款账号数量: {}  根据文件匹配到的已处理账号数量: {}", colorMap.get(40), content.size());
     }
 
     public void initTakeDoneAccounts(boolean isWrite) {
