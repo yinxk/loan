@@ -40,7 +40,7 @@ public class InitTakedAccounts {
         }
         log.error("总共匹配到的账号数量为 : {}", all.size());
         log.error("还没有处理的账号总数为 : {}", notDoneList.size());
-        log.info("已处理贷款账号数量: {}  根据文件匹配到的已处理账号数量: {}", colorMap.get(40), content.size());
+        log.error("已处理贷款账号数量: {}  根据文件匹配到的已处理账号数量: {}", colorMap.get(40), content.size());
     }
 
     public void initTakeDoneAccounts(boolean isWrite) {
