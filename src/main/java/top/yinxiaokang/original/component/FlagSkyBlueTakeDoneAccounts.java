@@ -65,7 +65,11 @@ public class FlagSkyBlueTakeDoneAccounts {
             log.error("标记的贷款账号: {}  对应文件: {}", flagAccount.get("dkzh"), flagAccount.get("file"));
         }
         log.error("该次总共标记账号数量是: {} ", theFlagAccounts.size());
-        takeDoneAccountToExcel.doToExcel();
+        if (theFlagAccounts.size() > 0) {
+            takeDoneAccountToExcel.doToExcel();
+        } else {
+            log.info("没有更新, 不更新文件");
+        }
     }
 
     private void flagSkyBlueToDoneAccount(String inFileName, String outFileName, String fName) {
