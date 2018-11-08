@@ -1,10 +1,12 @@
 package top.yinxiaokang.original.component;
 
+import lombok.extern.slf4j.Slf4j;
 import top.yinxiaokang.util.Constants;
 import top.yinxiaokang.util.SimpleExcelUtilLessFour;
 
 import java.util.*;
 
+@Slf4j
 public class TakeDoneAccountToExcel {
 
     private List<Map<String, Object>> doneAccounts;
@@ -42,6 +44,7 @@ public class TakeDoneAccountToExcel {
     }
 
     public void doToExcel() {
+        log.error("准备写出到 {} , 不要关闭程序", inOutFileName);
         SimpleExcelUtilLessFour.writeToExcel(inOutFileName, keyMap, doneAccounts);
     }
 

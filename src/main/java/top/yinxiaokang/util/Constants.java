@@ -125,6 +125,9 @@ public class Constants {
      */
     public static String YESTERDAY_SHOULD_PAYMENT_ACCOUNT =
             YESTERDAY_ACCOUNT_PATH + "/" + YESTERDAY_STR + "-应该正常扣款账号-oneday" + XLS;
+
+    public static String YESTERDAY_SHOULD_PAYMENT__TO_FLAG_ACCOUNT =
+            YESTERDAY_ACCOUNT_PATH + "/" + YESTERDAY_STR + "-应该正常扣款账号-业务分析需要版-oneday" + XLS;
     /**
      * 昨日 应该扣款之后未入账账号文件路径
      */
@@ -147,6 +150,11 @@ public class Constants {
      */
     public static String TODAY_SHOULD_PAYMENT_ACCOUNT_XLS =
             TODAY_ACCOUNT_PATH + "/" + TODAY_STR + "-应该正常扣款账号-oneday" + XLS;
+    /**
+     * 今日 给明天使用业务分析账号文件路径
+     */
+    public static String TODAY_SHOULD_PAYMENT_ACCOUNT_TO_FLAG_XLS =
+            TODAY_ACCOUNT_PATH + "/" + TODAY_STR + "-应该正常扣款账号-业务分析需要版-oneday" + XLS;
 
     /**
      * 今日 应该扣款账号文件路径

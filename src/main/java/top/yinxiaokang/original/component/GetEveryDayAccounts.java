@@ -17,7 +17,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 @Slf4j
-@SuppressWarnings({"SpellCheckingInspection", "unused", "unchecked"})
+@SuppressWarnings({"SpellCheckingInspection", "unused", "unchecked", "Duplicates"})
 public class GetEveryDayAccounts {
 
     private AccountCheck accountCheck = new AccountCheck();
@@ -272,6 +272,37 @@ public class GetEveryDayAccounts {
         Map<String, String> keyMap = new LinkedHashMap<>();
         keyMap.put("dkzh", "dkzh");
         ExcelUtil.writeToExcelByAll(Constants.TODAY_SHOULD_PAYMENT_ACCOUNT_XLS, null, keyMap, transform);
+    }
+
+    private void toExcelTodayToFlagDkzh(List<SomedayInformation> list) {
+        log.info("生成今日准备给明天使用的业务分析贷款账号的文件");
+
+        // 该文件只是用来分析第二天的业务  可以添加逾期应该扣款的贷款账号
+        list.addAll(overdues);
+
+        Map<String, SomedayInformation> appendOverdue = new HashMap<>();
+        for (SomedayInformation somedayInformation : list) {
+            String dkzh = somedayInformation.getDkzh();
+            if (appendOverdue.containsKey(dkzh)) {
+                log.error("逾期账号 {} 今日需要正常扣款, 会直接转逾期", dkzh);
+            } else {
+                appendOverdue.put(dkzh, somedayInformation);
+            }
+        }
+
+        list = sortByNextKkrq(appendOverdue);
+
+
+        List<Map<String, Object>> transform = new ArrayList<>();
+        for (SomedayInformation information : list) {
+            Map<String, Object> stringObjectMap = BeanOrMapUtil.transBean2Map(information);
+            transform.add(stringObjectMap);
+        }
+
+
+        Map<String, String> keyMap = new LinkedHashMap<>();
+        keyMap.put("dkzh", "dkzh");
+        ExcelUtil.writeToExcelByAll(Constants.TODAY_SHOULD_PAYMENT_ACCOUNT_TO_FLAG_XLS, null, keyMap, transform);
     }
 
     private void toExceYesterdayDkzh(List<SomedayInformation> list) {
