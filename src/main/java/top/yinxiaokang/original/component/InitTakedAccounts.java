@@ -3,6 +3,7 @@ package top.yinxiaokang.original.component;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import top.yinxiaokang.original.dto.CellStyleAndContent;
+import top.yinxiaokang.original.dto.ExcelReadReturn;
 import top.yinxiaokang.util.Constants;
 import top.yinxiaokang.util.ExcelUtil;
 
@@ -20,13 +21,17 @@ public class InitTakedAccounts {
 
     ExcelTransform excelTransform = new ExcelTransform();
     private static String pathStr = Constants.TAKE_ACCOUNT_PATH;
-
+    Map<Integer, Integer> colorMap = new HashMap<>();
 
     public void init() {
         initTakeDoneAccounts(true);
     }
+
     public void onlyListMessage() {
         initTakeDoneAccounts(false);
+        ExcelReadReturn excelReadReturn = ExcelUtil.readExcel(Constants.TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA_PATH, 0, false, false);
+        List<Map<String, Object>> content = excelReadReturn.getContent();
+        log.info("已处理贷款账号数量: {}  根据文件匹配到的已处理账号数量: {}", colorMap.get(40), content.size());
     }
 
     public void initTakeDoneAccounts(boolean isWrite) {
@@ -57,7 +62,6 @@ public class InitTakedAccounts {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss SSS");
         // 发现颜色为40 30的是已标记为处理过的数据
         List<Map<String, Object>> doneAccounts = new ArrayList<>();
-        Map<Integer, Integer> colorMap = new HashMap<>();
         for (Map<String, CellStyleAndContent> contentMap : all) {
             CellStyleAndContent content = contentMap.get("dkzh");
             CellStyleAndContent style = contentMap.get("行号");
