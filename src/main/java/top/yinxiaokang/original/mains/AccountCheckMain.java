@@ -51,7 +51,7 @@ public class AccountCheckMain {
     }
 
 
-    public static void everyDay(){
+    public static void everyDay() {
         // 今天扣款数据
         new GetEveryDayAccounts().work();
 

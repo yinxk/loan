@@ -97,6 +97,16 @@ public class AccountCheck {
         return null;
     }
 
+    public CLoanHousingPersonInformationBasic getBasicByDkzh(String dkzh, boolean showLog) {
+        try {
+            CLoanHousingPersonInformationBasic basicByDkzh = cLoanHousingPersonInformationBasicDao.getBasicByDkzh(dkzh, showLog);
+            return basicByDkzh;
+        } catch (IllegalAccessException | SQLException | InstantiationException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public List<CLoanHousingPersonInformationBasic> listBasicByDkzh(String dkzhsStr) {
         try {
             List<CLoanHousingPersonInformationBasic> cLoanHousingPersonInformationBasics = cLoanHousingPersonInformationBasicDao.listBasicByDkzhs(dkzhsStr);
@@ -116,7 +126,7 @@ public class AccountCheck {
     public List<StOverdue> listOverdueByDkzh(String dkzh) {
         List<StOverdue> stOverdues = null;
         try {
-            stOverdues = stOverdueDao.listByDkzh(dkzh);
+            stOverdues = stOverdueDao.listByDkzh(dkzh, false);
             Collections.sort(stOverdues, Comparator.comparing(StOverdue::getYqqc));
         } catch (IllegalAccessException | SQLException | InstantiationException e) {
             e.printStackTrace();
@@ -152,9 +162,11 @@ public class AccountCheck {
      * @return
      */
     public AccountInformations toAccountInformations(InitInformation initInformation) {
-        log.info("处理  " + initInformation);
+//        log.info("处理  " + initInformation);
         AccountInformations accountInformations = new AccountInformations();
-        SthousingAccount account = getSthousingAccount(initInformation.getDkzh());
+        SthousingAccount account = getSthousingAccount(initInformation.getDkzh(), false);
+        if (account == null)
+            return null;
         Date dkffrq = account.getDkffrq();
         Date dkxffrq = account.getDkxffrq();
         SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("yyyy-MM-");
@@ -170,9 +182,8 @@ public class AccountCheck {
         if (initInformation.getCsyqbj().compareTo(BigDecimal.ZERO) > 0) {
             accountInformations.setInitHasOverdue(true);
         }
-        if (account == null)
-            return null;
-        CLoanHousingPersonInformationBasic basic = getBasicByDkzh(initInformation.getDkzh());
+
+        CLoanHousingPersonInformationBasic basic = getBasicByDkzh(initInformation.getDkzh(), false);
         accountInformations.setCLoanHousingPersonInformationBasic(basic);
         //region 如果可以的话, 使用扩展表的dkxxffrq中的日来作为还款日
 //        try {
@@ -220,11 +231,17 @@ public class AccountCheck {
         try {
             SthousingAccount accountByDkzh = sthousingAccountDao.getAccountByDkzh(dkzh);
             return accountByDkzh;
-        } catch (IllegalAccessException e) {
+        } catch (IllegalAccessException | SQLException | InstantiationException e) {
             e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
+        }
+        return null;
+    }
+
+    public SthousingAccount getSthousingAccount(String dkzh, boolean showLog) {
+        try {
+            SthousingAccount accountByDkzh = sthousingAccountDao.getAccountByDkzh(dkzh, showLog);
+            return accountByDkzh;
+        } catch (IllegalAccessException | SQLException | InstantiationException e) {
             e.printStackTrace();
         }
         return null;
@@ -238,13 +255,9 @@ public class AccountCheck {
      */
     public List<SthousingDetail> listDetails(SthousingAccount account) {
         try {
-            List<SthousingDetail> sthousingDetails = sthousingDetailDao.listByDkzh(account.getDkzh());
+            List<SthousingDetail> sthousingDetails = sthousingDetailDao.listByDkzh(account.getDkzh(), false);
             return sthousingDetails;
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
+        } catch (IllegalAccessException | SQLException | InstantiationException e) {
             e.printStackTrace();
         }
         return null;
@@ -370,7 +383,7 @@ public class AccountCheck {
      * @return 还款计划
      */
     public List<RepaymentItem> repaymentItems(String dkzh, BigDecimal initDkye, BigDecimal initOverdueBjje, Boolean isSubtract) {
-        SthousingAccount account = getSthousingAccount(dkzh);
+        SthousingAccount account = getSthousingAccount(dkzh, false);
         List<CurrentPeriodRange> ranges = listHSRange(account, null);
         List<RepaymentItem> repaymentItems = repaymentItems(account, ranges, initDkye, initOverdueBjje, isSubtract);
         return repaymentItems;

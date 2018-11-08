@@ -15,6 +15,7 @@ import java.util.*;
  * 至于之前的 , 就先那样吧 <br />
  * 封装通用的查询方法 , 使用的地方很多
  */
+@SuppressWarnings({"WeakerAccess", "JavaDoc", "unused"})
 @Slf4j
 public class BaseDao {
     /**
@@ -38,8 +39,22 @@ public class BaseDao {
      * @throws SQLException
      */
     public <T> List<T> list(Class<T> clazz, String sql, Object... params) throws SQLException, IllegalAccessException, InstantiationException {
+        return listIsShowLog(clazz, sql, true, params);
+    }
+
+    /**
+     * 获取一个list, 由于可变参数的原因, 这个方法重载会出现编译器不知道匹配哪一个方法, 所有该方法改一下名字
+     *
+     * @param clazz
+     * @param sql
+     * @param params
+     * @param <T>
+     * @return
+     * @throws SQLException
+     */
+    public <T> List<T> listIsShowLog(Class<T> clazz, String sql, boolean showLog, Object... params) throws SQLException, IllegalAccessException, InstantiationException {
         List<T> list = new ArrayList<>();
-        ResultSet rs = selectCommon(sql, params);
+        ResultSet rs = selectCommon(sql, showLog, params);
         while (rs.next()) {
             T t = clazz.newInstance();
             setBean(rs, t);
@@ -57,14 +72,16 @@ public class BaseDao {
      * @return
      * @throws SQLException
      */
-    public ResultSet selectCommon(String sql, Object... paras)
+    public ResultSet selectCommon(String sql, boolean showLog, Object... paras)
             throws SQLException {
         PreparedStatement ps = conn.prepareStatement(sql);
         for (int i = 0; i < paras.length; i++) {
             ps.setObject(i + 1, paras[i]);
         }
-        log.info(sql);
-        log.info("parameters : " + Arrays.asList(paras));
+        if (showLog) {
+            log.info(sql);
+            log.info("parameters : " + Arrays.asList(paras));
+        }
         return ps.executeQuery();
     }
 

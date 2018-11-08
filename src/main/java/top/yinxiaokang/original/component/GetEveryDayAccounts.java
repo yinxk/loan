@@ -31,6 +31,8 @@ public class GetEveryDayAccounts {
     // 查询逾期的没有扣到当月应该扣款的期次的账号, 这些账号不能写入-oneday文件, 应该写入昨日扣款未入账和今日扣款应该扣账号
     private List<SomedayInformation> overdues;
 
+    private StringBuilder sb = new StringBuilder();
+
     public GetEveryDayAccounts() {
         StringBuilder sb = new StringBuilder(600);
         List<InitInformation> initInformations = Common.listBaseAccountInformationByExcelUtil();
@@ -59,6 +61,7 @@ public class GetEveryDayAccounts {
         return null;
     }
 
+    // region 准备数据
     private void listSomedayInformationToday() {
         LocalDate localDate = LocalDate.now();
         if (today != null) return;
@@ -106,10 +109,11 @@ public class GetEveryDayAccounts {
             if (doneAccount != null) {
                 iterator.remove();
                 log.info("移除 {} 匹配到的已处理贷款账号: {} ", msgType, doneAccount.getDkzh());
+                String theLog = "移除 %s 匹配到的已处理贷款账号: %s \n";
+                sb.append(String.format(theLog, msgType, doneAccount.getDkzh()));
             }
         }
     }
-
 
     private void listPrepare() {
         listSomedayInformationLastMonth();
@@ -119,6 +123,7 @@ public class GetEveryDayAccounts {
         fileterSomedayInformationList();
     }
 
+    // endregion
     private Map<String, SomedayInformation> distinctTodaySomdayInformationList() {
         Map<String, SomedayInformation> map = new HashMap<>();
 
@@ -145,16 +150,21 @@ public class GetEveryDayAccounts {
         return map;
     }
 
+    /**
+     * 今日需要正常扣款的所有贷款账号
+     */
     private List<SomedayInformation> listTodayAllAccounts() {
         Map<String, SomedayInformation> stringSomedayInformationMap = distinctTodaySomdayInformationList();
         return sortByNextKkrq(stringSomedayInformationMap);
     }
 
+    /**
+     * 经过昨日扣款, 今日还需要正常扣款的所有贷款账号, 也就是说是昨日正常扣款未入账的所有贷款账号
+     */
     private List<SomedayInformation> listYesterdayAllAccounts() {
         Map<String, SomedayInformation> stringSomedayInformationMap = distinctYesterdaySomdayInformationList();
         return sortByNextKkrq(stringSomedayInformationMap);
     }
-
 
     private List<SomedayInformation> sortByNextKkrq(Map<String, SomedayInformation> stringSomedayInformationMap) {
         List<SomedayInformation> list = new ArrayList<>();
@@ -167,7 +177,7 @@ public class GetEveryDayAccounts {
     }
 
     private void toLogTodayDkzh(List<SomedayInformation> list) {
-        log.info("生成今日贷款账号拼接成的执行SQL需要的字符串");
+        log.info("生成今日需要正常扣款贷款账号拼接成的执行SQL需要的字符串");
         StringBuilder sb = new StringBuilder();
         boolean isFirst = true;
         for (SomedayInformation information : list) {
@@ -185,21 +195,16 @@ public class GetEveryDayAccounts {
 
     private void toLogTodayAllMessage() {
         log.info("生成今日查询出来各种列表的总数量信息");
-        String sb = "已经处理的贷款账号数量: " +
-                doneAccounts.size() +
-                "\n" +
-                "上月需要扣款贷款账号数量: " +
-                lastMonth.size() +
-                "\n" +
-                "昨天需要扣款贷款账号数量: " +
-                yesterday.size() +
-                "\n" +
-                "今天需要扣款贷款账号数量: " +
-                today.size() +
-                "\n" +
-                "问题账号中还存在逾期未入账的贷款账号数量: " +
-                overdues.size() +
-                "\n";
+        sb.append("已经处理的贷款账号数量: ")
+                .append(doneAccounts.size()).append("\n")
+                .append("上月需要扣款贷款账号数量: ")
+                .append(lastMonth.size()).append("\n")
+                .append("昨天需要扣款贷款账号数量: ")
+                .append(yesterday.size()).append("\n")
+                .append("今天需要扣款贷款账号数量: ")
+                .append(today.size()).append("\n")
+                .append("问题账号中还存在逾期未入账的贷款账号数量: ")
+                .append(overdues.size()).append("\n");
 
         Set<String> over = new HashSet<>();
         for (SomedayInformation doneAccount : overdues) {
@@ -220,17 +225,17 @@ public class GetEveryDayAccounts {
         Set<String> disYesterdayToDone = distinctToOneList(done, yesterday);
         Set<String> disTodayToDone = distinctToOneList(done, today);
 
-        sb += "上月和逾期重复贷款账号数量: " + disLastMonthToOver.size() + "   账号: " + Arrays.toString(disLastMonthToOver.toArray()) + "\n";
-        sb += "昨天和逾期重复贷款账号数量: " + disYesterdayToOver.size() + "   账号: " + Arrays.toString(disYesterdayToOver.toArray()) + "\n";
-        sb += "今天和逾期重复贷款账号数量: " + disTodayToOver.size() + "   账号: " + Arrays.toString(disTodayToOver.toArray()) + "\n";
-        sb += "已处理和逾期重复贷款账号数量: " + disDoneAccountsToOver.size() + "   账号: " + Arrays.toString(disDoneAccountsToOver.toArray()) + "\n";
+        sb.append("上月和逾期重复贷款账号数量: ").append(disLastMonthToOver.size()).append("   账号: ").append(Arrays.toString(disLastMonthToOver.toArray())).append("\n");
+        sb.append("昨天和逾期重复贷款账号数量: ").append(disYesterdayToOver.size()).append("   账号: ").append(Arrays.toString(disYesterdayToOver.toArray())).append("\n");
+        sb.append("今天和逾期重复贷款账号数量: ").append(disTodayToOver.size()).append("   账号: ").append(Arrays.toString(disTodayToOver.toArray())).append("\n");
+        sb.append("已处理和逾期重复贷款账号数量: ").append(disDoneAccountsToOver.size()).append("   账号: ").append(Arrays.toString(disDoneAccountsToOver.toArray())).append("\n");
 
-        sb += "上月和已处理重复贷款账号数量: " + disLastMonthToDone.size() + "   账号: " + Arrays.toString(disLastMonthToDone.toArray()) + "\n";
-        sb += "昨天和已处理重复贷款账号数量: " + disYesterdayToDone.size() + "   账号: " + Arrays.toString(disYesterdayToDone.toArray()) + "\n";
-        sb += "今天和已处理重复贷款账号数量: " + disTodayToDone.size() + "   账号: " + Arrays.toString(disTodayToDone.toArray()) + "\n";
+        sb.append("上月和已处理重复贷款账号数量: ").append(disLastMonthToDone.size()).append("   账号: ").append(Arrays.toString(disLastMonthToDone.toArray())).append("\n");
+        sb.append("昨天和已处理重复贷款账号数量: ").append(disYesterdayToDone.size()).append("   账号: ").append(Arrays.toString(disYesterdayToDone.toArray())).append("\n");
+        sb.append("今天和已处理重复贷款账号数量: ").append(disTodayToDone.size()).append("   账号: ").append(Arrays.toString(disTodayToDone.toArray())).append("\n");
 
 
-        byte[] bytes = sb.getBytes();
+        byte[] bytes = sb.toString().getBytes();
 
         try (OutputStream outputStream = new FileOutputStream(Constants.TODAY_SHOULD_PAYMENT_ACCOUNT_MESSAGES_LOG)) {
             outputStream.write(bytes);
@@ -261,7 +266,7 @@ public class GetEveryDayAccounts {
     }
 
     private void toExcelTodayDkzh(List<SomedayInformation> list) {
-        log.info("生成今日仅贷款账号的文件");
+        log.info("生成今日需要正常扣款仅贷款账号的文件");
 
         List<Map<String, Object>> transform = new ArrayList<>();
         for (SomedayInformation information : list) {
@@ -283,9 +288,7 @@ public class GetEveryDayAccounts {
         Map<String, SomedayInformation> appendOverdue = new HashMap<>();
         for (SomedayInformation somedayInformation : list) {
             String dkzh = somedayInformation.getDkzh();
-            if (appendOverdue.containsKey(dkzh)) {
-                log.error("逾期账号 {} 今日需要正常扣款, 会直接转逾期", dkzh);
-            } else {
+            if (!appendOverdue.containsKey(dkzh)) {
                 appendOverdue.put(dkzh, somedayInformation);
             }
         }
@@ -339,12 +342,13 @@ public class GetEveryDayAccounts {
 
         // 该文件只是用来观看  可以添加逾期应该扣款的贷款账号
         list.addAll(overdues);
-
+        String theLog = "逾期账号 %s 今日需要正常扣款, 会直接转逾期 \n";
         Map<String, SomedayInformation> appendOverdue = new HashMap<>();
         for (SomedayInformation somedayInformation : list) {
             String dkzh = somedayInformation.getDkzh();
             if (appendOverdue.containsKey(dkzh)) {
                 log.error("逾期账号 {} 今日需要正常扣款, 会直接转逾期", dkzh);
+                sb.append(String.format(theLog, dkzh));
             } else {
                 appendOverdue.put(dkzh, somedayInformation);
             }
@@ -352,7 +356,7 @@ public class GetEveryDayAccounts {
 
         list = sortByNextKkrq(appendOverdue);
 
-        log.info("生成今日应该扣款账号相关信息文件");
+        log.info("生成今日应该扣款账号相关信息文件观看版");
         Map<String, String> keyMap = new LinkedHashMap<>();
         keyMap.put("dkzh", "贷款账号");
         keyMap.put("dkffrq", "贷款发放日期");
@@ -405,6 +409,7 @@ public class GetEveryDayAccounts {
     public void work() {
         List<SomedayInformation> todayAllAccounts = listTodayAllAccounts();
         toExcelTodayDkzh(todayAllAccounts);
+        toExcelTodayToFlagDkzh(todayAllAccounts);
         toLogTodayDkzh(todayAllAccounts);
         toExcelTodayShouldPaymentAccounts(todayAllAccounts);
         List<SomedayInformation> yesterdayAllAccounts = listYesterdayAllAccounts();

@@ -17,11 +17,15 @@ public class StOverdueDao extends BaseDao {
     }
 
     public List<StOverdue> listByDkzh(String dkzh) throws IllegalAccessException, SQLException, InstantiationException {
+        return listByDkzh(dkzh, true);
+    }
+
+    public List<StOverdue> listByDkzh(String dkzh, boolean showLog) throws IllegalAccessException, SQLException, InstantiationException {
         String sql = "SELECT over.dkzh,over.SSRQ,over.YQBJ,over.YQLX,over.YQFX,over.YQQC,overex.YWZT " +
                 "FROM st_housing_overdue_registration over " +
                 "INNER JOIN c_housing_overdue_registration_extension overex ON over.extenstion=overex.id " +
                 "WHERE over.DKZH=? AND over.deleted = 0 AND overex.deleted = 0";
-        List<StOverdue> list = list(StOverdue.class, sql, dkzh);
+        List<StOverdue> list = listIsShowLog(StOverdue.class, sql, showLog, dkzh);
         return list;
     }
 

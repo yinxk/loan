@@ -127,7 +127,7 @@ public class FileCommon {
     public static void logsToFile() {
 
         try (FileWriter writer = new FileWriter(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_LOG, true)) {
-            System.out.print(logs.toString());
+//            System.out.print(logs.toString());
             writer.write(logs.toString());
             logs = new StringBuffer();
         } catch (IOException e) {
