@@ -237,7 +237,7 @@ public class ExcelTransform {
             typeMap.get(ExcelFilterType.ALL).add(contentMap);
 
             // 多扣类型
-            if (备注.contains("多扣")) {
+            if (备注.contains("多扣") && !备注.contains("少扣")) {
                 BigDecimal 发生额差额合计 = Optional.ofNullable(contentMap.get("发生额差额合计")).map(CellStyleAndContent::getContent).map(Object::toString).map(BigDecimal::new).orElse(null);
                 BigDecimal 本金差额合计 = Optional.ofNullable(contentMap.get("本金差额合计")).map(CellStyleAndContent::getContent).map(Object::toString).map(BigDecimal::new).orElse(null);
                 BigDecimal 利息差额合计 = Optional.ofNullable(contentMap.get("利息差额合计")).map(CellStyleAndContent::getContent).map(Object::toString).map(BigDecimal::new).orElse(null);
