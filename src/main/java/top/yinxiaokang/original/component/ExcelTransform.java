@@ -31,6 +31,13 @@ public class ExcelTransform {
 
     Collection<Map> importExcel;
 
+    /**
+     * 分类映射
+     */
+    private Map<ExcelFilterType, List<Map<String, CellStyleAndContent>>> filterNotDoneAlltypeMap = new LinkedHashMap<>();
+
+    Map<String, String> keyMap = new LinkedHashMap<>();
+
 
     public static void main(String[] args) {
         ExcelTransform excelTransform = new ExcelTransform();
@@ -38,7 +45,6 @@ public class ExcelTransform {
         //excelTransform.workFormFile();
 
     }
-
 
     public ExcelTransform() {
         importExcel = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
@@ -51,6 +57,33 @@ public class ExcelTransform {
             ssDkye.add(account);
         }
         this.ssDkye = ssDkye;
+        /**
+         * 创建映射
+         */
+        ExcelFilterType[] excelFilterTypes = ExcelFilterType.values();
+        for (ExcelFilterType type : excelFilterTypes) {
+            List<Map<String, CellStyleAndContent>> typeList = new ArrayList<>();
+            filterNotDoneAlltypeMap.put(type, typeList);
+        }
+
+        keyMap.put("序号", "xh");
+        keyMap.put("dkzh", "dkzh");
+        keyMap.put("csye", "csye");
+        keyMap.put("本金合计", "tsbjhj");
+        keyMap.put("xzdkye", "xzdkye");// 修正贷款余额(程序计算)
+        keyMap.put("csyqbj", "csyqbj");// 初始逾期本金
+        keyMap.put("ssdkye", "ssdkye");// 实时贷款余额
+        keyMap.put("dkyesfgx", "dkyesfgx");// 贷款余额是否更新
+        keyMap.put("fsxd", "fsxd"); // 推算修正后余额是否与 凭证推算内容中的余额相等
+        keyMap.put("发生额差额合计", "fsecehj");
+        keyMap.put("本金差额合计", "bjcehj");
+        keyMap.put("利息差额合计", "lxcehj");
+        keyMap.put("备注", "bz");
+        keyMap.put("说明", "sm");
+        keyMap.put("行号", "hh");
+        keyMap.put("tzhye", "tzhye");// 凭证中的 修正后余额(一截内容,不能精确匹配到数字余额)
+        keyMap.put("fileName", "fileName");// 存在于的文件名, 主要在全部待处理中有意义
+        //keyMap.put("tscontent", "tscontent");// 推算凭证的内容
     }
 
     private SthousingAccount getAccountByDkzh(String dkzh) {
@@ -63,7 +96,7 @@ public class ExcelTransform {
         return null;
     }
 
-    public void workFormDiretory() {
+    private void workFormDiretory() {
         File diretory = new File(pathStr);
         if (!diretory.isDirectory()) {
             throw new RuntimeException("not directory");
@@ -74,12 +107,28 @@ public class ExcelTransform {
                 doTransform(file.getPath(), file.getName());
             }
         }
+        allDone();
         log.info("分类转换excel运行结束!");
     }
 
     public void workFormFile() {
         doTransform(pathStr + fileStr + Constants.XLS, fileStr + Constants.XLS);
         log.info("分类转换excel运行结束!");
+    }
+
+    private void allDone() {
+        log.info("准备写出 {} 不要关闭", Constants.TAKE_ACCOUNT_TRANSFORM_PATH + "/所有文件待处理" + Constants.XLS);
+        Workbook wb = new HSSFWorkbook();
+        File file = ExcelUtil.getOutFileExcelName(Constants.TAKE_ACCOUNT_TRANSFORM_PATH + "/所有文件待处理" + Constants.XLS);
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+            for (Map.Entry<ExcelFilterType, List<Map<String, CellStyleAndContent>>> entry : this.filterNotDoneAlltypeMap.entrySet()) {
+                createSheet(wb, entry.getKey().getTypeMessage(), entry.getValue(), keyMap);
+            }
+            wb.write(fileOutputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        log.info("写出 {} 完成", Constants.TAKE_ACCOUNT_TRANSFORM_PATH + "/所有文件待处理" + Constants.XLS);
     }
 
 
@@ -181,31 +230,14 @@ public class ExcelTransform {
 
     private void doTransform(String pathFileName, String fileName) {
         List<Map<String, CellStyleAndContent>> list = listExcelAccounts(pathFileName);
-        Map<String, String> keyMap = new LinkedHashMap<>();
-        keyMap.put("序号", "xh");
-        keyMap.put("dkzh", "dkzh");
-        keyMap.put("csye", "csye");
-        keyMap.put("本金合计", "tsbjhj");
-        keyMap.put("xzdkye", "xzdkye");// 修正贷款余额(程序计算)
-        keyMap.put("csyqbj", "csyqbj");// 初始逾期本金
-        keyMap.put("ssdkye", "ssdkye");// 实时贷款余额
-        keyMap.put("dkyesfgx", "dkyesfgx");// 贷款余额是否更新
-        keyMap.put("fsxd", "fsxd"); // 推算修正后余额是否与 凭证推算内容中的余额相等
-        keyMap.put("发生额差额合计", "fsecehj");
-        keyMap.put("本金差额合计", "bjcehj");
-        keyMap.put("利息差额合计", "lxcehj");
-        keyMap.put("备注", "bz");
-        keyMap.put("说明", "sm");
-        keyMap.put("行号", "hh");
-        keyMap.put("tzhye", "tzhye");// 凭证中的 修正后余额(一截内容,不能精确匹配到数字余额)
-        //keyMap.put("tscontent", "tscontent");// 推算凭证的内容
+
 
         String[] split = fileName.split("\\.");
 
         Workbook wb = new HSSFWorkbook();
         File file = ExcelUtil.getOutFileExcelName(Constants.TAKE_ACCOUNT_TRANSFORM_PATH + "/" + split[0] + "-转换版" + Constants.XLS);
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-            filterType(list, keyMap, wb);
+            filterType(list, keyMap, wb, fileName);
             wb.write(fileOutputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -215,7 +247,7 @@ public class ExcelTransform {
         log.info(pathFileName + "=====转换完成=====");
     }
 
-    private void filterType(List<Map<String, CellStyleAndContent>> list, Map<String, String> keyMap, Workbook wb) {
+    private void filterType(List<Map<String, CellStyleAndContent>> list, Map<String, String> keyMap, Workbook wb, String fileName) {
         /**
          * 分类映射
          */
@@ -233,8 +265,11 @@ public class ExcelTransform {
             String 备注 = Optional.ofNullable(contentMap.get("备注")).map(CellStyleAndContent::getContent).map(Object::toString).orElse("");
             BigDecimal xzdkye = (BigDecimal) contentMap.get("xzdkye").getContent();
             BigDecimal ssdkye = getAccountByDkzh(contentMap.get("dkzh").getContent().toString()).getDkye();
-            // 全部
+            // 全部co
             typeMap.get(ExcelFilterType.ALL).add(contentMap);
+            if (isDone(contentMap)) {
+                this.filterNotDoneAlltypeMap.get(ExcelFilterType.ALL).add(contentMap);
+            }
 
             // 多扣类型
             if (备注.contains("多扣") && !备注.contains("少扣")) {
@@ -252,6 +287,9 @@ public class ExcelTransform {
                             本金差额合计.compareTo(BigDecimal.ZERO) > 0 &&
                             利息差额合计.compareTo(BigDecimal.ZERO) < 0) {
                         typeMap.get(ExcelFilterType.MANY_FZF).add(contentMap);
+                        if (isDone(contentMap)) {
+                            this.filterNotDoneAlltypeMap.get(ExcelFilterType.MANY_FZF).add(contentMap);
+                        }
                         contentMap.put("xzdkye", new CellStyleAndContent(xzdkye.subtract(发生额差额合计.abs()), null));
                         moreTagStr = ExcelFilterType.MANY_FZF.getTypeMessage();
                     }
@@ -259,16 +297,25 @@ public class ExcelTransform {
                     else if (发生额差额合计.compareTo(BigDecimal.ZERO) < 0 &&
                             本金差额合计.compareTo(BigDecimal.ZERO) < 0) {
                         typeMap.get(ExcelFilterType.MANY_FFF_FFZ_FFL).add(contentMap);
+                        if (isDone(contentMap)) {
+                            this.filterNotDoneAlltypeMap.get(ExcelFilterType.MANY_FFF_FFZ_FFL).add(contentMap);
+                        }
                         contentMap.put("xzdkye", new CellStyleAndContent(xzdkye.subtract(发生额差额合计.abs()), null));
                         moreTagStr = ExcelFilterType.MANY_FFF_FFZ_FFL.getTypeMessage();
                     } else {
                         typeMap.get(ExcelFilterType.OTHER).add(contentMap);
+                        if (isDone(contentMap)) {
+                            this.filterNotDoneAlltypeMap.get(ExcelFilterType.OTHER).add(contentMap);
+                        }
                         moreTagStr = ExcelFilterType.OTHER.getTypeMessage();
                     }
                 }
                 // 多扣类型 已结清的
                 else {
                     typeMap.get(ExcelFilterType.MANY_OUTSTANDING_FFF_FFZ_FFL).add(contentMap);
+                    if (isDone(contentMap)) {
+                        this.filterNotDoneAlltypeMap.get(ExcelFilterType.MANY_OUTSTANDING_FFF_FFZ_FFL).add(contentMap);
+                    }
                     moreTagStr = ExcelFilterType.MANY_OUTSTANDING_FFF_FFZ_FFL.getTypeMessage();
                 }
                 log.info("多扣类型分类信息: {}, {}, {},  ====> {} ", 发生额差额合计, 本金差额合计, 利息差额合计, moreTagStr);
@@ -276,14 +323,23 @@ public class ExcelTransform {
             // 少扣
             else if (备注.contains("少扣")) {
                 typeMap.get(ExcelFilterType.LESS).add(contentMap);
+                if (isDone(contentMap)) {
+                    this.filterNotDoneAlltypeMap.get(ExcelFilterType.LESS).add(contentMap);
+                }
             }
             // 本息颠倒
             else if (备注.contains("颠倒")) {
                 typeMap.get(ExcelFilterType.BX_REVERSE).add(contentMap);
+                if (isDone(contentMap)) {
+                    this.filterNotDoneAlltypeMap.get(ExcelFilterType.BX_REVERSE).add(contentMap);
+                }
             }
             // 其他
             else {
                 typeMap.get(ExcelFilterType.OTHER).add(contentMap);
+                if (isDone(contentMap)) {
+                    this.filterNotDoneAlltypeMap.get(ExcelFilterType.OTHER).add(contentMap);
+                }
             }
             xzdkye = (BigDecimal) contentMap.get("xzdkye").getContent();
             //修正贷款余额是否在调整后余额中存在
@@ -301,12 +357,25 @@ public class ExcelTransform {
                 contentMap.put("dkyesfgx", new CellStyleAndContent("是", null));
             }
             contentMap.put("ssdkye", new CellStyleAndContent(ssdkye, null));
+            contentMap.put("fileName", new CellStyleAndContent(fileName, null));
 
         }
 
         for (Map.Entry<ExcelFilterType, List<Map<String, CellStyleAndContent>>> entry : typeMap.entrySet()) {
             createSheet(wb, entry.getKey().getTypeMessage(), entry.getValue(), keyMap);
         }
+    }
+
+    private boolean isDone(Map<String, CellStyleAndContent> contentMap) {
+        CellStyleAndContent cellStyleAndContent = contentMap.get("行号");
+        CellStyle cellStyle = cellStyleAndContent.getCellStyle();
+        short fillBackgroundColor = cellStyle.getFillBackgroundColor();
+        short fillForegroundColor = cellStyle.getFillForegroundColor();
+        if (fillBackgroundColor == 40 || fillBackgroundColor == 30 ||
+                fillForegroundColor == 40 || fillForegroundColor == 30) {
+            return false;
+        }
+        return true;
     }
 
     private void createSheet(Workbook wb, String sheetName, List<Map<String, CellStyleAndContent>> list, Map<String, String> keyMap) {
@@ -322,6 +391,7 @@ public class ExcelTransform {
             Cell cell = row.createCell(k++);
             cell.setCellValue(entry.getValue());
         }
+        sheet.createFreezePane(0, 1, 0, 1);
     }
 
 
