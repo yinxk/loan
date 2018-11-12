@@ -223,7 +223,7 @@ public class Constants {
     /**
      * 修账 已经处理过的贷款账号
      */
-    public static String TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA_PATH = TAKE_ACCOUNT_PATH + TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA + "/已处理贷款账号" + XLS;
+    public static String TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA_PATH = TAKE_ACCOUNT_PATH + TAKE_ACCOUNT_TAKED_ACCOUNTS_DATA + "/已处理贷款账号" + XLSX;
 
     /**
      * 修账 标记天蓝色路径
