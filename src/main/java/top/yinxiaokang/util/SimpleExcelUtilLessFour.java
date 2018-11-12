@@ -57,11 +57,13 @@ public class SimpleExcelUtilLessFour {
                 for (Map.Entry<String, String> keyEntry : keyMap.entrySet()) {
                     Cell cell = row.createCell(j++);
                     if (content.containsKey(keyEntry.getKey())) {
-                        sheet.autoSizeColumn(j - 1);
                         cell.setCellType(CellType.STRING);
                         cell.setCellValue(content.get(keyEntry.getKey()).toString());
                     }
                 }
+            }
+            for (i = 0; i < keyMap.size(); i++) {
+                sheet.autoSizeColumn(i);
             }
             wb.write(outputStream);
             log.info("写出 {} 完成", fileName);
