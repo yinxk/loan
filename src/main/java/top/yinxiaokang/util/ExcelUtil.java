@@ -101,11 +101,13 @@ public class ExcelUtil {
                 for (Map.Entry<String, String> key : keyMap1.entrySet()) {
                     Cell cell = row.createCell(j++);
                     if (content.containsKey(key.getKey())) {
-                        sheet.autoSizeColumn(j - 1);
                         Object value = content.get(key.getKey());
                         setCellValue(cell, value);
                     }
                 }
+            }
+            for (i = 0; i < keyMap1.size(); i++) {
+                sheet.autoSizeColumn(i);
             }
         });
     }

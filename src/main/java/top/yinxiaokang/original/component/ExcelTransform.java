@@ -409,7 +409,6 @@ public class ExcelTransform {
             while (keyIte.hasNext()) {
                 Map.Entry<String, String> key = keyIte.next();
                 if (contentMap.containsKey(key.getKey())) {
-                    sheet.autoSizeColumn(j);
                     CellStyle cellStyle1 = Optional.ofNullable(contentMap.get(key.getKey())).map(CellStyleAndContent::getCellStyle).orElse(null);
                     Cell cell = row.createCell(j++);
                     if ((key.getKey().equals("dkzh") || key.getKey().equals("行号") || key.getKey().equals("说明")) && cellStyle1 != null) {
@@ -425,6 +424,9 @@ public class ExcelTransform {
                 }
 
             }
+        }
+        for (int i = 0; i < keyMap.size(); i++) {
+            sheet.autoSizeColumn(i);
         }
     }
 }

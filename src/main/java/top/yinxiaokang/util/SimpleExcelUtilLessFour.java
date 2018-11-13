@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
 import java.net.URL;
@@ -31,7 +32,15 @@ public class SimpleExcelUtilLessFour {
     }
 
     public static void writeToExcel(String fileName, Map<String, String> keyMap, List<Map<String, Object>> contents) {
-        Workbook wb = new HSSFWorkbook();
+        Workbook wb;
+        if (fileName.endsWith(".xls")) {
+            wb = new HSSFWorkbook();
+        } else if (fileName.endsWith(".xlsx")) {
+            wb = new XSSFWorkbook();
+        } else {
+            throw new RuntimeException("不支持的文件类型");
+        }
+        log.info("新创建了workbook : {}", wb);
         try (OutputStream outputStream = new FileOutputStream(fileName)) {
             Sheet sheet = wb.createSheet();
             Row title = sheet.createRow(0);
@@ -48,11 +57,13 @@ public class SimpleExcelUtilLessFour {
                 for (Map.Entry<String, String> keyEntry : keyMap.entrySet()) {
                     Cell cell = row.createCell(j++);
                     if (content.containsKey(keyEntry.getKey())) {
-                        sheet.autoSizeColumn(j - 1);
                         cell.setCellType(CellType.STRING);
                         cell.setCellValue(content.get(keyEntry.getKey()).toString());
                     }
                 }
+            }
+            for (i = 0; i < keyMap.size(); i++) {
+                sheet.autoSizeColumn(i);
             }
             wb.write(outputStream);
             log.info("写出 {} 完成", fileName);
