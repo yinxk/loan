@@ -287,11 +287,14 @@ public class GetEveryDayAccounts {
 
         // 该文件只是用来分析第二天的业务  可以添加逾期应该扣款的贷款账号
         transformList.addAll(overdues);
-
+        String theLog = "逾期账号 %s 今日需要正常扣款, 会直接转逾期 \n";
         Map<String, SomedayInformation> appendOverdue = new HashMap<>();
         for (SomedayInformation somedayInformation : transformList) {
             String dkzh = somedayInformation.getDkzh();
-            if (!appendOverdue.containsKey(dkzh)) {
+            if (appendOverdue.containsKey(dkzh)) {
+                log.error("逾期账号 {} 今日需要正常扣款, 会直接转逾期", dkzh);
+                sb.append(String.format(theLog, dkzh));
+            } else {
                 appendOverdue.put(dkzh, somedayInformation);
             }
         }
@@ -345,20 +348,20 @@ public class GetEveryDayAccounts {
         list = new ArrayList<>(list);
 
         // 该文件只是用来观看  可以添加逾期应该扣款的贷款账号
-        list.addAll(overdues);
-        String theLog = "逾期账号 %s 今日需要正常扣款, 会直接转逾期 \n";
-        Map<String, SomedayInformation> appendOverdue = new HashMap<>();
-        for (SomedayInformation somedayInformation : list) {
-            String dkzh = somedayInformation.getDkzh();
-            if (appendOverdue.containsKey(dkzh)) {
-                log.error("逾期账号 {} 今日需要正常扣款, 会直接转逾期", dkzh);
-                sb.append(String.format(theLog, dkzh));
-            } else {
-                appendOverdue.put(dkzh, somedayInformation);
-            }
-        }
+//        list.addAll(overdues);
+//        String theLog = "逾期账号 %s 今日需要正常扣款, 会直接转逾期 \n";
+//        Map<String, SomedayInformation> appendOverdue = new HashMap<>();
+//        for (SomedayInformation somedayInformation : list) {
+//            String dkzh = somedayInformation.getDkzh();
+//            if (appendOverdue.containsKey(dkzh)) {
+//                log.error("逾期账号 {} 今日需要正常扣款, 会直接转逾期", dkzh);
+//                sb.append(String.format(theLog, dkzh));
+//            } else {
+//                appendOverdue.put(dkzh, somedayInformation);
+//            }
+//        }
 
-        list = sortByNextKkrq(appendOverdue);
+//        list = sortByNextKkrq(appendOverdue);
 
         log.info("生成今日应该扣款账号相关信息文件观看版");
         Map<String, String> keyMap = new LinkedHashMap<>();
