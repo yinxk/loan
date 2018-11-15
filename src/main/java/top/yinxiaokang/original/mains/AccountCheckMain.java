@@ -2,7 +2,6 @@ package top.yinxiaokang.original.mains;
 
 import lombok.extern.slf4j.Slf4j;
 import top.yinxiaokang.original.component.*;
-import top.yinxiaokang.util.Utils;
 import top.yinxiaokang.original.dto.AccountInformations;
 import top.yinxiaokang.original.entity.StOverdue;
 import top.yinxiaokang.original.entity.SthousingAccount;
@@ -15,9 +14,7 @@ import top.yinxiaokang.original.loan.repayment.RepaymentMethod;
 import top.yinxiaokang.original.loan.repayment.RepaymentMonthRateScale;
 import top.yinxiaokang.original.loan.repayment.RepaymentPlan;
 import top.yinxiaokang.original.service.AccountCheck;
-import top.yinxiaokang.util.Common;
-import top.yinxiaokang.util.Constants;
-import top.yinxiaokang.util.DateUtil;
+import top.yinxiaokang.util.*;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -215,7 +212,16 @@ public class AccountCheckMain {
     }
 
     public static void main(String[] args) {
-        everyDay();
+        while (true) {
+            log.error("现在时间是: {} ", LocalDateTime.now());
+            long sleepTime = MilliSecond.betweenNowAndTomorrow915();
+            try {
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            everyDay();
+        }
         //byDkzh();
     }
 

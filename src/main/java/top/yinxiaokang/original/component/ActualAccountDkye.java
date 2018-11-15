@@ -9,6 +9,7 @@ import top.yinxiaokang.original.service.AccountCheck;
 import top.yinxiaokang.util.BeanOrMapUtil;
 import top.yinxiaokang.util.Common;
 import top.yinxiaokang.util.Constants;
+import top.yinxiaokang.util.MilliSecond;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -65,8 +66,17 @@ public class ActualAccountDkye {
         toExcel();
     }
 
+
     public static void main(String[] args) {
-        ActualAccountDkye actualAccountDkye = new ActualAccountDkye();
-        actualAccountDkye.work();
+        while (true) {
+            long sleepTime = MilliSecond.betweenNowAndTomorrow2301();
+            try {
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            ActualAccountDkye actualAccountDkye = new ActualAccountDkye();
+            actualAccountDkye.work();
+        }
     }
 }
