@@ -21,17 +21,21 @@ import java.util.Map;
 
 @Slf4j
 public class ActualAccountDkye {
-    AccountCheck accountCheck = new AccountCheck();
+    AccountCheck accountCheck;
     List<SthousingAccount> sthousingAccounts;
     List<CLoanHousingPersonInformationBasic> basicList;
 
+
+    public ActualAccountDkye() {
+        accountCheck = new AccountCheck();
+    }
 
     private String initBaseAccountDkzhAppendedString() {
         List<InitInformation> initInformations = Common.listBaseAccountInformationByExcelUtil();
         StringBuilder sb = new StringBuilder();
         boolean isFirst = true;
         for (InitInformation information : initInformations) {
-            isFirst = Common.appendDkzhToSqlCanRead(sb, isFirst, information.getDkzh(),false);
+            isFirst = Common.appendDkzhToSqlCanRead(sb, isFirst, information.getDkzh(), false);
         }
         return sb.toString();
     }
@@ -49,7 +53,7 @@ public class ActualAccountDkye {
         List<Map<String, Object>> contentList = new ArrayList<>();
         for (SthousingAccount sthousingAccount : sthousingAccounts) {
             Map<String, Object> stringObjectMap = BeanOrMapUtil.transBean2Map(sthousingAccount);
-            CLoanHousingPersonInformationBasic basicByDkzh = accountCheck.getBasicByDkzh(sthousingAccount.getDkzh());
+            CLoanHousingPersonInformationBasic basicByDkzh = accountCheck.getBasicByDkzh(sthousingAccount.getDkzh(), false);
             stringObjectMap.put("jkrxm", basicByDkzh.getJkrxm());
             contentList.add(stringObjectMap);
         }
@@ -61,7 +65,7 @@ public class ActualAccountDkye {
         }
     }
 
-    public void work(){
+    public void work() {
         listSthousingAccountByDkzhs();
         toExcel();
     }
