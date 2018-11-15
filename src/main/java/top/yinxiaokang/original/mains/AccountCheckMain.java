@@ -220,6 +220,7 @@ public class AccountCheckMain {
             }
             AccountCheckMain accountCheckMain = new AccountCheckMain();
             accountCheckMain.everyDay();
+            accountCheckMain = null;
         }
         //byDkzh();
     }

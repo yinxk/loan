@@ -81,6 +81,7 @@ public class ActualAccountDkye {
             }
             ActualAccountDkye actualAccountDkye = new ActualAccountDkye();
             actualAccountDkye.work();
+            actualAccountDkye = null;
         }
     }
 }
