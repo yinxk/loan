@@ -36,19 +36,20 @@ import static top.yinxiaokang.util.FileCommon.*;
 @SuppressWarnings("Duplicates")
 @Slf4j
 public class AccountCheckMain {
-    private static AccountCheck accountCheck = new AccountCheck();
+    private AccountCheck accountCheck ;
 
-    private static final String KEY_ISGENERATE = "isGenerate";
+    private final String KEY_ISGENERATE = "isGenerate";
 
-    private static final String KEY_NOTGENERATE = "notGenerate";
+    private final String KEY_NOTGENERATE = "notGenerate";
 
-    private static final String KEY_PREPAYMENT = "prepayment";
+    private final String KEY_PREPAYMENT = "prepayment";
 
     public AccountCheckMain() {
+        accountCheck = new AccountCheck();
     }
 
 
-    public static void everyDay() {
+    public void everyDay() {
         // 今天扣款数据
         new GetEveryDayAccounts().work();
 
@@ -108,7 +109,7 @@ public class AccountCheckMain {
         //endregion
 
         //doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
-        doAnalyze(accountInformationsList, checkMain);
+        doAnalyze(accountInformationsList);
         logs.append("读取总条数: " + size + "\n");
         if (errorList.size() > 0) {
             logs.append("错误信息 :");
@@ -146,10 +147,7 @@ public class AccountCheckMain {
         log.info("************************************************************************************************************************************************************");
     }
 
-    public static void byDkzh() {
-
-
-        AccountCheckMain checkMain = new AccountCheckMain();
+    public void byDkzh() {
 
         Collection<Map> importExcel = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
         Collection<Map> oneDayMap = new ArrayList<>();
@@ -193,7 +191,7 @@ public class AccountCheckMain {
         //endregion
 
         //doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
-        doAnalyze(accountInformationsList, checkMain);
+        doAnalyze(accountInformationsList);
         logs.append("读取总条数: " + size + "\n");
         if (errorList.size() > 0) {
             logs.append("错误信息 :");
@@ -220,7 +218,8 @@ public class AccountCheckMain {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            everyDay();
+            AccountCheckMain accountCheckMain = new AccountCheckMain();
+            accountCheckMain.everyDay();
         }
         //byDkzh();
     }
@@ -229,12 +228,11 @@ public class AccountCheckMain {
      * 一般情况
      *
      * @param accountInformationsList
-     * @param checkMain
      */
-    private static void doAnalyze(List<AccountInformations> accountInformationsList, AccountCheckMain checkMain) {
+    private void doAnalyze(List<AccountInformations> accountInformationsList) {
         int dealNum = 0;
         logs.append("==================================================--start--==========================================\n");
-        doAnalyze(checkMain, accountInformationsList, dealNum);
+        doAnalyze(accountInformationsList, dealNum);
         logs.append("==================================================--end--==========================================\n");
     }
 
@@ -244,7 +242,7 @@ public class AccountCheckMain {
      * @param accountInformationsList
      * @param checkMain
      */
-    private static void doAnalyzeInitHasOverdue(List<AccountInformations> accountInformationsList, AccountCheckMain checkMain) {
+    private void doAnalyzeInitHasOverdue(List<AccountInformations> accountInformationsList, AccountCheckMain checkMain) {
         Map<String, List<AccountInformations>> generateOrNotGenerateList = checkMain.isGenerateOrNotGenerateList(accountInformationsList);
         List<AccountInformations> isGenerate = generateOrNotGenerateList.get(KEY_ISGENERATE);
         List<AccountInformations> notGenerate = generateOrNotGenerateList.get(KEY_NOTGENERATE);
@@ -252,10 +250,10 @@ public class AccountCheckMain {
         log.info("存在提前还款业务的账号数量: " + prepayment.size());
         int dealNum = 0;
         logs.append("==================================================start--已经产生业务==========================================\n");
-        doAnalyze(checkMain, isGenerate, dealNum);
+        doAnalyze(isGenerate, dealNum);
         logs.append("==================================================end--已经产生业务==========================================\n");
         logs.append("==================================================start--没有产生业务==========================================\n");
-        doAnalyze(checkMain, notGenerate, dealNum);
+        doAnalyze(notGenerate, dealNum);
         logs.append("==================================================end--没有产生业务==========================================\n");
 
         logs.append("已经产生业务账号数: " + isGenerate.size() + "\n");
@@ -265,11 +263,10 @@ public class AccountCheckMain {
     /**
      * 分析器 ,  每种经过该方法,  该方法再调用其他需要的模块
      *
-     * @param checkMain
      * @param informations
      * @param dealNum
      */
-    private static void doAnalyze(AccountCheckMain checkMain, List<AccountInformations> informations, int dealNum) {
+    private void doAnalyze(List<AccountInformations> informations, int dealNum) {
         int writeTag = 0;
         // 对于即将扣款分析, 排序 , 其他不用排序
         //Collections.sort(informations, Comparator.comparing(o -> o.getSthousingAccount().getDkxffrq()));
@@ -314,7 +311,7 @@ public class AccountCheckMain {
             // endregion
 
 
-            checkMain.analyzeOneThousandDkzh(item, reverseBxQc);
+            analyzeOneThousandDkzh(item, reverseBxQc);
 
 
 //            checkMain.analyzeOneThousandDkzhFuturePayment(item);
