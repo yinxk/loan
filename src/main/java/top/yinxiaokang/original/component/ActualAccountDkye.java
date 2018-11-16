@@ -77,10 +77,10 @@ public class ActualAccountDkye {
             new Thread(() -> {
                 while (time.get('T') > 0) {
                     Long t = time.get('T');
-                    System.out.printf("离任务开始时间还有: %s s \n", t / 1000);
-                    time.put('T', t - 1000);
+                    System.out.printf("%s s  ", t / 1000);
+                    time.put('T', t - 10000);
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(10000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

@@ -212,16 +212,16 @@ public class AccountCheckMain {
     public static void main(String[] args) {
         while (true) {
             log.error("现在时间是: {} ", LocalDateTime.now());
-            long sleepTime = MilliSecond.betweenNowAndTomorrow915();
+            long sleepTime = MilliSecond.betweenNowAndNext915();
             Map<Character, Long> time = new HashMap<>();
             time.put('T', sleepTime);
             new Thread(() -> {
                 while (time.get('T') > 0) {
                     Long t = time.get('T');
-                    System.out.printf("离任务开始时间还有: %s s \n", t / 1000);
-                    time.put('T', t - 1000);
+                    System.out.printf("%s s  ", t / 1000);
+                    time.put('T', t - 10000);
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(10000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

@@ -7,27 +7,36 @@ import java.time.ZoneOffset;
 
 public class MilliSecond {
 
-    public static long betweenNowAndTomorrow(LocalTime localTime) {
-        long start = System.currentTimeMillis();
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
+    private static long betweenNowAndNextDateTime(LocalTime localTime) {
+        LocalDate today = LocalDate.now();
+        LocalDateTime nextDateTime = LocalDateTime.of(today, localTime);
+        LocalDateTime now = LocalDateTime.now();
+        if (nextDateTime.isAfter(now)) {
+            return betweenTwoDateTime(now, nextDateTime);
+        }
+        LocalDate tomorrow = today.plusDays(1);
         LocalDateTime tomorrowDateTime = LocalDateTime.of(tomorrow, localTime);
-        long end = tomorrowDateTime.toInstant(ZoneOffset.of("+8")).toEpochMilli();
-        return end - start;
+        return betweenTwoDateTime(now, tomorrowDateTime);
+    }
+
+    private static long betweenTwoDateTime(LocalDateTime start, LocalDateTime end) {
+        long milli = end.toInstant(ZoneOffset.of("+8")).toEpochMilli() - start.toInstant(ZoneOffset.of("+8")).toEpochMilli();
+        return milli >= 0 ? milli : -milli;
     }
 
 
-    public static long betweenNowAndTomorrow915() {
+    public static long betweenNowAndNext915() {
         LocalTime localTime = LocalTime.of(9, 15);
-        return betweenNowAndTomorrow(localTime);
+        return betweenNowAndNextDateTime(localTime);
     }
 
     public static long betweenNowAndTomorrow1001() {
         LocalTime localTime = LocalTime.of(10, 1);
-        return betweenNowAndTomorrow(localTime);
+        return betweenNowAndNextDateTime(localTime);
     }
 
     public static long betweenNowAndTomorrow2301() {
         LocalTime localTime = LocalTime.of(23, 1);
-        return betweenNowAndTomorrow(localTime);
+        return betweenNowAndNextDateTime(localTime);
     }
 }
