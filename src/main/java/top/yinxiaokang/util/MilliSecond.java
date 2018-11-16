@@ -30,12 +30,12 @@ public class MilliSecond {
         return betweenNowAndNextDateTime(localTime);
     }
 
-    public static long betweenNowAndTomorrow1001() {
+    public static long betweenNowAndNext1001() {
         LocalTime localTime = LocalTime.of(10, 1);
         return betweenNowAndNextDateTime(localTime);
     }
 
-    public static long betweenNowAndTomorrow2301() {
+    public static long betweenNowAndNext2301() {
         LocalTime localTime = LocalTime.of(23, 1);
         return betweenNowAndNextDateTime(localTime);
     }

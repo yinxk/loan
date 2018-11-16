@@ -71,16 +71,16 @@ public class ActualAccountDkye {
 
     public static void main(String[] args) {
         while (true) {
-            long sleepTime = MilliSecond.betweenNowAndTomorrow2301();
+            long sleepTime = MilliSecond.betweenNowAndNext2301();
             Map<Character, Long> time = new HashMap<>();
             time.put('T', sleepTime);
             new Thread(() -> {
                 while (time.get('T') > 0) {
                     Long t = time.get('T');
                     System.out.printf("%s s  ", t / 1000);
-                    time.put('T', t - 10000);
+                    time.put('T', t - 60000);
                     try {
-                        Thread.sleep(10000);
+                        Thread.sleep(60000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
