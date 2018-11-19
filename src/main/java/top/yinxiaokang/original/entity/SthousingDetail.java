@@ -1,10 +1,14 @@
 package top.yinxiaokang.original.entity;
 
+import lombok.Getter;
+import lombok.Setter;
 import top.yinxiaokang.util.Utils;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
+@Getter
+@Setter
 public class SthousingDetail {
 
     private String id;
@@ -29,93 +33,7 @@ public class SthousingDetail {
 
     private String extenstion;
 
-    public BigDecimal getDqqc() {
-        return dqqc;
-    }
-
-    public void setDqqc(BigDecimal dqqc) {
-        this.dqqc = dqqc;
-    }
-
-    public String getDkywmxlx() {
-        return dkywmxlx;
-    }
-
-    public void setDkywmxlx(String dkywmxlx) {
-        this.dkywmxlx = dkywmxlx;
-    }
-
-    public BigDecimal getBjje() {
-        return bjje;
-    }
-
-    public void setBjje(BigDecimal bjje) {
-        this.bjje = bjje;
-    }
-
-    public BigDecimal getLxje() {
-        return lxje;
-    }
-
-    public void setLxje(BigDecimal lxje) {
-        this.lxje = lxje;
-    }
-
-    public BigDecimal getFse() {
-        return fse;
-    }
-
-    public void setFse(BigDecimal fse) {
-        this.fse = fse;
-    }
-
-    public BigDecimal getXqdkye() {
-        return xqdkye;
-    }
-
-    public void setXqdkye(BigDecimal xqdkye) {
-        this.xqdkye = xqdkye;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public BigDecimal getFxje() {
-        return fxje;
-    }
-
-    public void setFxje(BigDecimal fxje) {
-        this.fxje = fxje;
-    }
-
-    public Date getYwfsrq() {
-        return ywfsrq;
-    }
-
-    public void setYwfsrq(Date ywfsrq) {
-        this.ywfsrq = ywfsrq;
-    }
-
-    public Date getCreated_at() {
-        return created_at;
-    }
-
-    public void setCreated_at(Date created_at) {
-        this.created_at = created_at;
-    }
-
-    public String getExtenstion() {
-        return extenstion;
-    }
-
-    public void setExtenstion(String extenstion) {
-        this.extenstion = extenstion;
-    }
+    private String remark;
 
     @Override
     public String toString() {
