@@ -76,7 +76,11 @@ public class AddExplainToExcel {
                             cellStyle.cloneStyleFrom(sm.getCellStyle());
 
                             Sheet sheet = row.getSheet();
-                            sheet.addMergedRegion(new CellRangeAddress(row.getRowNum(), row.getRowNum() + 16, sm.getColumnIndex(), sm.getColumnIndex()));
+                            try {
+                                sheet.addMergedRegion(new CellRangeAddress(row.getRowNum(), row.getRowNum() + 16, sm.getColumnIndex(), sm.getColumnIndex()));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                             sheet.setColumnWidth(sm.getColumnIndex(), 10000);
                             theCellStyle(cellStyle, font);
 
