@@ -77,6 +77,7 @@ public class ExcelTransform {
         keyMap.put("xzdkye", "xzdkye");// 修正贷款余额(程序计算)
         keyMap.put("csyqbj", "csyqbj");// 初始逾期本金
         keyMap.put("ssdkye", "ssdkye");// 实时贷款余额
+        keyMap.put("ssdkye-xzdkye", "ssdkye-xzdkye");// 实时贷款余额-修账贷款余额
         keyMap.put("dkyesfgx", "dkyesfgx");// 贷款余额是否更新
         keyMap.put("fsxd", "fsxd"); // 推算修正后余额是否与 凭证推算内容中的余额相等
         keyMap.put("发生额差额合计", "fsecehj");
@@ -345,6 +346,14 @@ public class ExcelTransform {
                 }
                 log.info("多扣类型分类信息: {}, {}, {},  ====> {} ", 发生额差额合计, 本金差额合计, 利息差额合计, moreTagStr);
             }
+            // 已结清的 对应类型已经不适合
+            else if (ssdkye.compareTo(BigDecimal.ONE) <= 0) {
+                typeMap.get(ExcelFilterType.CLOSED_ACCOUNT).add(contentMap);
+                allMap.get(ExcelFilterType.CLOSED_ACCOUNT).add(contentMap);
+                if (isDone(contentMap)) {
+                    this.filterNotDoneAlltypeMap.get(ExcelFilterType.CLOSED_ACCOUNT).add(contentMap);
+                }
+            }
             // 少扣
             else if (发生额差额合计.compareTo(Common.ERROR_RANGE) > 0) {
                 typeMap.get(ExcelFilterType.LESS).add(contentMap);
@@ -354,7 +363,7 @@ public class ExcelTransform {
                 }
             }
             // 本息颠倒
-            else if (发生额差额合计.compareTo(Common.ERROR_RANGE.negate()) > 0 && 发生额差额合计.compareTo(Common.ERROR_RANGE) < 0 && 备注.contains("颠倒")) {
+            else if (发生额差额合计.compareTo(Common.ERROR_RANGE.negate()) > 0 && 发生额差额合计.compareTo(Common.ERROR_RANGE) < 0/* && 备注.contains("颠倒")*/) {
                 typeMap.get(ExcelFilterType.BX_REVERSE).add(contentMap);
                 allMap.get(ExcelFilterType.BX_REVERSE).add(contentMap);
                 if (isDone(contentMap)) {
@@ -386,6 +395,7 @@ public class ExcelTransform {
             }
             contentMap.put("ssdkye", new CellStyleAndContent(ssdkye, null));
             contentMap.put("fileName", new CellStyleAndContent(fileName, null));
+            contentMap.put("ssdkye-xzdkye", new CellStyleAndContent(ssdkye.subtract(xzdkye), null));
 
         }
 

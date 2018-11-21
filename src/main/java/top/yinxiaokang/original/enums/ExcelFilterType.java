@@ -16,7 +16,8 @@ public enum ExcelFilterType {
     MANY_FFF_FFZ_FFL("多扣 未结清 负负负 | 负负正 | 负负零"),
     MANY_OUTSTANDING_FFF_FFZ_FFL("多扣 已结清"),
     LESS("少扣"),
-    OTHER("其他")
+    OTHER("其他"),
+    CLOSED_ACCOUNT("已结清 类型不符合"),
     ;
     private String typeMessage;
 
