@@ -1,15 +1,19 @@
 package top.yinxiaokang.original.component;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import top.yinxiaokang.original.dto.ExcelReadReturn;
 import top.yinxiaokang.util.Constants;
 import top.yinxiaokang.util.ExcelUtil;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class SupplementRepayment {
 
     private List<Map<String, Object>> messages;
@@ -34,6 +38,8 @@ public class SupplementRepayment {
             if (dkzhCell == null) return;
             CellStyle cellStyle = dkzhCell.getCellStyle();
             if (cellStyle == null) return;
+            String xh = ExcelUtil.getStringCellContent(row.getCell(keyMapReverse.get("序号")));
+            if (StringUtils.isBlank(xh)) return;
             String dkzh = ExcelUtil.getStringCellContent(dkzhCell);
             Map<String, Object> msByDkzh = getMsByDkzh(dkzh);
             Cell xmCell = row.createCell(keyMapReverse.get("姓名"));
@@ -43,7 +49,17 @@ public class SupplementRepayment {
             sjhmCell.setCellValue(msByDkzh.get("sjhm") == null ? "" : msByDkzh.get("sjhm").toString());
             sjhmCell.setCellStyle(cellStyle);
             Cell kkfsCell = row.createCell(keyMapReverse.get("扣款方式"));
-            kkfsCell.setCellValue(msByDkzh.get("kkfs") == null ? "" : msByDkzh.get("kkfs").toString());
+            String ye = msByDkzh.get("ye").toString();
+            String fse = ExcelUtil.getStringCellContent(row.getCell(keyMapReverse.get("发生额")));
+            BigDecimal yeB = new BigDecimal(ye);
+            BigDecimal fseB = new BigDecimal(fse);
+
+            String kkfsStr = "";
+
+            kkfsStr = yeB.compareTo(fseB) > 0 ? "公积金" : "银行卡";
+
+            log.info("序号: {}  贷款账号:{}  发生额:{}  余额:{}  扣款方式:{}", xh, dkzh, fseB, yeB, kkfsStr);
+            kkfsCell.setCellValue(kkfsStr);
             kkfsCell.setCellStyle(cellStyle);
         });
     }
