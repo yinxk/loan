@@ -359,10 +359,16 @@ public class ExcelUtil {
                     }
 
                 } catch (IllegalStateException e) {
-                    object = cell.getRichStringCellValue();
+                    try {
+                        object = cell.getRichStringCellValue();
+                    } catch (Exception e1) {
+                        log.error("({},{})", cell.getRowIndex(), cell.getColumnIndex(), e1);
+                    }
                 }
                 break;
             case BLANK:
+                break;
+            default:
                 return null;
         }
         return object;

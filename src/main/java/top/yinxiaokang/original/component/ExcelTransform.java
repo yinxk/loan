@@ -36,6 +36,8 @@ public class ExcelTransform {
      */
     private Map<ExcelFilterType, List<Map<String, CellStyleAndContent>>> filterNotDoneAlltypeMap = new LinkedHashMap<>();
 
+    private Map<ExcelFilterType, List<Map<String, CellStyleAndContent>>> allMap = new LinkedHashMap<>();
+
     Map<String, String> keyMap = new LinkedHashMap<>();
 
 
@@ -63,7 +65,9 @@ public class ExcelTransform {
         ExcelFilterType[] excelFilterTypes = ExcelFilterType.values();
         for (ExcelFilterType type : excelFilterTypes) {
             List<Map<String, CellStyleAndContent>> typeList = new ArrayList<>();
+            List<Map<String, CellStyleAndContent>> allTypeList = new ArrayList<>();
             filterNotDoneAlltypeMap.put(type, typeList);
+            allMap.put(type, allTypeList);
         }
 
         keyMap.put("序号", "xh");
@@ -73,6 +77,7 @@ public class ExcelTransform {
         keyMap.put("xzdkye", "xzdkye");// 修正贷款余额(程序计算)
         keyMap.put("csyqbj", "csyqbj");// 初始逾期本金
         keyMap.put("ssdkye", "ssdkye");// 实时贷款余额
+        keyMap.put("ssdkye-xzdkye", "ssdkye-xzdkye");// 实时贷款余额-修账贷款余额
         keyMap.put("dkyesfgx", "dkyesfgx");// 贷款余额是否更新
         keyMap.put("fsxd", "fsxd"); // 推算修正后余额是否与 凭证推算内容中的余额相等
         keyMap.put("发生额差额合计", "fsecehj");
@@ -108,6 +113,7 @@ public class ExcelTransform {
             }
         }
         allDone();
+        all();
         log.info("分类转换excel运行结束!");
     }
 
@@ -129,6 +135,21 @@ public class ExcelTransform {
             e.printStackTrace();
         }
         log.info("写出 {} 完成", Constants.TAKE_ACCOUNT_TRANSFORM_PATH + "/所有文件待处理" + Constants.XLS);
+    }
+
+    private void all() {
+        log.info("准备写出 {} 不要关闭", Constants.TAKE_ACCOUNT_TRANSFORM_PATH + "/所有文件" + Constants.XLS);
+        Workbook wb = new HSSFWorkbook();
+        File file = ExcelUtil.getOutFileExcelName(Constants.TAKE_ACCOUNT_TRANSFORM_PATH + "/所有文件" + Constants.XLS);
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+            for (Map.Entry<ExcelFilterType, List<Map<String, CellStyleAndContent>>> entry : this.allMap.entrySet()) {
+                createSheet(wb, entry.getKey().getTypeMessage(), entry.getValue(), keyMap);
+            }
+            wb.write(fileOutputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        log.info("写出 {} 完成", Constants.TAKE_ACCOUNT_TRANSFORM_PATH + "/所有文件" + Constants.XLS);
     }
 
 
@@ -267,13 +288,14 @@ public class ExcelTransform {
             BigDecimal ssdkye = getAccountByDkzh(contentMap.get("dkzh").getContent().toString()).getDkye();
             // 全部co
             typeMap.get(ExcelFilterType.ALL).add(contentMap);
+            allMap.get(ExcelFilterType.ALL).add(contentMap);
             if (isDone(contentMap)) {
                 this.filterNotDoneAlltypeMap.get(ExcelFilterType.ALL).add(contentMap);
             }
 
             // 多扣类型
-            if (备注.contains("多扣") && !备注.contains("少扣")) {
-                BigDecimal 发生额差额合计 = Optional.ofNullable(contentMap.get("发生额差额合计")).map(CellStyleAndContent::getContent).map(Object::toString).map(BigDecimal::new).orElse(null);
+            BigDecimal 发生额差额合计 = Optional.ofNullable(contentMap.get("发生额差额合计")).map(CellStyleAndContent::getContent).map(Object::toString).map(BigDecimal::new).orElse(null);
+            if (发生额差额合计.compareTo(BigDecimal.ZERO) < 0) {
                 BigDecimal 本金差额合计 = Optional.ofNullable(contentMap.get("本金差额合计")).map(CellStyleAndContent::getContent).map(Object::toString).map(BigDecimal::new).orElse(null);
                 BigDecimal 利息差额合计 = Optional.ofNullable(contentMap.get("利息差额合计")).map(CellStyleAndContent::getContent).map(Object::toString).map(BigDecimal::new).orElse(null);
                 if (发生额差额合计 == null || 本金差额合计 == null || 利息差额合计 == null) {
@@ -287,6 +309,7 @@ public class ExcelTransform {
                             本金差额合计.compareTo(BigDecimal.ZERO) > 0 &&
                             利息差额合计.compareTo(BigDecimal.ZERO) < 0) {
                         typeMap.get(ExcelFilterType.MANY_FZF).add(contentMap);
+                        allMap.get(ExcelFilterType.MANY_FZF).add(contentMap);
                         if (isDone(contentMap)) {
                             this.filterNotDoneAlltypeMap.get(ExcelFilterType.MANY_FZF).add(contentMap);
                         }
@@ -297,6 +320,7 @@ public class ExcelTransform {
                     else if (发生额差额合计.compareTo(BigDecimal.ZERO) < 0 &&
                             本金差额合计.compareTo(BigDecimal.ZERO) < 0) {
                         typeMap.get(ExcelFilterType.MANY_FFF_FFZ_FFL).add(contentMap);
+                        allMap.get(ExcelFilterType.MANY_FFF_FFZ_FFL).add(contentMap);
                         if (isDone(contentMap)) {
                             this.filterNotDoneAlltypeMap.get(ExcelFilterType.MANY_FFF_FFZ_FFL).add(contentMap);
                         }
@@ -304,6 +328,7 @@ public class ExcelTransform {
                         moreTagStr = ExcelFilterType.MANY_FFF_FFZ_FFL.getTypeMessage();
                     } else {
                         typeMap.get(ExcelFilterType.OTHER).add(contentMap);
+                        allMap.get(ExcelFilterType.OTHER).add(contentMap);
                         if (isDone(contentMap)) {
                             this.filterNotDoneAlltypeMap.get(ExcelFilterType.OTHER).add(contentMap);
                         }
@@ -313,6 +338,7 @@ public class ExcelTransform {
                 // 多扣类型 已结清的
                 else {
                     typeMap.get(ExcelFilterType.MANY_OUTSTANDING_FFF_FFZ_FFL).add(contentMap);
+                    allMap.get(ExcelFilterType.MANY_OUTSTANDING_FFF_FFZ_FFL).add(contentMap);
                     if (isDone(contentMap)) {
                         this.filterNotDoneAlltypeMap.get(ExcelFilterType.MANY_OUTSTANDING_FFF_FFZ_FFL).add(contentMap);
                     }
@@ -320,16 +346,26 @@ public class ExcelTransform {
                 }
                 log.info("多扣类型分类信息: {}, {}, {},  ====> {} ", 发生额差额合计, 本金差额合计, 利息差额合计, moreTagStr);
             }
+            // 已结清的 对应类型已经不适合
+            else if (ssdkye.compareTo(BigDecimal.ONE) <= 0) {
+                typeMap.get(ExcelFilterType.CLOSED_ACCOUNT).add(contentMap);
+                allMap.get(ExcelFilterType.CLOSED_ACCOUNT).add(contentMap);
+                if (isDone(contentMap)) {
+                    this.filterNotDoneAlltypeMap.get(ExcelFilterType.CLOSED_ACCOUNT).add(contentMap);
+                }
+            }
             // 少扣
-            else if (备注.contains("少扣")) {
+            else if (发生额差额合计.compareTo(Common.ERROR_RANGE) > 0) {
                 typeMap.get(ExcelFilterType.LESS).add(contentMap);
+                allMap.get(ExcelFilterType.LESS).add(contentMap);
                 if (isDone(contentMap)) {
                     this.filterNotDoneAlltypeMap.get(ExcelFilterType.LESS).add(contentMap);
                 }
             }
             // 本息颠倒
-            else if (备注.contains("颠倒")) {
+            else if (发生额差额合计.compareTo(Common.ERROR_RANGE.negate()) > 0 && 发生额差额合计.compareTo(Common.ERROR_RANGE) < 0/* && 备注.contains("颠倒")*/) {
                 typeMap.get(ExcelFilterType.BX_REVERSE).add(contentMap);
+                allMap.get(ExcelFilterType.BX_REVERSE).add(contentMap);
                 if (isDone(contentMap)) {
                     this.filterNotDoneAlltypeMap.get(ExcelFilterType.BX_REVERSE).add(contentMap);
                 }
@@ -337,6 +373,7 @@ public class ExcelTransform {
             // 其他
             else {
                 typeMap.get(ExcelFilterType.OTHER).add(contentMap);
+                allMap.get(ExcelFilterType.OTHER).add(contentMap);
                 if (isDone(contentMap)) {
                     this.filterNotDoneAlltypeMap.get(ExcelFilterType.OTHER).add(contentMap);
                 }
@@ -358,6 +395,7 @@ public class ExcelTransform {
             }
             contentMap.put("ssdkye", new CellStyleAndContent(ssdkye, null));
             contentMap.put("fileName", new CellStyleAndContent(fileName, null));
+            contentMap.put("ssdkye-xzdkye", new CellStyleAndContent(ssdkye.subtract(xzdkye), null));
 
         }
 
@@ -401,6 +439,8 @@ public class ExcelTransform {
             map.put("dkzh", new CellStyleAndContent(map.get("dkzh").getContent(), map.get("行号").getCellStyle()));
         }
 
+        Map<Integer, CellStyle> cellStyleMap = new HashMap<>();
+
         for (int i = 0; i < list.size(); i++) {
             Row row = sheet.createRow(i + 1);
             Map<String, CellStyleAndContent> contentMap = list.get(i);
@@ -412,10 +452,15 @@ public class ExcelTransform {
                     CellStyle cellStyle1 = Optional.ofNullable(contentMap.get(key.getKey())).map(CellStyleAndContent::getCellStyle).orElse(null);
                     Cell cell = row.createCell(j++);
                     if ((key.getKey().equals("dkzh") || key.getKey().equals("行号") || key.getKey().equals("说明")) && cellStyle1 != null) {
-                        CellStyle style = wb.createCellStyle();
-                        style.setFillForegroundColor(cellStyle1.getFillForegroundColor());
-                        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-                        cell.setCellStyle(style);
+                        if (cellStyleMap.containsKey((int) cellStyle1.getFillForegroundColor())) {
+                            cell.setCellStyle(cellStyleMap.get((int) cellStyle1.getFillForegroundColor()));
+                        } else {
+                            CellStyle style = wb.createCellStyle();
+                            style.setFillForegroundColor(cellStyle1.getFillForegroundColor());
+                            style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                            cell.setCellStyle(style);
+                            cellStyleMap.put((int) cellStyle1.getFillForegroundColor(), style);
+                        }
                     }
                     String content = Optional.ofNullable(contentMap.get(key.getKey())).map(CellStyleAndContent::getContent).map(Object::toString).orElse("");
                     cell.setCellValue(content);
