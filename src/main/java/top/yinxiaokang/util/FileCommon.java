@@ -25,6 +25,7 @@ public class FileCommon {
     // region excel
     public static OutputStream outXLSXStream = null;
     public static OutputStream outXLSXStreamByDkzh = null;
+    public static OutputStream outXLSXStreamAll = null;
     public static List<OneThousand> datasetOneThousand = new ArrayList<>();
     public static List<AllAccountDkye> datasetAllAccountDkye = new ArrayList<>();
     public static List<OneThousand> dataset = datasetOneThousand;
@@ -32,12 +33,7 @@ public class FileCommon {
     // endregion
 
     static {
-        try {
-            outXLSXStream = new FileOutputStream(new File(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_XLS));
-            outXLSXStreamByDkzh = new FileOutputStream(new File(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_BY_DKZH_XLS));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+
         KEY_MAP = new LinkedHashMap<>();
         KEY_MAP.put("dkzh", "贷款账号");
         KEY_MAP.put("jkrxm", "借款人姓名");
@@ -98,6 +94,11 @@ public class FileCommon {
      * 输出到excel
      */
     public static void listToXlsx() {
+        try {
+            outXLSXStream = new FileOutputStream(new File(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_XLS));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         log.info("开始=====>" + Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_XLS);
         ExcelUtil.exportExcel(KEY_MAP, dataset, outXLSXStream);
         log.info("结束=====>" + Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_XLS);
@@ -111,11 +112,34 @@ public class FileCommon {
      * 输出到excel
      */
     public static void listToXlsxByDkzh() {
+        try {
+            outXLSXStreamByDkzh = new FileOutputStream(new File(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_BY_DKZH_XLS));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         log.info("开始=====>" + Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_BY_DKZH_XLS);
         ExcelUtil.exportExcel(KEY_MAP, dataset, outXLSXStreamByDkzh);
         log.info("结束=====>" + Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_BY_DKZH_XLS);
         try {
             outXLSXStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    /**
+     * 输出到excel
+     */
+    public static void listToXlsxAll() {
+        try {
+            outXLSXStreamAll = new FileOutputStream(new File(Constants.All_DKZH_BUSINESS_XLS));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        log.info("开始=====>" + Constants.All_DKZH_BUSINESS_XLS);
+        ExcelUtil.exportExcel(KEY_MAP, dataset, outXLSXStreamAll);
+        log.info("结束=====>" + Constants.All_DKZH_BUSINESS_XLS);
+        try {
+            outXLSXStreamAll.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -142,6 +166,21 @@ public class FileCommon {
     public static void logsToFileByDkzh() {
 
         try (FileWriter writer = new FileWriter(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_BY_DKZH_LOG, true)) {
+            System.out.print(logs.toString());
+            writer.write(logs.toString());
+            logs = new StringBuffer();
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.info("创建失败!");
+        }
+    }
+
+    /**
+     * 写入一部分日志到文件
+     */
+    public static void logsToFileAll() {
+
+        try (FileWriter writer = new FileWriter(Constants.All_DKZH_BUSINESS_LOG, true)) {
             System.out.print(logs.toString());
             writer.write(logs.toString());
             logs = new StringBuffer();
