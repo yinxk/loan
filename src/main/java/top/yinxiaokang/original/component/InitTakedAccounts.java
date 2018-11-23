@@ -16,6 +16,7 @@ import java.util.*;
  * @author yinxk
  * @date 2018/11/3 15:36
  */
+@SuppressWarnings("Duplicates")
 @Slf4j
 public class InitTakedAccounts {
 
@@ -23,7 +24,24 @@ public class InitTakedAccounts {
     private static String pathStr = Constants.TAKE_ACCOUNT_PATH;
     Map<Integer, Integer> colorMap = new HashMap<>();
     List<Map<String, Object>> notDoneList = new ArrayList<>();
+    List<Map<String, Object>> moreOnePrePayment;
+    List<Map<String, Object>> moreOnePrePaymentMessage = new ArrayList<>();
     List<Map<String, CellStyleAndContent>> all = new ArrayList<>();
+
+    public InitTakedAccounts() {
+        ExcelReadReturn excelReadReturn = ExcelUtil.readExcel(Constants.BASE_PATH + "/提前还款或者结清2次及以上问题账号.xlsx", 0, false, false);
+        moreOnePrePayment = excelReadReturn.getContent();
+    }
+
+    private boolean isInMoreOnePrePayment(String dkzh) {
+        for (Map<String, Object> map : moreOnePrePayment) {
+            if (map.get("dkzh").equals(dkzh)) {
+                return true;
+            }
+
+        }
+        return false;
+    }
 
     public void init() {
         initTakeDoneAccounts(true);
@@ -41,6 +59,12 @@ public class InitTakedAccounts {
         log.error("总共匹配到的账号数量为 : {}", all.size());
         log.error("还没有处理的账号总数为 : {}", notDoneList.size());
         log.error("已处理贷款账号数量: {}  根据文件匹配到的已处理账号数量: {}", colorMap.get(40), content.size());
+
+        for (Map<String, Object> contentMap : moreOnePrePaymentMessage) {
+            log.error(String.format(theLog, contentMap.get("dkzh"), contentMap.get("fse"), contentMap.get("bjje"),
+                    contentMap.get("lxje"), contentMap.get("bz").toString().trim(), contentMap.get("file")));
+        }
+        log.error("匹配到的两次以及以上提前还款或者结清的账号数量: {} ", moreOnePrePaymentMessage.size());
     }
 
     public void initTakeDoneAccounts(boolean isWrite) {
@@ -74,6 +98,7 @@ public class InitTakedAccounts {
             CellStyleAndContent content = contentMap.get("dkzh");
             CellStyleAndContent style = contentMap.get("行号");
             String dkzh = content.getContent().toString();
+
             short color = style.getCellStyle().getFillForegroundColor();
             log.debug("贷款账号: {}  颜色是: {}  对应颜色名: {}  文件: {} ", dkzh, color, IndexedColors.fromInt(color).name(), dkzhsKey.get(dkzh));
             Integer integer = colorMap.get((int) color);
@@ -97,6 +122,16 @@ public class InitTakedAccounts {
                 notDone.put("bz", contentMap.get("备注").getContent());
                 notDone.put("file", dkzhsKey.get(dkzh));
                 notDoneList.add(notDone);
+            }
+            if (isInMoreOnePrePayment(dkzh)) {
+                Map<String, Object> notDone = new HashMap<>();
+                notDone.put("dkzh", dkzh);
+                notDone.put("fse", contentMap.get("发生额差额合计").getContent());
+                notDone.put("bjje", contentMap.get("本金差额合计").getContent());
+                notDone.put("lxje", contentMap.get("利息差额合计").getContent());
+                notDone.put("bz", contentMap.get("备注").getContent());
+                notDone.put("file", dkzhsKey.get(dkzh));
+                moreOnePrePaymentMessage.add(notDone);
             }
         }
         log.error("不同颜色对应的记录数量: {}", colorMap);
