@@ -121,7 +121,7 @@ public class FileCommon {
         ExcelUtil.exportExcel(KEY_MAP, dataset, outXLSXStreamByDkzh);
         log.info("结束=====>" + Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_BY_DKZH_XLS);
         try {
-            outXLSXStream.close();
+            outXLSXStreamByDkzh.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
