@@ -152,8 +152,12 @@ public class AccountCheckMain {
         Collection<Map> importExcel = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
         Collection<Map> oneDayMap = new ArrayList<>();
         Map<String, Object> dkzh = new HashMap<>();
-        dkzh.put("dkzh", "52001069603600000000318581");
+        dkzh.put("dkzh", "52001069403600000000469146");
         oneDayMap.add(dkzh);
+        dkzh = new HashMap<>();
+        dkzh.put("dkzh", "52001069633600000000524248");
+        oneDayMap.add(dkzh);
+
 
         File logFile = new File(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_BY_DKZH_LOG);
         if (logFile.isFile() && logFile.exists()) {
@@ -210,32 +214,42 @@ public class AccountCheckMain {
     }
 
     public static void main(String[] args) {
-        while (true) {
-            log.error("现在时间是: {} ", LocalDateTime.now());
-            long sleepTime = MilliSecond.betweenNowAndNext915();
-            Map<Character, Long> time = new HashMap<>();
-            time.put('T', sleepTime);
-            new Thread(() -> {
-                while (time.get('T') > 0) {
-                    Long t = time.get('T');
-                    System.out.printf("%s s  ", t / 1000);
-                    time.put('T', t - 60000);
-                    try {
-                        Thread.sleep(60000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-            try {
-                Thread.sleep(sleepTime);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            AccountCheckMain accountCheckMain = new AccountCheckMain();
-            accountCheckMain.everyDay();
-            accountCheckMain = null;
-        }
+
+
+
+
+        AccountCheckMain accountCheckMain = new AccountCheckMain();
+//        accountCheckMain.byDkzh();
+        accountCheckMain.everyDay();
+
+
+
+//        while (true) {
+//            log.error("现在时间是: {} ", LocalDateTime.now());
+//            long sleepTime = MilliSecond.betweenNowAndNext915();
+//            Map<Character, Long> time = new HashMap<>();
+//            time.put('T', sleepTime);
+//            new Thread(() -> {
+//                while (time.get('T') > 0) {
+//                    Long t = time.get('T');
+//                    System.out.printf("%s s  ", t / 1000);
+//                    time.put('T', t - 60000);
+//                    try {
+//                        Thread.sleep(60000);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }).start();
+//            try {
+//                Thread.sleep(sleepTime);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            AccountCheckMain accountCheckMain = new AccountCheckMain();
+//            accountCheckMain.everyDay();
+//            accountCheckMain = null;
+//        }
         //byDkzh();
     }
 
@@ -776,7 +790,7 @@ public class AccountCheckMain {
                 nextDetail = shouldDetails.get(i + 1);
             }
             // 代表重新生成了还款计划
-            if (repaymentItems != null && repaymentTag > -1) {
+            if (repaymentItems != null && repaymentTag > -1 && thisDetail.getDkywmxlx().contains("正常还款")) {
                 RepaymentItem repaymentItem = repaymentItems.get(repaymentTag);
                 thisDetail.setFse(repaymentItem.getFse());
                 thisDetail.setLxje(repaymentItem.getHklxje());

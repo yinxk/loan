@@ -71,6 +71,9 @@ public class ActualAccountDkye {
 
     public static void main(String[] args) {
         while (true) {
+            ActualAccountDkye actualAccountDkye = new ActualAccountDkye();
+            actualAccountDkye.work();
+            actualAccountDkye = null;
             long sleepTime = MilliSecond.betweenNowAndNext2301();
             Map<Character, Long> time = new HashMap<>();
             time.put('T', sleepTime);
@@ -91,9 +94,6 @@ public class ActualAccountDkye {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            ActualAccountDkye actualAccountDkye = new ActualAccountDkye();
-            actualAccountDkye.work();
-            actualAccountDkye = null;
         }
     }
 }
