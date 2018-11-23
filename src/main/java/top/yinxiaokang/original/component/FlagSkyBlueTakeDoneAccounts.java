@@ -57,13 +57,24 @@ public class FlagSkyBlueTakeDoneAccounts {
             throw new RuntimeException("not directory");
         }
         File[] files = directory.listFiles();
+        List<Map<String, String>> filesList = new ArrayList<>();
         assert files != null;
         for (File file : files) {
-            if (file.isFile() || file.getName().contains("-20-")) {
-                //flagSkyBlueToDoneAccount(file.getPath(), Constants.TAKE_ACCOUNT_TAKED_FLAG_SKY_BLUE_ACCOUNTS_DATA_PATH + "/" + file.getName(), file.getName());
-                flagSkyBlueToDoneAccount(file.getPath(), null, file.getName());
+            if (file.isFile()) {
+                Map<String, String> map = new HashMap<>();
+                map.put("path", file.getPath());
+                map.put("name", file.getName());
+                filesList.add(map);
             }
         }
+
+        filesList.sort((o1, o2) -> o2.get("name").compareTo(o1.get("name")));
+
+        for (Map<String, String> map : filesList) {
+            flagSkyBlueToDoneAccount(map.get("path"), null, map.get("name"));
+        }
+
+
         log.error("该次总共标记账号数量是: {} ", theFlagAccounts.size());
         for (Map<String, String> flagAccount : theFlagAccounts) {
             log.error("标记的贷款账号: {}  对应文件: {}", flagAccount.get("dkzh"), flagAccount.get("file"));
@@ -118,10 +129,15 @@ public class FlagSkyBlueTakeDoneAccounts {
                         // 过滤已标记的
                         String flag = doneAccount.get("是否已标记").toString();
                         CellStyle hhStyle = row.getCell(contentMapColIndex.get("行号")).getCellStyle();
-                        if ("是".equals(flag) &&
-                                (hhStyle.getFillForegroundColor() == IndexedColors.SKY_BLUE.getIndex() ||
-                                        hhStyle.getFillBackgroundColor() == IndexedColors.SKY_BLUE.getIndex())) {
-                            log.debug("贷款账号 {} 已标记  标记记号: {}  标记颜色: {}  ", dkzh, flag, hhStyle.getFillForegroundColor());
+                        if ("是".equals(flag)) {
+                            if (hhStyle.getFillForegroundColor() == IndexedColors.SKY_BLUE.getIndex() ||
+                                    hhStyle.getFillBackgroundColor() == IndexedColors.SKY_BLUE.getIndex()) {
+                                return;
+                            }
+                            log.debug("贷款账号 {}   标记记号: {}  颜色: {}  是否是标记色:{} ", dkzh, flag,
+                                    hhStyle.getFillForegroundColor(),
+                                    hhStyle.getFillForegroundColor() == IndexedColors.SKY_BLUE.getIndex()
+                                            || hhStyle.getFillBackgroundColor() == IndexedColors.SKY_BLUE.getIndex());
                             return;
                         }
 
