@@ -152,8 +152,12 @@ public class AccountCheckMain {
         Collection<Map> importExcel = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
         Collection<Map> oneDayMap = new ArrayList<>();
         Map<String, Object> dkzh = new HashMap<>();
-        dkzh.put("dkzh", "52001069603600000000318581");
+        dkzh.put("dkzh", "52001069403600000000469146");
         oneDayMap.add(dkzh);
+        dkzh = new HashMap<>();
+        dkzh.put("dkzh", "52001069633600000000524248");
+        oneDayMap.add(dkzh);
+
 
         File logFile = new File(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_BY_DKZH_LOG);
         if (logFile.isFile() && logFile.exists()) {
@@ -209,33 +213,88 @@ public class AccountCheckMain {
         log.info("************************************************************************************************************************************************************");
     }
 
-    public static void main(String[] args) {
-        while (true) {
-            log.error("现在时间是: {} ", LocalDateTime.now());
-            long sleepTime = MilliSecond.betweenNowAndNext915();
-            Map<Character, Long> time = new HashMap<>();
-            time.put('T', sleepTime);
-            new Thread(() -> {
-                while (time.get('T') > 0) {
-                    Long t = time.get('T');
-                    System.out.printf("%s s  ", t / 1000);
-                    time.put('T', t - 60000);
-                    try {
-                        Thread.sleep(60000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-            try {
-                Thread.sleep(sleepTime);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            AccountCheckMain accountCheckMain = new AccountCheckMain();
-            accountCheckMain.everyDay();
-            accountCheckMain = null;
+    public void all(){
+        Collection<Map> importExcel = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
+        File logFile = new File(Constants.All_DKZH_BUSINESS_LOG);
+        if (logFile.isFile() && logFile.exists()) {
+            log.info("文件存在, 删除文件!");
+            logFile.delete();
         }
+
+        int size = importExcel.size();
+        logs.append("=============================================写入时间: " + DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "=============================================\n");
+        logs.append("读取总条数: " + size + "\n");
+
+        List<InitInformation> initInformationList = Common.importExcelToInitInformationList(importExcel);
+        // 置空, 让虚拟机GC的时候清理掉
+        importExcel = null;
+        List<InitInformation> errorList = new ArrayList<>();
+        List<AccountInformations> accountInformationsList = new ArrayList<>();
+        for (InitInformation initInformation : initInformationList) {
+            AccountInformations accountInformations = accountCheck.toAccountInformations(initInformation);
+            if (accountInformations == null) {
+                errorList.add(initInformation);
+                continue;
+            }
+            accountInformationsList.add(accountInformations);
+        }
+
+        //doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
+        doAnalyze(accountInformationsList);
+        logs.append("读取总条数: " + size + "\n");
+        if (errorList.size() > 0) {
+            logs.append("错误信息 :");
+            for (InitInformation initInformation : errorList) {
+                logs.append(initInformation);
+            }
+            logs.append("\n");
+        }
+        logs.append("=============================================写入完成时间: " + DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "=============================================\n");
+        logsToFileAll();
+        listToXlsxAll();
+        log.info("************************************************************************************************************************************************************");
+        log.info("**************************************************************************结束运行!*************************************************************************");
+        log.info("********************************************************************" + DateUtil.DTF_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND.format(LocalDateTime.now()) + "********************************************************************");
+        log.info("************************************************************************************************************************************************************");
+    }
+
+    public static void main(String[] args) {
+
+
+
+
+        AccountCheckMain accountCheckMain = new AccountCheckMain();
+//        accountCheckMain.byDkzh();
+        accountCheckMain.everyDay();
+//        accountCheckMain.all();
+
+
+//        while (true) {
+//            log.error("现在时间是: {} ", LocalDateTime.now());
+//            long sleepTime = MilliSecond.betweenNowAndNext915();
+//            Map<Character, Long> time = new HashMap<>();
+//            time.put('T', sleepTime);
+//            new Thread(() -> {
+//                while (time.get('T') > 0) {
+//                    Long t = time.get('T');
+//                    System.out.printf("%s s  ", t / 1000);
+//                    time.put('T', t - 60000);
+//                    try {
+//                        Thread.sleep(60000);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }).start();
+//            try {
+//                Thread.sleep(sleepTime);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            AccountCheckMain accountCheckMain = new AccountCheckMain();
+//            accountCheckMain.everyDay();
+//            accountCheckMain = null;
+//        }
         //byDkzh();
     }
 
@@ -776,7 +835,7 @@ public class AccountCheckMain {
                 nextDetail = shouldDetails.get(i + 1);
             }
             // 代表重新生成了还款计划
-            if (repaymentItems != null && repaymentTag > -1) {
+            if (repaymentItems != null && repaymentTag > -1 && thisDetail.getDkywmxlx().contains("正常还款")) {
                 RepaymentItem repaymentItem = repaymentItems.get(repaymentTag);
                 thisDetail.setFse(repaymentItem.getFse());
                 thisDetail.setLxje(repaymentItem.getHklxje());
