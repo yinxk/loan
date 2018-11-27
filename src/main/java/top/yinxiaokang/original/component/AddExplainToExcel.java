@@ -21,6 +21,8 @@ public class AddExplainToExcel {
         maps = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION_SSDKYE);
     }
 
+    LinkedList<CellRangeAddress> temp = new LinkedList<>();
+
     private Map getJkrxmByDkzh(String dkzh) {
         Objects.requireNonNull(dkzh);
         for (Map map : maps) {
@@ -75,13 +77,12 @@ public class AddExplainToExcel {
                             Font font = wb.createFont();
                             cellStyle.cloneStyleFrom(sm.getCellStyle());
 
-                            Sheet sheet = row.getSheet();
-                            try {
-                                sheet.addMergedRegion(new CellRangeAddress(row.getRowNum(), row.getRowNum() + 16, sm.getColumnIndex(), sm.getColumnIndex()));
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                            if (temp.size() > 0) {
+                                CellRangeAddress last = temp.getLast();
+                                last.setLastRow(row.getRowNum() - 2);
                             }
-                            sheet.setColumnWidth(sm.getColumnIndex(), 10000);
+                            temp.add(new CellRangeAddress(row.getRowNum(), row.getRowNum(), sm.getColumnIndex(), sm.getColumnIndex()));
+
                             theCellStyle(cellStyle, font);
 
                             String cellValue = ExcelUtil.getStringCellContent(sm);
@@ -126,8 +127,22 @@ public class AddExplainToExcel {
 
     private void addRightBorder(String inFileName) {
         log.info("设置合并单元格右边边框 : {}", inFileName);
+        Map<String, Integer> count = new HashMap<>();
+        final String key = "count";
+        count.put(key, 0);
+
+        CellRangeAddress last = temp.getLast();
+        last.setLastRow(last.getFirstRow() + 16);
+        final Integer max = last.getLastRow();
+
         ExcelUtil.copyExcelAndUpdate(inFileName, 1, false, null,
                 (wb, row, keyMap, contentMapColIndex) -> {
+                    Integer integer = count.get(key);
+
+                    if (integer.compareTo(max) > 0) {
+                        return;
+                    }
+                    count.put(key, integer + 1);
                     Cell sm = row.getCell(contentMapColIndex.get("说明"));
                     if (sm == null) sm = row.createCell(contentMapColIndex.get("说明"));
                     CellStyle cellStyle = sm.getCellStyle();
@@ -137,6 +152,15 @@ public class AddExplainToExcel {
                     cellStyle1.setRightBorderColor(IndexedColors.BLACK.getIndex());
                     cellStyle1.setBorderBottom(BorderStyle.THIN);
                     cellStyle1.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+                    Sheet sheet = row.getSheet();
+                    try {
+                        if (temp.size() > 0) {
+                            sheet.addMergedRegion(temp.pop());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    sheet.setColumnWidth(sm.getColumnIndex(), 10000);
                     sm.setCellStyle(cellStyle1);
                 });
     }
@@ -151,6 +175,7 @@ public class AddExplainToExcel {
         assert files != null;
         for (File file : files) {
             if (file.isFile() || file.getName().contains("-18")) {
+                temp.clear();
                 addExplainToExcel(file.getPath(), Constants.TAKE_ACCOUNT_FILLED_DATA_PATH + "/" + file.getName());
                 addRightBorder(Constants.TAKE_ACCOUNT_FILLED_DATA_PATH + "/" + file.getName());
             }
