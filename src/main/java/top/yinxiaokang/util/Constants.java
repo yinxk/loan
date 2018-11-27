@@ -185,7 +185,7 @@ public class Constants {
     /**
      * 昨日业务文件名及路径, 不包含扩展名
      */
-    public static String YESTERDAY_SHOULD_PAYMENT_BY_DKZH_BUSINESS = YESTERDAY_BUSINESS_PATH + "/单独账号" + "/" + YESTERDAY_STR + "-业务推算和实际业务";
+    public static String YESTERDAY_SHOULD_PAYMENT_BY_DKZH_BUSINESS = YESTERDAY_BUSINESS_PATH + "/单独账号" + "/" + TODAY_STR + "-业务推算和实际业务";
     /**
      * 所有业务文件名及路径
      */
