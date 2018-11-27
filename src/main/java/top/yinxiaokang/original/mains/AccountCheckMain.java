@@ -152,11 +152,11 @@ public class AccountCheckMain {
         Collection<Map> importExcel = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
         Collection<Map> oneDayMap = new ArrayList<>();
         Map<String, Object> dkzh = new HashMap<>();
-        dkzh.put("dkzh", "52001069403600000000469146");
+        dkzh.put("dkzh", "52001069633600000000493323");
         oneDayMap.add(dkzh);
-        dkzh = new HashMap<>();
-        dkzh.put("dkzh", "52001069633600000000524248");
-        oneDayMap.add(dkzh);
+//        dkzh = new HashMap<>();
+//        dkzh.put("dkzh", "52001069633600000000524248");
+//        oneDayMap.add(dkzh);
 
 
         File logFile = new File(Constants.YESTERDAY_SHOULD_PAYMENT_BUSINESS_BY_DKZH_LOG);
@@ -263,38 +263,38 @@ public class AccountCheckMain {
 
 
 
-        AccountCheckMain accountCheckMain = new AccountCheckMain();
+//        AccountCheckMain accountCheckMain = new AccountCheckMain();
 //        accountCheckMain.byDkzh();
-        accountCheckMain.everyDay();
-//        accountCheckMain.all();
+//        accountCheckMain.everyDay();
+////        accountCheckMain.all();
 
 
-//        while (true) {
-//            log.error("现在时间是: {} ", LocalDateTime.now());
-//            long sleepTime = MilliSecond.betweenNowAndNext915();
-//            Map<Character, Long> time = new HashMap<>();
-//            time.put('T', sleepTime);
-//            new Thread(() -> {
-//                while (time.get('T') > 0) {
-//                    Long t = time.get('T');
-//                    System.out.printf("%s s  ", t / 1000);
-//                    time.put('T', t - 60000);
-//                    try {
-//                        Thread.sleep(60000);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }).start();
-//            try {
-//                Thread.sleep(sleepTime);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            AccountCheckMain accountCheckMain = new AccountCheckMain();
-//            accountCheckMain.everyDay();
-//            accountCheckMain = null;
-//        }
+        while (true) {
+            log.error("现在时间是: {} ", LocalDateTime.now());
+            long sleepTime = MilliSecond.betweenNowAndNext915();
+            Map<Character, Long> time = new HashMap<>();
+            time.put('T', sleepTime);
+            new Thread(() -> {
+                while (time.get('T') > 0) {
+                    Long t = time.get('T');
+                    System.out.printf("%s s  ", t / 1000);
+                    time.put('T', t - 60000);
+                    try {
+                        Thread.sleep(60000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            try {
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            AccountCheckMain accountCheckMain = new AccountCheckMain();
+            accountCheckMain.everyDay();
+            accountCheckMain = null;
+        }
         //byDkzh();
     }
 
@@ -764,15 +764,18 @@ public class AccountCheckMain {
                                     List<SthousingDetail> prepaymentList, Date now, int prepaymentTag) {
         SthousingDetail prepaymentDetail;
         for (RepaymentItem repaymentItem : repaymentItems) {
-            // 截止日期
-            if (now != null && Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(now)) > 0) {
-                break;
-            }
+
 
             prepaymentDetail = null;
             if (prepaymentTag < prepaymentList.size()) {
                 prepaymentDetail = prepaymentList.get(prepaymentTag);
             }
+
+            // 截止日期
+            if (now != null && Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(now)) > 0 && prepaymentDetail == null) {
+                break;
+            }
+
             // 若 不存在提前还款(or结清)业务 或者 该期还款日期在提前还款(or结清)业务发生日期之前, 那么该期计划应该存在
             if (prepaymentDetail == null ||
                     Utils.SDF_YEAR_MONTH_DAY.format(repaymentItem.getHkrq()).compareTo(Utils.SDF_YEAR_MONTH_DAY.format(prepaymentDetail.getYwfsrq())) < 0) {
