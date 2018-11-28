@@ -18,7 +18,7 @@ public class Conn {
     private static final String NAME = "root";
     private static final String PASSWORD = "zlgj9YAf02zt21ZYv1QwXzVHttUAZv";
 
-    {
+    static {
         try {
             log.info("加载驱动开始...");
             Class.forName(DRIVER);
