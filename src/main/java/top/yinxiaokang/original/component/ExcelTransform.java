@@ -108,7 +108,7 @@ public class ExcelTransform {
         }
         File[] files = diretory.listFiles();
         for (File file : files) {
-            if (file.isFile()) {
+            if (file.isFile() || file.getName().contains("11-15")) {
                 doTransform(file.getPath(), file.getName());
             }
         }
@@ -192,7 +192,7 @@ public class ExcelTransform {
         }
         Iterator<Map<String, CellStyleAndContent>> firstMsgIte = firstMes.iterator();
         String regexDkzh = "账号：([\\s\\S]*)\n初始贷款余额";
-        String regexCsye = "初始贷款余额：([\\s\\S]*)\n期初逾期金额";
+        String regexCsye = "初始贷款余额：([\\s\\S]*?)\n(姓名|期初)";
         String regexTzhye = "(调整后余额|调整后本金余额)([\\s\\S]*)";
 
         Pattern patternDkzh = Pattern.compile(regexDkzh);
@@ -229,8 +229,8 @@ public class ExcelTransform {
 
                 Map mapFromImportExcelByDkzh = getMapFromImportExcelByDkzh(groupDkzh);
                 String csye = mapFromImportExcelByDkzh.get("csye").toString();
-                if (!groupCsye.equals(csye)) {
-                    throw new ErrorException("初始逾期本金经查询验证不相等 : " + groupDkzh);
+                if (!groupCsye.trim().equals(csye.trim())) {
+                    throw new ErrorException("初始贷款余额经查询验证不相等 : " + groupDkzh + " 原始余额: " + csye + "   excel中余额: " + groupCsye);
                 }
 
                 String csyqbj = mapFromImportExcelByDkzh.get("csyqbj").toString();
