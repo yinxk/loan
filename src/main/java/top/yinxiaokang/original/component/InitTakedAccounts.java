@@ -1,6 +1,7 @@
 package top.yinxiaokang.original.component;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import top.yinxiaokang.original.dto.CellStyleAndContent;
 import top.yinxiaokang.original.dto.ExcelReadReturn;
@@ -27,6 +28,7 @@ public class InitTakedAccounts {
     List<Map<String, Object>> moreOnePrePayment;
     List<Map<String, Object>> moreOnePrePaymentMessage = new ArrayList<>();
     List<Map<String, CellStyleAndContent>> all = new ArrayList<>();
+    List<String> overTimeStringList = new ArrayList<>();
 
     public InitTakedAccounts() {
         ExcelReadReturn excelReadReturn = ExcelUtil.readExcel(Constants.BASE_PATH + "/提前还款或者结清2次及以上问题账号.xlsx", 0, false, false);
@@ -65,6 +67,13 @@ public class InitTakedAccounts {
                     contentMap.get("lxje"), contentMap.get("bz").toString().trim(), contentMap.get("file")));
         }
         log.error("匹配到的两次以及以上提前还款或者结清的账号数量: {} ", moreOnePrePaymentMessage.size());
+
+        for (String s : overTimeStringList) {
+            log.error(s);
+        }
+        log.error("超时账号数量: {} ", overTimeStringList.size());
+
+
     }
 
     public void initTakeDoneAccounts(boolean isWrite) {
@@ -74,6 +83,7 @@ public class InitTakedAccounts {
         }
         File[] files = diretory.listFiles();
         Map<String, String> dkzhsKey = new HashMap<>();
+        Map<String, CellStyle> dkzhsAndCellStyle = new HashMap<>();
         assert files != null;
         for (File file : files) {
             if (file.isFile()) {
@@ -81,11 +91,22 @@ public class InitTakedAccounts {
                 for (Map<String, CellStyleAndContent> excelAccount : excelAccounts) {
                     String dkzh = excelAccount.get("dkzh").getContent().toString();
                     if (dkzhsKey.containsKey(dkzh)) {
-                        String msg = "%s 和 %s 存在相同贷款账号: %s";
+                        String msg = "%s 和 %s 存在相同贷款账号: %s \n";
                         String formatMsg = String.format(msg, dkzhsKey.get(dkzh), file.getName(), dkzh);
-                        throw new RuntimeException(formatMsg);
+                        CellStyle cellStyle = dkzhsAndCellStyle.get(dkzh);
+                        IndexedColors indexedColors = IndexedColors.fromInt(cellStyle.getFillForegroundColor());
+                        // 紫罗兰色 表示超时的
+                        if (indexedColors == IndexedColors.VIOLET) {
+                            String overTimeStr = "%s 和 %s 存在相同贷款账号: %s 其中已超时:%s ";
+                            overTimeStringList.add(String.format(overTimeStr, dkzhsKey.get(dkzh), file.getName(), dkzh, dkzhsKey.get(dkzh)));
+                            //log.error("{} 和 {} 存在相同贷款账号: {} 其中已超时:{} ",dkzhsKey.get(dkzh),file.getName(),dkzh,dkzhsKey.get(dkzh));
+                            //all.removeIf(next -> dkzh.equals(next.get("dkzh").toString()));
+                        } else {
+                            throw new RuntimeException(formatMsg);
+                        }
                     }
                     dkzhsKey.put(dkzh, file.getName());
+                    dkzhsAndCellStyle.put(dkzh, excelAccount.get("行号").getCellStyle());
                     all.add(excelAccount);
                 }
 
