@@ -134,15 +134,15 @@ public class FlagSkyBlueTakeDoneAccounts {
                                     hhStyle.getFillBackgroundColor() == IndexedColors.SKY_BLUE.getIndex()) {
                                 return;
                             }
-                            log.debug("贷款账号 {}   标记记号: {}  颜色: {}  是否是标记色:{} ", dkzh, flag,
-                                    hhStyle.getFillForegroundColor(),
+                            log.debug("贷款账号 {}   标记记号: {}  颜色: {}  颜色名:{}  是否是标记色:{} ", dkzh, flag,
+                                    hhStyle.getFillForegroundColor(), IndexedColors.fromInt(hhStyle.getFillForegroundColor()),
                                     hhStyle.getFillForegroundColor() == IndexedColors.SKY_BLUE.getIndex()
                                             || hhStyle.getFillBackgroundColor() == IndexedColors.SKY_BLUE.getIndex());
                             return;
                         }
                         if (hhStyle.getFillForegroundColor() == IndexedColors.VIOLET.getIndex()) {
-                            log.debug("贷款账号 {}   标记记号: {}  颜色: {}  是否是标记色:{}  超时标记", dkzh, flag,
-                                    hhStyle.getFillForegroundColor(),
+                            log.debug("贷款账号 {}   标记记号: {}  颜色: {}  颜色名:{}  是否是标记色:{}  超时标记", dkzh, flag,
+                                    hhStyle.getFillForegroundColor(),IndexedColors.fromInt(hhStyle.getFillForegroundColor()),
                                     hhStyle.getFillForegroundColor() == IndexedColors.SKY_BLUE.getIndex()
                                             || hhStyle.getFillBackgroundColor() == IndexedColors.SKY_BLUE.getIndex());
                             return;
