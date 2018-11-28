@@ -140,6 +140,13 @@ public class FlagSkyBlueTakeDoneAccounts {
                                             || hhStyle.getFillBackgroundColor() == IndexedColors.SKY_BLUE.getIndex());
                             return;
                         }
+                        if (hhStyle.getFillForegroundColor() == IndexedColors.VIOLET.getIndex()) {
+                            log.debug("贷款账号 {}   标记记号: {}  颜色: {}  是否是标记色:{}  超时标记", dkzh, flag,
+                                    hhStyle.getFillForegroundColor(),
+                                    hhStyle.getFillForegroundColor() == IndexedColors.SKY_BLUE.getIndex()
+                                            || hhStyle.getFillBackgroundColor() == IndexedColors.SKY_BLUE.getIndex());
+                            return;
+                        }
 
                         log.debug("匹配的贷款账号: {}, 已处理的贷款账号: {}", dkzh, doneAccount.get("贷款账号"));
 
