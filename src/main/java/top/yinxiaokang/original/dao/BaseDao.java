@@ -100,7 +100,8 @@ public class BaseDao {
         for (int i = 0; i < paras.length; i++) {
             ps.setObject(i + 1, paras[i]);
         }
-        log.info(sql, paras);
+        log.info(sql);
+        log.info("parameters : " + Arrays.asList(paras));
         return ps.executeUpdate();
     }
 
