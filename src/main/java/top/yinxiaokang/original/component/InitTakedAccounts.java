@@ -96,7 +96,7 @@ public class InitTakedAccounts {
                         CellStyle cellStyle = dkzhsAndCellStyle.get(dkzh);
                         IndexedColors indexedColors = IndexedColors.fromInt(cellStyle.getFillForegroundColor());
                         // 紫罗兰色 表示超时的
-                        if (indexedColors == IndexedColors.VIOLET) {
+                        if (indexedColors == IndexedColors.VIOLET || IndexedColors.fromInt(excelAccount.get("行号").getCellStyle().getFillForegroundColor()) == IndexedColors.VIOLET) {
                             String overTimeStr = "%s 和 %s 存在相同贷款账号: %s 其中已超时:%s ";
                             overTimeStringList.add(String.format(overTimeStr, dkzhsKey.get(dkzh), file.getName(), dkzh, dkzhsKey.get(dkzh)));
                             //log.error("{} 和 {} 存在相同贷款账号: {} 其中已超时:{} ",dkzhsKey.get(dkzh),file.getName(),dkzh,dkzhsKey.get(dkzh));
