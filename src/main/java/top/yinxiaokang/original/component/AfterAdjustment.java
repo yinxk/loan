@@ -50,6 +50,7 @@ public class AfterAdjustment {
 
         toExcelTitle.put("isTz", "是否调账");
         toExcelTitle.put("tsQmye", "推算期末余额");
+        toExcelTitle.put("ce", "期末贷款-推算期末余额");
         toExcelTitle.put("nextRow1", "新加行");
     }
 
@@ -115,15 +116,20 @@ public class AfterAdjustment {
             bjjeSum = bjjeSum.add(detail.getBjje());
         }
         BigDecimal abs = csye.subtract(bjjeSum).subtract(account.getDkye()).abs();
-//        if (abs.compareTo(new BigDecimal("0.05")) <= 0) {
-//            log.info("贷款账号 {} 业务本金金额+贷款余额 = 初始余额", account.getDkzh());
-//            filterDkzh.add(account.getDkzh());
-//            return;
-//        }
+        if (abs.compareTo(new BigDecimal("0.05")) <= 0) {
+            log.info("贷款账号 {} 业务本金金额+贷款余额 = 初始余额", account.getDkzh());
+            filterDkzh.add(account.getDkzh());
+            return;
+        }
 
         for (SthousingDetail detail : details) {
             fseHj = fseHj.add(detail.getFse());
-            tsQmdkye = tsQmdkye.subtract(detail.getBjje());
+            if (detail.getDkywmxlx().equals("01")) {
+                tsQmdkye = tsQmdkye.add(detail.getBjje());
+            } else {
+                tsQmdkye = tsQmdkye.subtract(detail.getBjje());
+            }
+
             Map<String, Object> detailMap = BeanOrMapUtil.transBean2Map(detail);
             detailMap.put("ywfsrq", simpleDateFormat.format((Date) detailMap.get("ywfsrq")));
 
@@ -131,6 +137,7 @@ public class AfterAdjustment {
             detailMap.put("tsQmye", tsQmdkye);
             detailMap.put("dkzh", account.getDkzh());
             detailMap.put("nextRow1", fileName);
+            detailMap.put("ce", detail.getXqdkye().subtract(tsQmdkye));
             toExcelContent.add(detailMap);
         }
 
