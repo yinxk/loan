@@ -18,7 +18,7 @@ public class PrepaymentFilter {
     private Set<String> baseAccountSet = new HashSet<>();
     private List<String> inBaseAccountList = new ArrayList<>();
     List<InitInformation> initInformationList;
-    private Set<String> doneAccountSet = new HashSet<>();
+    private Map<String, Integer> doneAccountMap = new HashMap<>();
 
     public PrepaymentFilter() {
         initInformationList = Common.listBaseAccountInformationByExcelUtil();
@@ -29,12 +29,16 @@ public class PrepaymentFilter {
         List<Map<String, Object>> content = excelReadReturn.getContent();
         for (Map<String, Object> map : content) {
             String dkzh = (String) map.get("贷款账号");
-            doneAccountSet.add(dkzh);
+            if (doneAccountMap.containsKey(dkzh)) {
+                doneAccountMap.put(dkzh, doneAccountMap.get(dkzh) + 1);
+            } else {
+                doneAccountMap.put(dkzh, 1);
+            }
         }
     }
 
-    private boolean isInDoneAccount(String dkzh) {
-        return doneAccountSet.contains(dkzh);
+    private Integer getDoneAccountNumber(String dkzh) {
+        return doneAccountMap.get(dkzh);
     }
 
     private boolean isInBaseAccount(String dkzh) {
@@ -55,10 +59,16 @@ public class PrepaymentFilter {
         List<Map<String, Object>> content = excelReadReturn.getContent();
 
         List<Map<String, Object>> rContent = new ArrayList<>();
+        Map<String, Integer> accountMap = new HashMap<>();
         for (Map<String, Object> map : content) {
             String dkzh = (String) map.get("贷款账号");
             if (StringUtils.isBlank(dkzh)) {
                 continue;
+            }
+            if (accountMap.containsKey(dkzh)) {
+                accountMap.put(dkzh, accountMap.get(dkzh) + 1);
+            } else {
+                accountMap.put(dkzh, 1);
             }
             Double ce = (Double) map.get("差额");
             BigDecimal ceBig = new BigDecimal(ce.toString());
@@ -68,8 +78,9 @@ public class PrepaymentFilter {
             }
             map.put("差额", ceBig.negate());
 
-            if (isInDoneAccount(dkzh)) {
-                log.info("过滤已处理贷款账号: {}", dkzh);
+            Integer doneAccountNumber = getDoneAccountNumber(dkzh);
+            if (doneAccountNumber != null && accountMap.get(dkzh).compareTo(doneAccountNumber) <= 0) {
+                log.error(" 贷款账号: {}  处理次数: {}  当前计数序号:{}", dkzh, doneAccountNumber, accountMap.get(dkzh));
                 continue;
             }
 
@@ -80,12 +91,45 @@ public class PrepaymentFilter {
             }
         }
 
+
+        Map<String, Integer> dkzhMap = new HashMap<>();
+
         for (Map<String, Object> map : rContent) {
             String dkzh = (String) map.get("贷款账号");
+            if (StringUtils.isBlank(dkzh)) {
+                throw new RuntimeException("验证阶段,存在空贷款账号");
+            }
             if (isInBaseAccountByInitList(dkzh)) {
                 throw new RuntimeException("经过过滤还存在交集贷款账号 : " + dkzh);
             }
+
+            Integer number = dkzhMap.get(dkzh);
+
+            dkzhMap.put(dkzh, number == null ? 1 : number + 1);
+
         }
+
+
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        int checkNum = 0;
+        for (String s : dkzhMap.keySet()) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(",");
+            }
+            sb.append("'");
+            sb.append(s);
+            sb.append("'");
+            checkNum++;
+        }
+
+        log.error("总共条数: {}", rContent.size());
+        String dkzhs = sb.toString();
+        log.error(dkzhs);
+        log.error("方式一验证账号的数量: {}", checkNum);
+        log.error("方式二验证账号的数量: {}", dkzhs.split(",").length);
 
         Map<String, String> keyMap = new LinkedHashMap<>();
         keyMap.put("贷款账号", "贷款账号");
