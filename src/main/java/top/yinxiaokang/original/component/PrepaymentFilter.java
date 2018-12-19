@@ -8,21 +8,33 @@ import top.yinxiaokang.util.Common;
 import top.yinxiaokang.util.Constants;
 import top.yinxiaokang.util.ExcelUtil;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @SuppressWarnings("WeakerAccess")
 @Slf4j
-public class PrepaymentFilter1427Account {
+public class PrepaymentFilter {
 
     private Set<String> baseAccountSet = new HashSet<>();
     private List<String> inBaseAccountList = new ArrayList<>();
     List<InitInformation> initInformationList;
+    private Set<String> doneAccountSet = new HashSet<>();
 
-    public PrepaymentFilter1427Account() {
+    public PrepaymentFilter() {
         initInformationList = Common.listBaseAccountInformationByExcelUtil();
         for (InitInformation information : initInformationList) {
             baseAccountSet.add(information.getDkzh());
         }
+        ExcelReadReturn excelReadReturn = ExcelUtil.readExcel(Constants.PRE_REPAYMENT_DONE_XLSX_PATH, 0, false, false);
+        List<Map<String, Object>> content = excelReadReturn.getContent();
+        for (Map<String, Object> map : content) {
+            String dkzh = (String) map.get("贷款账号");
+            doneAccountSet.add(dkzh);
+        }
+    }
+
+    private boolean isInDoneAccount(String dkzh) {
+        return doneAccountSet.contains(dkzh);
     }
 
     private boolean isInBaseAccount(String dkzh) {
@@ -48,6 +60,19 @@ public class PrepaymentFilter1427Account {
             if (StringUtils.isBlank(dkzh)) {
                 continue;
             }
+            Double ce = (Double) map.get("差额");
+            BigDecimal ceBig = new BigDecimal(ce.toString());
+            int scale = ceBig.scale();
+            if (scale > 2) {
+                throw new RuntimeException(dkzh + " 差额位数太多: " + ceBig.toPlainString());
+            }
+            map.put("差额", ceBig.negate());
+
+            if (isInDoneAccount(dkzh)) {
+                log.info("过滤已处理贷款账号: {}", dkzh);
+                continue;
+            }
+
             if (isInBaseAccount(dkzh)) {
                 inBaseAccountList.add(dkzh);
             } else {
@@ -77,7 +102,7 @@ public class PrepaymentFilter1427Account {
 
 
     public static void main(String[] args) {
-        PrepaymentFilter1427Account filter1427Account = new PrepaymentFilter1427Account();
+        PrepaymentFilter filter1427Account = new PrepaymentFilter();
         filter1427Account.work();
     }
 }

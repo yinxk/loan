@@ -249,6 +249,7 @@ public class Constants {
     public static String PRE_REPAYMENT_PATH = BASE_PATH + "/提前还款";
 
     public static String PRE_REPAYMENT_XLSX_PATH = PRE_REPAYMENT_PATH + "/提前还款数据 - V5 - 截止6-10日前 - 计算结果终极版1207 - 使用版.xlsx";
+    public static String PRE_REPAYMENT_DONE_XLSX_PATH = PRE_REPAYMENT_PATH + "/已处理贷款账号/提前还款已处理贷款账号.xls";
 
 
     public static void main(String[] args) {
