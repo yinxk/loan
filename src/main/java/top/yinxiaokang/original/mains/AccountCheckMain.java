@@ -542,19 +542,38 @@ public class AccountCheckMain {
 
         //导入系统的时候存在逾期记录
         if (informations.isInitHasOverdue()) {
-            for (StOverdue overdue : initOverdueList) {
-                SthousingDetail detail = new SthousingDetail();
-                detail.setBjje(overdue.getYqbj());
-                detail.setLxje(overdue.getYqlx());
-                detail.setFxje(overdue.getYqfx());
-                detail.setDqqc(overdue.getYqqc());
-                detail.setYwfsrq(overdue.getSsrq());
-                detail.setDkywmxlx("初始导入");
-                detail.setFse(overdue.getYqbj().add(overdue.getYqlx()));
-                dkyeByCsye = dkyeByCsye.subtract(overdue.getYqbj());
-                detail.setXqdkye(dkyeByCsye);
-                shouldDetails.add(detail);
+            if (isAnalyzeImported) {
+                int analyzeImportedIndex = 0;
+                for (StOverdue overdue : initOverdueList) {
+                    RepaymentItem item = repaymentItems.get(analyzeImportedIndex);
+                    SthousingDetail detail = new SthousingDetail();
+                    detail.setBjje(item.getHkbjje());
+                    detail.setLxje(item.getHklxje());
+                    detail.setFxje(BigDecimal.ZERO);
+                    detail.setDqqc(new BigDecimal(item.getHkqc()));
+                    detail.setYwfsrq(item.getHkrq());
+                    detail.setDkywmxlx("初始导入 推算");
+                    detail.setFse(item.getFse());
+                    dkyeByCsye = dkyeByCsye.subtract(overdue.getYqbj());
+                    detail.setXqdkye(dkyeByCsye);
+                    shouldDetails.add(detail);
+                }
+            } else {
+                for (StOverdue overdue : initOverdueList) {
+                    SthousingDetail detail = new SthousingDetail();
+                    detail.setBjje(overdue.getYqbj());
+                    detail.setLxje(overdue.getYqlx());
+                    detail.setFxje(overdue.getYqfx());
+                    detail.setDqqc(overdue.getYqqc());
+                    detail.setYwfsrq(overdue.getSsrq());
+                    detail.setDkywmxlx("初始导入");
+                    detail.setFse(overdue.getYqbj().add(overdue.getYqlx()));
+                    dkyeByCsye = dkyeByCsye.subtract(overdue.getYqbj());
+                    detail.setXqdkye(dkyeByCsye);
+                    shouldDetails.add(detail);
+                }
             }
+
         }
 
         if (informations.getInitInformation().getCsyqbj().compareTo(BigDecimal.ZERO) > 0) {
