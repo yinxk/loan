@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Objects;
 
 
 @XmlRootElement(name = "LoanPlanItem")
@@ -96,6 +97,25 @@ public class RepaymentItem implements Serializable {
 
     public void setHkqc(Integer hkqc) {
         this.hkqc = hkqc;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RepaymentItem that = (RepaymentItem) o;
+        return Objects.equals(hkbjje, that.hkbjje) &&
+                Objects.equals(hklxje, that.hklxje) &&
+                Objects.equals(fse, that.fse) &&
+                Objects.equals(qcdkye, that.qcdkye) &&
+                Objects.equals(qmdkye, that.qmdkye) &&
+                Objects.equals(hkrq, that.hkrq) &&
+                Objects.equals(hkqc, that.hkqc);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(hkbjje, hklxje, fse, qcdkye, qmdkye, hkrq, hkqc);
     }
 
     @Override

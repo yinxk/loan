@@ -546,8 +546,12 @@ public class AccountCheckMain {
         if (informations.isInitHasOverdue()) {
             if (isAnalyzeImported) {
                 int analyzeImportedIndex = 0;
-                for (StOverdue overdue : initOverdueList) {
-                    RepaymentItem item = repaymentItems.get(analyzeImportedIndex);
+                Iterator<RepaymentItem> iterator = repaymentItems.iterator();
+                while (iterator.hasNext()) {
+                    if (analyzeImportedIndex > 3) {
+                        break;
+                    }
+                    RepaymentItem item = iterator.next();
                     SthousingDetail detail = new SthousingDetail();
                     detail.setBjje(item.getHkbjje());
                     detail.setLxje(item.getHklxje());
@@ -556,10 +560,23 @@ public class AccountCheckMain {
                     detail.setYwfsrq(item.getHkrq());
                     detail.setDkywmxlx("初始导入 推算");
                     detail.setFse(item.getFse());
-                    dkyeByCsye = dkyeByCsye.subtract(overdue.getYqbj());
+                    dkyeByCsye = dkyeByCsye.subtract(detail.getBjje());
                     detail.setXqdkye(dkyeByCsye);
                     shouldDetails.add(detail);
+                    iterator.remove();
                     analyzeImportedIndex++;
+                }
+                List<RepaymentItem> repaymentItemList = RepaymentPlan.listRepaymentPlan(csye, dkxffrq, informations.getSyqs().intValue(), sthousingAccount.getDkll(),
+                        RepaymentMethod.getRepaymentMethodByCode(sthousingAccount.getDkhkfs()), informations.getYhqs().intValue(), RepaymentMonthRateScale.NO);
+                if (repaymentItemList.size() != repaymentItems.size()) {
+                    throw new RuntimeException("初始导入的加入到推算, 去除推算后, 两者还款计划期数不想等");
+                }
+                for (int i = 0; i < repaymentItemList.size(); i++) {
+                    RepaymentItem repaymentItem = repaymentItemList.get(i);
+                    RepaymentItem repaymentItem1 = repaymentItems.get(i);
+                    if (!repaymentItem.equals(repaymentItem1)) {
+                        throw new RuntimeException("初始导入的加入到推算, 去除推算后, 两者还款计划存在不相等期次信息 " + repaymentItem + " " + repaymentItem1);
+                    }
                 }
             } else {
                 for (StOverdue overdue : initOverdueList) {
