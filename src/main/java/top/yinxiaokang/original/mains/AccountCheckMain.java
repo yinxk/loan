@@ -33,7 +33,7 @@ import static top.yinxiaokang.util.FileCommon.*;
  * @author yinxk
  * @date 2018/8/6 11:45
  */
-@SuppressWarnings("Duplicates")
+@SuppressWarnings({"Duplicates", "ConstantConditions"})
 @Slf4j
 public class AccountCheckMain {
     private AccountCheck accountCheck ;
@@ -512,13 +512,24 @@ public class AccountCheckMain {
     public void analyzeOneThousandDkzh(AccountInformations informations, List<Integer> reverseQc) {
         // 业务记录
         List<SthousingDetail> details = informations.getDetails();
+        SthousingAccount sthousingAccount = informations.getSthousingAccount();
         BigDecimal csye = informations.getInitInformation().getCsye();
         BigDecimal dkyeByCsye = csye.add(BigDecimal.ZERO);
+        List<StOverdue> initOverdueList = informations.getInitOverdueList();
         // 根据业务推算的余额 , 减去初始逾期本金对我们系统的业务进行分析 , 计算
         BigDecimal dkyeByYeWu = csye.subtract(informations.getInitInformation().getCsyqbj());
 
+        boolean isAnalyzeImported = false;
+
         // 还款计划
         List<RepaymentItem> repaymentItems = informations.getRepaymentItems();
+        if (isAnalyzeImported) {
+            BigDecimal containsImportedSyqs = informations.getSyqs().add(new BigDecimal(initOverdueList.size()));
+            BigDecimal subtract = informations.getYhqs().subtract(new BigDecimal(initOverdueList.size()));
+            repaymentItems = RepaymentPlan.listRepaymentPlan(csye, sthousingAccount.getDkxffrq(), containsImportedSyqs.intValue(), sthousingAccount.getDkll(),
+                    RepaymentMethod.getRepaymentMethodByCode(sthousingAccount.getDkhkfs()), subtract.intValue(), RepaymentMonthRateScale.NO);
+
+        }
         // 提前还款的业务, 已排序
         List<SthousingDetail> prepaymentList = Common.listPrepayment(details);
 
@@ -531,7 +542,6 @@ public class AccountCheckMain {
 
         //导入系统的时候存在逾期记录
         if (informations.isInitHasOverdue()) {
-            List<StOverdue> initOverdueList = informations.getInitOverdueList();
             for (StOverdue overdue : initOverdueList) {
                 SthousingDetail detail = new SthousingDetail();
                 detail.setBjje(overdue.getYqbj());
@@ -710,8 +720,8 @@ public class AccountCheckMain {
                 sumOfShouldFse, sumOfShouldBj, sumOfShouldLx, "-", "-",
                 sumOfSjFse, sumOfSjBj, sumOfSjLx, "-",
                 subFse, subBj, subLx, subDkye, shouldDkye,
-                informations.getSthousingAccount().getDkye(),
-                shouldDkye.subtract(informations.getSthousingAccount().getDkye()));
+                sthousingAccount.getDkye(),
+                shouldDkye.subtract(sthousingAccount.getDkye()));
         OneThousand oneThousand1 = new OneThousand();
         // region 推算合计
         oneThousand1.setHklx("合计");
@@ -738,8 +748,8 @@ public class AccountCheckMain {
 //        oneThousand1.setSubLxTotal(subLx);
 //        oneThousand1.setSubDkyeTotal(subDkye);
         oneThousand1.setTsdkye(shouldDkye);
-        oneThousand1.setSjdkye(informations.getSthousingAccount().getDkye());
-        oneThousand1.setSubDkye(shouldDkye.subtract(informations.getSthousingAccount().getDkye()));
+        oneThousand1.setSjdkye(sthousingAccount.getDkye());
+        oneThousand1.setSubDkye(shouldDkye.subtract(sthousingAccount.getDkye()));
         dataset.add(oneThousand1);
         logs.append(format);
     }
