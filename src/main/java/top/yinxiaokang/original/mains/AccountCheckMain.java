@@ -566,7 +566,7 @@ public class AccountCheckMain {
                     iterator.remove();
                     analyzeImportedIndex++;
                 }
-                List<RepaymentItem> repaymentItemList = RepaymentPlan.listRepaymentPlan(csye, dkxffrq, informations.getSyqs().intValue(), sthousingAccount.getDkll(),
+                List<RepaymentItem> repaymentItemList = RepaymentPlan.listRepaymentPlan(dkyeByCsye, dkxffrq, informations.getSyqs().intValue(), sthousingAccount.getDkll(),
                         RepaymentMethod.getRepaymentMethodByCode(sthousingAccount.getDkhkfs()), informations.getYhqs().intValue(), RepaymentMonthRateScale.NO);
                 if (repaymentItemList.size() != repaymentItems.size()) {
                     throw new RuntimeException("初始导入的加入到推算, 去除推算后, 两者还款计划期数不想等");
