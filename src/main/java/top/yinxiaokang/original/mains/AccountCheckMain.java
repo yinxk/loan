@@ -36,7 +36,7 @@ import static top.yinxiaokang.util.FileCommon.*;
 @SuppressWarnings({"Duplicates", "ConstantConditions"})
 @Slf4j
 public class AccountCheckMain {
-    private AccountCheck accountCheck ;
+    private AccountCheck accountCheck;
 
     private final String KEY_ISGENERATE = "isGenerate";
 
@@ -213,7 +213,7 @@ public class AccountCheckMain {
         log.info("************************************************************************************************************************************************************");
     }
 
-    public void all(){
+    public void all() {
         Collection<Map> importExcel = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
         File logFile = new File(Constants.All_DKZH_BUSINESS_LOG);
         if (logFile.isFile() && logFile.exists()) {
@@ -259,8 +259,6 @@ public class AccountCheckMain {
     }
 
     public static void main(String[] args) {
-
-
 
 
 //        AccountCheckMain accountCheckMain = new AccountCheckMain();
@@ -518,7 +516,11 @@ public class AccountCheckMain {
         List<StOverdue> initOverdueList = informations.getInitOverdueList();
         // 根据业务推算的余额 , 减去初始逾期本金对我们系统的业务进行分析 , 计算
         BigDecimal dkyeByYeWu = csye.subtract(informations.getInitInformation().getCsyqbj());
-
+        Date dkxffrq = accountCheck.getFirstDkxffrq(informations.getCurrentPeriodRanges());
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(dkxffrq);
+        calendar.add(Calendar.MONTH, -initOverdueList.size());
+        dkxffrq = calendar.getTime();
         boolean isAnalyzeImported = false;
 
         // 还款计划
@@ -526,7 +528,7 @@ public class AccountCheckMain {
         if (isAnalyzeImported) {
             BigDecimal containsImportedSyqs = informations.getSyqs().add(new BigDecimal(initOverdueList.size()));
             BigDecimal subtract = informations.getYhqs().subtract(new BigDecimal(initOverdueList.size()));
-            repaymentItems = RepaymentPlan.listRepaymentPlan(csye, sthousingAccount.getDkxffrq(), containsImportedSyqs.intValue(), sthousingAccount.getDkll(),
+            repaymentItems = RepaymentPlan.listRepaymentPlan(csye, dkxffrq, containsImportedSyqs.intValue(), sthousingAccount.getDkll(),
                     RepaymentMethod.getRepaymentMethodByCode(sthousingAccount.getDkhkfs()), subtract.intValue(), RepaymentMonthRateScale.NO);
 
         }
@@ -557,6 +559,7 @@ public class AccountCheckMain {
                     dkyeByCsye = dkyeByCsye.subtract(overdue.getYqbj());
                     detail.setXqdkye(dkyeByCsye);
                     shouldDetails.add(detail);
+                    analyzeImportedIndex++;
                 }
             } else {
                 for (StOverdue overdue : initOverdueList) {
