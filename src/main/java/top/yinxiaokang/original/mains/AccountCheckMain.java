@@ -213,7 +213,7 @@ public class AccountCheckMain {
         log.info("************************************************************************************************************************************************************");
     }
 
-    public void all() {
+    public void allButNotDoned() {
         Collection<Map> importExcel = Common.xlsToList(Constants.BASE_ACCOUNT_INFORMATION);
         File logFile = new File(Constants.All_DKZH_BUSINESS_LOG);
         if (logFile.isFile() && logFile.exists()) {
@@ -229,6 +229,7 @@ public class AccountCheckMain {
         // 置空, 让虚拟机GC的时候清理掉
         importExcel = null;
         List<InitInformation> errorList = new ArrayList<>();
+        TakeDoneAccountToExcel takeDoneAccountToExcel = new TakeDoneAccountToExcel();
         List<AccountInformations> accountInformationsList = new ArrayList<>();
         for (InitInformation initInformation : initInformationList) {
             AccountInformations accountInformations = accountCheck.toAccountInformations(initInformation);
@@ -236,8 +237,16 @@ public class AccountCheckMain {
                 errorList.add(initInformation);
                 continue;
             }
+            try {
+                takeDoneAccountToExcel.canAppendToExcel(accountInformations.getSthousingAccount().getDkzh());
+            } catch (Exception e) {
+                log.info("过滤 {}",e);
+                continue;
+            }
             accountInformationsList.add(accountInformations);
         }
+
+
 
         //doAnalyzeInitHasOverdue(accountInformationsList, checkMain);
         doAnalyze(accountInformationsList);
@@ -261,38 +270,38 @@ public class AccountCheckMain {
     public static void main(String[] args) {
 
 
-//        AccountCheckMain accountCheckMain = new AccountCheckMain();
+        AccountCheckMain accountCheckMain = new AccountCheckMain();
 //        accountCheckMain.byDkzh();
 //        accountCheckMain.everyDay();
-////        accountCheckMain.all();
+        accountCheckMain.allButNotDoned();
 
 
-        while (true) {
-            log.error("现在时间是: {} ", LocalDateTime.now());
-            long sleepTime = MilliSecond.betweenNowAndNext915();
-            Map<Character, Long> time = new HashMap<>();
-            time.put('T', sleepTime);
-            new Thread(() -> {
-                while (time.get('T') > 0) {
-                    Long t = time.get('T');
-                    System.out.printf("%s s  ", t / 1000);
-                    time.put('T', t - 60000);
-                    try {
-                        Thread.sleep(60000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-            try {
-                Thread.sleep(sleepTime);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            AccountCheckMain accountCheckMain = new AccountCheckMain();
-            accountCheckMain.everyDay();
-            accountCheckMain = null;
-        }
+        //while (true) {
+        //    log.error("现在时间是: {} ", LocalDateTime.now());
+        //    long sleepTime = MilliSecond.betweenNowAndNext915();
+        //    Map<Character, Long> time = new HashMap<>();
+        //    time.put('T', sleepTime);
+        //    new Thread(() -> {
+        //        while (time.get('T') > 0) {
+        //            Long t = time.get('T');
+        //            System.out.printf("%s s  ", t / 1000);
+        //            time.put('T', t - 60000);
+        //            try {
+        //                Thread.sleep(60000);
+        //            } catch (InterruptedException e) {
+        //                e.printStackTrace();
+        //            }
+        //        }
+        //    }).start();
+        //    try {
+        //        Thread.sleep(sleepTime);
+        //    } catch (InterruptedException e) {
+        //        e.printStackTrace();
+        //    }
+        //    AccountCheckMain accountCheckMain = new AccountCheckMain();
+        //    accountCheckMain.everyDay();
+        //    accountCheckMain = null;
+        //}
         //byDkzh();
     }
 
