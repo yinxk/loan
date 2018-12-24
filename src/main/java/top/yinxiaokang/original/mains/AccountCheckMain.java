@@ -516,16 +516,17 @@ public class AccountCheckMain {
         List<StOverdue> initOverdueList = informations.getInitOverdueList();
         // 根据业务推算的余额 , 减去初始逾期本金对我们系统的业务进行分析 , 计算
         BigDecimal dkyeByYeWu = csye.subtract(informations.getInitInformation().getCsyqbj());
-        Date dkxffrq = accountCheck.getFirstDkxffrq(informations.getCurrentPeriodRanges());
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(dkxffrq);
-        calendar.add(Calendar.MONTH, -initOverdueList.size());
-        dkxffrq = calendar.getTime();
+
         boolean isAnalyzeImported = false;
 
         // 还款计划
         List<RepaymentItem> repaymentItems = informations.getRepaymentItems();
         if (isAnalyzeImported) {
+            Date dkxffrq = accountCheck.getFirstDkxffrq(informations.getCurrentPeriodRanges());
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(dkxffrq);
+            calendar.add(Calendar.MONTH, -initOverdueList.size());
+            dkxffrq = calendar.getTime();
             BigDecimal containsImportedSyqs = informations.getSyqs().add(new BigDecimal(initOverdueList.size()));
             BigDecimal subtract = informations.getYhqs().subtract(new BigDecimal(initOverdueList.size()));
             repaymentItems = RepaymentPlan.listRepaymentPlan(csye, dkxffrq, containsImportedSyqs.intValue(), sthousingAccount.getDkll(),
