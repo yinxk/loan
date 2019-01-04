@@ -57,8 +57,8 @@ public class UpdateQcByExcel {
             connection.setAutoCommit(false);
             int i = doSql.doUpdate(connection, sql);
             log.info("结束处理第 {} 条", count );
-            successedList.add(updateModal);
             connection.commit();
+            successedList.add(updateModal);
         } catch (SQLException e) {
             try {
                 connection.rollback();
@@ -75,7 +75,7 @@ public class UpdateQcByExcel {
 
     public static void main(String[] args) {
 
-        ExcelReadReturn excelReadReturn = ExcelUtil.readExcel("c:/", 0, false, true);
+        ExcelReadReturn excelReadReturn = ExcelUtil.readExcel("C:\\修账相关数据\\提前还款\\期次问题\\提前还款期次错误-合并版.xlsx", 0, false, true);
         List<Map<String, Object>> content = excelReadReturn.getContent();
 
         List<UpdateModal> updateModalList = new ArrayList<>();
