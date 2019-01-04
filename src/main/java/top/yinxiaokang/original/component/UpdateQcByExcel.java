@@ -57,7 +57,7 @@ public class UpdateQcByExcel {
             log.info("开始处理第 {} 条", count);
             connection.setAutoCommit(false);
             int i = doSql.doUpdate(connection, sql);
-            log.info("结束处理第 {} 条", count );
+            log.info("结束处理第 {} 条", count);
             connection.commit();
             successedList.add(updateModal);
         } catch (SQLException e) {
@@ -102,7 +102,11 @@ public class UpdateQcByExcel {
         UpdateQcByExcel updateQcByExcel = new UpdateQcByExcel();
         log.info("更新开始");
         for (UpdateModal updateModal : updateModalList) {
-            //updateQcByExcel.work(updateModal);
+            try {
+                updateQcByExcel.work(updateModal);
+            } catch (Exception e) {
+                log.error("{} {}", updateModal, e);
+            }
         }
         log.info("更新结束");
 
