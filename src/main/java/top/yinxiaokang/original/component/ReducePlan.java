@@ -34,7 +34,7 @@ public class ReducePlan {
 
         // region 直接通过贷款账号进行更新
         SthousingAccount account1 = new SthousingAccount();
-        account1.setDkzh("23846057000001207");
+        account1.setDkzh("23791057800004389");
         accountArrayList.add(account1);
         // endregion
 
