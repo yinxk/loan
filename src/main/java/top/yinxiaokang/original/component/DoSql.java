@@ -42,6 +42,7 @@ public class DoSql {
 
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         int i = preparedStatement.executeUpdate();
+        log.info(sql);
         if (showLog) {
             log.info("处理更新了: " + i);
         }
