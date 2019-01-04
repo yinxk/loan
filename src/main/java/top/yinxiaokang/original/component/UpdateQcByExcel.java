@@ -6,6 +6,7 @@ import top.yinxiaokang.original.dto.ExcelReadReturn;
 import top.yinxiaokang.others.StringUtil;
 import top.yinxiaokang.util.ExcelUtil;
 
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ public class UpdateQcByExcel {
             log.info("开始处理第 {} 条", count);
             connection.setAutoCommit(false);
             int i = doSql.doUpdate(connection, sql);
-            log.info("结束处理第 {} 条", count );
+            log.info("结束处理第 {} 条", count);
             connection.commit();
             successedList.add(updateModal);
         } catch (SQLException e) {
@@ -83,11 +84,12 @@ public class UpdateQcByExcel {
             String dkzh = map.get("贷款账号").toString();
             String errorQc = map.get("错误期次").toString();
             String rightQc = map.get("正确期次").toString();
+            BigInteger rightQcBigInteger = new BigInteger(rightQc.toString());
             String ywlsh = map.get("业务流水号") == null ? "" : map.get("业务流水号").toString();
             UpdateModal updateModal = new UpdateModal();
             updateModal.setDkzh(dkzh);
             updateModal.setErrorQc(errorQc);
-            updateModal.setRightQc(rightQc);
+            updateModal.setRightQc(rightQcBigInteger.toString());
             updateModal.setYwlsh(ywlsh);
             updateModalList.add(updateModal);
         }
@@ -100,7 +102,11 @@ public class UpdateQcByExcel {
         UpdateQcByExcel updateQcByExcel = new UpdateQcByExcel();
         log.info("更新开始");
         for (UpdateModal updateModal : updateModalList) {
-            //updateQcByExcel.work(updateModal);
+            try {
+                updateQcByExcel.work(updateModal);
+            } catch (Exception e) {
+                log.error("{} {}", updateModal, e);
+            }
         }
         log.info("更新结束");
 
