@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+@SuppressWarnings("ALL")
 @Slf4j
 public class DoSql {
 
@@ -32,11 +33,19 @@ public class DoSql {
 
     }
 
-    public void doUpdate(Connection connection, String sql) throws SQLException {
+    public int doUpdate(Connection connection, String sql) throws SQLException {
+
+        return doUpdate(connection, sql, true);
+    }
+
+    public int doUpdate(Connection connection, String sql, boolean showLog) throws SQLException {
 
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         int i = preparedStatement.executeUpdate();
-        log.info("处理更新了: " + i);
+        if (showLog) {
+            log.info("处理更新了: " + i);
+        }
+        return i;
     }
 
 }
