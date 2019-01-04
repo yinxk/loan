@@ -75,7 +75,7 @@ public class UpdateQcByExcel {
 
     public static void main(String[] args) {
 
-        ExcelReadReturn excelReadReturn = ExcelUtil.readExcel("C:\\修账相关数据\\提前还款\\期次问题\\提前还款期次错误-合并版.xlsx", 0, false, true);
+        ExcelReadReturn excelReadReturn = ExcelUtil.readExcel("C:\\修账相关数据\\提前还款\\期次问题\\提前还款期次错误-使用版.xls", 0, false, true);
         List<Map<String, Object>> content = excelReadReturn.getContent();
 
         List<UpdateModal> updateModalList = new ArrayList<>();
@@ -85,6 +85,10 @@ public class UpdateQcByExcel {
             String rightQc = map.get("正确期次").toString();
             String ywlsh = map.get("业务流水号") == null ? "" : map.get("业务流水号").toString();
             UpdateModal updateModal = new UpdateModal();
+            updateModal.setDkzh(dkzh);
+            updateModal.setErrorQc(errorQc);
+            updateModal.setRightQc(rightQc);
+            updateModal.setYwlsh(ywlsh);
             updateModalList.add(updateModal);
         }
 
@@ -96,7 +100,7 @@ public class UpdateQcByExcel {
         UpdateQcByExcel updateQcByExcel = new UpdateQcByExcel();
         log.info("更新开始");
         for (UpdateModal updateModal : updateModalList) {
-            updateQcByExcel.work(updateModal);
+            //updateQcByExcel.work(updateModal);
         }
         log.info("更新结束");
 
