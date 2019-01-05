@@ -41,7 +41,7 @@ public class Conn {
     }
 
     public static void closeResource(Connection conn, Statement statement, ResultSet resultSet) {
-        log.error("关闭连接相关资源");
+        log.info("关闭连接相关资源");
         try {
             if (resultSet != null) {
                 resultSet.close();
