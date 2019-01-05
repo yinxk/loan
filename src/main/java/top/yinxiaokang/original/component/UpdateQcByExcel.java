@@ -5,11 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import top.yinxiaokang.original.dao.BaseDao;
 import top.yinxiaokang.original.dto.ExcelReadReturn;
 import top.yinxiaokang.others.StringUtil;
-import top.yinxiaokang.util.Common;
 import top.yinxiaokang.util.ExcelUtil;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -24,12 +22,10 @@ public class UpdateQcByExcel {
     private List<String> doLog = new ArrayList<>();
     private List<UpdateModal> failedList = new ArrayList<>();
     private List<UpdateModal> successedList = new ArrayList<>();
-    private final static String SQL_TO_FORMAT = "UPDATE st_housing_business_details de  " +
-            "INNER JOIN c_housing_business_details_extension deex ON de.extenstion = deex.id  " +
-            "SET de.DQQC = ? " +
-            "WHERE  " +
-            "  de.DKZH = ?  " +
-            "  AND de.DQQC = ?  ";
+    private final static String SQL_TO_FORMAT = "UPDATE st_housing_business_details de INNER JOIN c_housing_business_details_extension deex ON de.extenstion=deex.id  " +
+            "SET de.DQQC= ?  WHERE de.id IN ( " +
+            "SELECT a.id FROM ( " +
+            "SELECT de.id FROM st_housing_business_details de INNER JOIN c_housing_business_details_extension deex ON de.extenstion=deex.id WHERE de.DKZH=? AND de.DQQC=? " ;
     private Conn conn;
     private Connection connection;
 
@@ -56,6 +52,7 @@ public class UpdateQcByExcel {
         if (StringUtil.notEmpty(updateModal.getYwlsh())) {
             sql += " AND de.ywlsh = ?";
         }
+        sql += ") a) ";
         try {
             count++;
             log.info("开始处理第 {} 条", count);
