@@ -11,10 +11,7 @@ import top.yinxiaokang.util.ExcelUtil;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @SuppressWarnings("ALL")
 @Slf4j
@@ -85,10 +82,10 @@ public class ClosedAccountUpsideDownRepair {
         log.info("处理贷款账号: {} 开始", dkzh);
         InitInformation initInformation = initInformationMap.get(dkzh);
         List<SthousingDetail> sthousingDetails = listDetailByDkzh(dkzh);
-        SthousingDetail repaired = null;
+        List<SthousingDetail> repairedList = new ArrayList<>();
         for (SthousingDetail sthousingDetail : sthousingDetails) {
             if (StringUtil.notEmpty(sthousingDetail.getRemark())) {
-                repaired = sthousingDetail;
+                repairedList.add(sthousingDetail);
             }
         }
 
@@ -102,11 +99,11 @@ public class ClosedAccountUpsideDownRepair {
             last = sthousingDetail;
             ye = ye.subtract(sthousingDetail.getBjje());
             int i = doUpdate(sthousingDetail.getId(), ye);
-            log.info("更新期次:{},贷款余额:{}", sthousingDetail.getDqqc(), ye);
+            log.info("更新期次:{},贷款余额:{},更新行数:{}", sthousingDetail.getDqqc(), ye, i);
         }
-
-        doUpdateQc(repaired.getId(), last.getDqqc());
-
+        for (SthousingDetail repaired : repairedList) {
+            log.info("待更新业务期次:{},需要更新的业务期次:{},更新行数:{}", repaired.getDqqc(), last.getDqqc(), doUpdateQc(repaired.getId(), last.getDqqc()));
+        }
         log.info("处理贷款账号: {} 结束", dkzh);
     }
 
