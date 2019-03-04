@@ -55,7 +55,8 @@ public class PrepaymentFilter {
     }
 
     public void work() {
-        ExcelReadReturn excelReadReturn = ExcelUtil.readExcel(Constants.PRE_REPAYMENT_XLSX_PATH, 1, false, false);
+        //ExcelReadReturn excelReadReturn = ExcelUtil.readExcel(Constants.PRE_REPAYMENT_XLSX_PATH, 1, false, false);
+        ExcelReadReturn excelReadReturn = ExcelUtil.readExcel("C:\\修账相关数据\\提前还款\\提前还款 - 退款600多笔.xls", 0, false, false);
         List<Map<String, Object>> content = excelReadReturn.getContent();
 
         List<Map<String, Object>> rContent = new ArrayList<>();
